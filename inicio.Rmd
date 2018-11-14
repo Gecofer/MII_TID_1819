@@ -1,0 +1,23 @@
+---
+title: "inicio"
+author: "Alejandro Campoy Nieves"
+date: "14 de noviembre de 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Lectura de datos
+
+```{r lectura, include=FALSE}
+datos_train <- read.table("./datos/drugLibTrain_raw.tsv", sep="\t", comment.char="", 
+quote = "\"", header=TRUE)
+datos_test <- read.table("./datos/drugLibTest_raw.tsv", sep="\t", comment.char="", 
+quote = "\"", header=TRUE)
+View(datos_train)
+View(datos_test)
+```
+
+

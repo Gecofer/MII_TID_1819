@@ -9,15 +9,48 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+## Explicación atributos
+
 ## Lectura de datos
 
 ```{r lectura, include=FALSE}
+# Para leer datos train
 datos_train <- read.table("./datos/drugLibTrain_raw.tsv", sep="\t", comment.char="", 
-quote = "\"", header=TRUE)
+                          quote = "\"", header=TRUE)
+head(datos_train, 5) # visualizar solo las 5 primeras filas
+summary(datos_train) # información sobre los datos
+View(datos_train) # ver la tabla
+
+# Para leer datos test
 datos_test <- read.table("./datos/drugLibTest_raw.tsv", sep="\t", comment.char="", 
-quote = "\"", header=TRUE)
-View(datos_train)
-View(datos_test)
+                         quote = "\"", header=TRUE)
+head(datos_test, 5) # visualizar solo las 5 primeras filas
+summary(datos_test) # información sobre los datos
+View(datos_test) # ver la tabla
 ```
 
+## Prepocesamiento de datos
 
+### Ver si algún atributo (columna) no nos hace falta
+
+- Indicar que es relevante para nosotros, ver como están agrupados.
+- Comprobar la columna "sideEffectsReview" ya que contiene NONE
+- Comprobar la columna de ID si hace falta, ya que tenemos 8 atributos, y aparecen que tenemos 9 atributos.
+
+### Correlación
+
+- Crear patrones en los textos, para saber que documentos hacen referencia a un tipo de fármaco, y podíamos sustituir los fármacos por un número.
+- Leyendo el comentario que nos diga pertenece a este fármaco con una x probabilidad.
+- Técnica de agrupamiento: coger los textos y agrupar (sin hacer clasificación), haciendo un "unit" a la columna de fármacos.
+
+Para el analisis de sentimientos solo hace falta texto, tener en cuenta "benefitsReview" y "commentsReview". Los efectos secundarios y la efectividad que tienen las drogas, hacer un análisis de sentimientos.
+
+El analisis textual hacer para:
+  - los comentarios en funcion de la droga
+  - en función del rating
+  
+### Comprobación de celdas NA
+
+```{r}
+View(is.na(datos_test))
+```

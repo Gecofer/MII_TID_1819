@@ -8,12 +8,15 @@ author:
 - "Andrea Morales Garzón"
 date: "14 de noviembre de 2018"
 output:
-  pdf_document: default
+  pdf_document:
+    keep_tex: true
 ---
 
 \newpage 
 
 <!--- Índice --->
+
+\tableofcontents
 
 \newpage 
 

@@ -36,11 +36,11 @@ Repositorio para las prácticas de la asignatura TID.
 
 ## Tareas
 
-[  ] Siempre tener definido el directorio de trabajo para verlo `getwd()`, para modificarlo `setwd(dir)`
-[  ] Hacer portada
-[  ] Hacer índice
-[  ] Ver qué salidas de ejecuciones queremos poner (si es muy grande foto)
-[  ] Escribir de donde hemos cogido el conjunto de datos
+- [ ] Siempre tener definido el directorio de trabajo para verlo `getwd()`, para modificarlo `setwd(dir)`
+- [ ] Hacer portada
+- [ ] Hacer índice
+- [ ] Ver qué salidas de ejecuciones queremos poner (si es muy grande foto)
+- [ ] Escribir de donde hemos cogido el conjunto de datos
 
 
 ## Enlaces

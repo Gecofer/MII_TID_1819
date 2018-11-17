@@ -1,0 +1,278 @@
+\documentclass[]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\fi
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\hypersetup{unicode=true,
+            pdftitle={Proyecto TID},
+            pdfauthor={Alejandro Campoy Nieves; Gema Correa Fernández; Luis Gallego Quero; Jonathan Martín Valera; Andrea Morales Garzón},
+            pdfborder={0 0 0},
+            breaklinks=true}
+\urlstyle{same}  % don't use monospace font for urls
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\usepackage{longtable,booktabs}
+\usepackage{graphicx,grffile}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+\IfFileExists{parskip.sty}{%
+\usepackage{parskip}
+}{% else
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{0}
+% Redefines (sub)paragraphs to behave more like sections
+\ifx\paragraph\undefined\else
+\let\oldparagraph\paragraph
+\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+\let\oldsubparagraph\subparagraph
+\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+
+%%% Use protect on footnotes to avoid problems with footnotes in titles
+\let\rmarkdownfootnote\footnote%
+\def\footnote{\protect\rmarkdownfootnote}
+
+%%% Change title format to be more compact
+\usepackage{titling}
+
+% Create subtitle command for use in maketitle
+\newcommand{\subtitle}[1]{
+  \posttitle{
+    \begin{center}\large#1\end{center}
+    }
+}
+
+\setlength{\droptitle}{-2em}
+
+  \title{Proyecto TID}
+    \pretitle{\vspace{\droptitle}\centering\huge}
+  \posttitle{\par}
+    \author{Alejandro Campoy Nieves \\ Gema Correa Fernández \\ Luis Gallego Quero \\ Jonathan Martín Valera \\ Andrea Morales Garzón}
+    \preauthor{\centering\large\emph}
+  \postauthor{\par}
+      \predate{\centering\large\emph}
+  \postdate{\par}
+    \date{14 de noviembre de 2018}
+
+
+\begin{document}
+\maketitle
+
+\newpage 
+
+\tableofcontents
+
+\newpage 
+
+\section{1. Comprender el problema a
+resolver}\label{comprender-el-problema-a-resolver}
+
+Para la realización y aplicación de las técnicas explicadas a lo largo
+del curso, hemos seleccionado un \emph{dataset} proporcionado por
+\href{https://archive.ics.uci.edu/ml/index.php}{\emph{UCI Machine
+Learning Repository}}. En concreto, hemos escogido
+\href{https://archive.ics.uci.edu/ml/datasets/Drug+Review+Dataset+\%28Druglib.com\%29}{\textbf{Drug
+Review Dataset}}, una exhaustiva base de datos de medicamentos
+organizada por relevancia para medicamentos específicos. El conjunto de
+datos proporciona revisiones de pacientes sobre medicamentos específicos
+junto con las condiciones relacionadas. Además, las revisiones se
+agrupan en informes sobre tres aspectos: beneficios, efectos secundarios
+y comentarios generales. De igual modo, las calificaciones están
+disponibles con respecto a la satisfacción general, así como una
+calificación de efectos secundarios de 5 pasos y una calificación de
+eficacia de 5 pasos. Los datos se obtuvieron rastreando los sitios de
+revisión farmacéutica en línea.
+
+\begin{longtable}[]{@{}llllll@{}}
+\toprule
+\begin{minipage}[b]{0.18\columnwidth}\raggedright\strut
+DataSet Characteristics:\strut
+\end{minipage} & \begin{minipage}[b]{0.25\columnwidth}\raggedright\strut
+Multivariate, Text\strut
+\end{minipage} & \begin{minipage}[b]{0.15\columnwidth}\raggedright\strut
+Number of Instances:\strut
+\end{minipage} & \begin{minipage}[b]{0.04\columnwidth}\raggedright\strut
+4143\strut
+\end{minipage} & \begin{minipage}[b]{0.13\columnwidth}\raggedright\strut
+Area:\strut
+\end{minipage} & \begin{minipage}[b]{0.08\columnwidth}\raggedright\strut
+N/A\strut
+\end{minipage}\tabularnewline
+\midrule
+\endhead
+\begin{minipage}[t]{0.18\columnwidth}\raggedright\strut
+Attribute Characteristics:\strut
+\end{minipage} & \begin{minipage}[t]{0.25\columnwidth}\raggedright\strut
+Integer\strut
+\end{minipage} & \begin{minipage}[t]{0.15\columnwidth}\raggedright\strut
+Number of Attributes:\strut
+\end{minipage} & \begin{minipage}[t]{0.04\columnwidth}\raggedright\strut
+8\strut
+\end{minipage} & \begin{minipage}[t]{0.13\columnwidth}\raggedright\strut
+Date Donated\strut
+\end{minipage} & \begin{minipage}[t]{0.08\columnwidth}\raggedright\strut
+2018-10-02\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.18\columnwidth}\raggedright\strut
+----------------------------\strut
+\end{minipage} & \begin{minipage}[t]{0.25\columnwidth}\raggedright\strut
+----------------------------------------\strut
+\end{minipage} & \begin{minipage}[t]{0.15\columnwidth}\raggedright\strut
+-----------------------\strut
+\end{minipage} & \begin{minipage}[t]{0.04\columnwidth}\raggedright\strut
+------\strut
+\end{minipage} & \begin{minipage}[t]{0.13\columnwidth}\raggedright\strut
+---------------------\strut
+\end{minipage} & \begin{minipage}[t]{0.08\columnwidth}\raggedright\strut
+------------\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.18\columnwidth}\raggedright\strut
+Associated Tasks:\strut
+\end{minipage} & \begin{minipage}[t]{0.25\columnwidth}\raggedright\strut
+Classification, Regression, Clustering\strut
+\end{minipage} & \begin{minipage}[t]{0.15\columnwidth}\raggedright\strut
+Missing Values?\strut
+\end{minipage} & \begin{minipage}[t]{0.04\columnwidth}\raggedright\strut
+N/A\strut
+\end{minipage} & \begin{minipage}[t]{0.13\columnwidth}\raggedright\strut
+Number of Web Hits:\strut
+\end{minipage} & \begin{minipage}[t]{0.08\columnwidth}\raggedright\strut
+7001\strut
+\end{minipage}\tabularnewline
+\bottomrule
+\end{longtable}
+
+Los datos se dividen en un conjunto train (75\%) y otro conjunto test
+(25\%) y se almacenan en dos archivos.tsv (tab-separated-values),
+respectivamente. Los atributos que tenemos en este dataset son:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{urlDrugName} (categorical): nombre de la droga
+\item
+  \textbf{condition} (categorical): nombre de la condición
+\item
+  \textbf{benefitsReview} (text): paciente sobre beneficios
+\item
+  \textbf{sideEffectsReview} (text): paciente sobre los efectos
+  secundarios
+\item
+  \textbf{commentsReview} (text): comentario general del paciente
+\item
+  \textbf{rating} (numerical): clasificación de paciente de 10 estrellas
+\item
+  \textbf{sideEffects} (categorical): clasificación de 5 pasos de
+  efectos secundarios
+\item
+  \textbf{effectiveness} (categorical): clasificación de efectividad de
+  5 pasos
+\end{enumerate}
+
+\section{2. Prepocesamiento de datos}\label{prepocesamiento-de-datos}
+
+Para poder analizar el dataset y realizar el prepocesamiento al mismo,
+lo primero que se va hacer es leer tanto el conjunto de datos train como
+de test. Primero, leeremos los datos con los que se va a entrenar y
+luego los datos test.
+
+\subsection{2.1. Lectura de datos}\label{lectura-de-datos}
+
+A continuación, leemos nuestro dataset train y test:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# Lectura de datos train}
+\NormalTok{datos_train <-}\StringTok{ }\KeywordTok{read.table}\NormalTok{(}\StringTok{"datos/drugLibTrain_raw.tsv"}\NormalTok{, }\DataTypeTok{sep=}\StringTok{"}\CharTok{\textbackslash{}t}\StringTok{"}\NormalTok{, }\DataTypeTok{comment.char=}\StringTok{""}\NormalTok{, }
+                          \DataTypeTok{quote =} \StringTok{"}\CharTok{\textbackslash{}"}\StringTok{"}\NormalTok{, }\DataTypeTok{header=}\OtherTok{TRUE}\NormalTok{)}
+\KeywordTok{head}\NormalTok{(datos_train, }\DecValTok{5}\NormalTok{) }\CommentTok{# visualizar las 5 primeras filas}
+\KeywordTok{summary}\NormalTok{(datos_train) }\CommentTok{# información sobre los datos}
+\KeywordTok{View}\NormalTok{(datos_train)    }\CommentTok{# vista de la tabla }
+
+\CommentTok{# Lectura de datos test}
+\NormalTok{datos_test <-}\StringTok{ }\KeywordTok{read.table}\NormalTok{(}\StringTok{"./datos/drugLibTest_raw.tsv"}\NormalTok{, }\DataTypeTok{sep=}\StringTok{"}\CharTok{\textbackslash{}t}\StringTok{"}\NormalTok{, }\DataTypeTok{comment.char=}\StringTok{""}\NormalTok{, }
+                         \DataTypeTok{quote =} \StringTok{"}\CharTok{\textbackslash{}"}\StringTok{"}\NormalTok{, }\DataTypeTok{header=}\OtherTok{TRUE}\NormalTok{)}
+\KeywordTok{head}\NormalTok{(datos_test, }\DecValTok{5}\NormalTok{) }\CommentTok{# visualizar las 5 primeras filas}
+\KeywordTok{summary}\NormalTok{(datos_test) }\CommentTok{# información sobre los datos}
+\KeywordTok{View}\NormalTok{(datos_test)    }\CommentTok{# vista de la tabla }
+\end{Highlighting}
+\end{Shaded}
+
+\subsection{2.2. Falta de datos, categorización, normalización,
+reducción de
+dimensionalidad.}\label{falta-de-datos-categorizacion-normalizacion-reduccion-de-dimensionalidad.}
+
+
+\end{document}

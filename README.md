@@ -2,6 +2,26 @@
 
 Repositorio para las prácticas de la asignatura TID.
 
+## Tabla de contenidos
+
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+
+- [Prácticas](#pr%C3%A1cticas)
+  - [P2. Prepocesamiento de datos](#p2-prepocesamiento-de-datos)
+      - [Correlación](#correlaci%C3%B3n)
+  - [P3. Métodos de agrupamientos (Clustering)](#p3-m%C3%A9todos-de-agrupamientos-clustering)
+  - [P4. Clasificación](#p4-clasificaci%C3%B3n)
+  - [P5. Regresión](#p5-regresi%C3%B3n)
+  - [P6. Reglas de asociación](#p6-reglas-de-asociaci%C3%B3n)
+- [Tareas](#tareas)
+- [Enlaces](#enlaces)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+---
+
 ## Prácticas
 
 ### P2. Prepocesamiento de datos

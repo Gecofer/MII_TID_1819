@@ -70,3 +70,4 @@ Repositorio para las prácticas de la asignatura TID.
 - Crear documento PDF: https://bookdown.org/yihui/rmarkdown/pdf-document.html
 - UCI Machine Learning: https://archive.ics.uci.edu/ml/index.php
 - Drug Review Dataset Data Set: https://archive.ics.uci.edu/ml/datasets/Drug+Review+Dataset+%28Druglib.com%29 y http://www.druglib.com
+- Crear tabla contenidos Markdown: https://github.com/thlorenz/doctoc#specifying-location-of-toc

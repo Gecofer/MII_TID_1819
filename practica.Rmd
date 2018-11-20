@@ -1,5 +1,5 @@
 ---
-title: "Proyecto TID"
+title: 
 author: 
 - "Alejandro Campoy Nieves"
 - "Gema Correa Fernández"
@@ -10,15 +10,82 @@ date: "14 de noviembre de 2018"
 output:
   pdf_document:
     keep_tex: true
+lang: es-ES
+geometry: margin=1in
+header-includes: 
+  - \usepackage{fancyhdr} 
+  - \fancyfoot[CO,CE]{My footer}
 ---
 
+<!----------------------------------------------------------------Portada------------------------------------------------------------------>
+####################
+\thispagestyle{empty}
+
+\begin{center} \huge \textbf{Tratamiento Inteligente de datos} \end{center}
+\vspace{0.3cm}
+\begin{center} \huge \textbf{(TID)} \end{center}
+\vspace{1.7cm}
+\begin{center} \Large \textbf{\textsc{Prácticas de la asignatura}} \end{center}
+\vspace{0.2cm}
+\begin{center} \large \textbf{2018-2019} \end{center}
+
+\vspace{2.5cm}
+
+\textbf{\large En colaboración con:}
+\vspace{0.2cm}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.7\textwidth]{imagenes/logoUGR.jpg}
+    \label{imagen2}
+\end{figure}
+
+\vspace{2.5cm}
+
+\hspace{8.5cm}{\large \textbf{Participantes}}
+
+\vspace{0.25cm}
+
+\hspace{8.5cm}{Alejandro Campoy Nieves \href{mailto:gecorrea@correo.ugr.es}{\textcolor{blue}{\underline{gecorrea@correo.ugr.es}}} }
+
+\vspace{0.15cm}
+
+\hspace{8.5cm}{Gema Correa Fernández \href{mailto:gecorrea@correo.ugr.es}{\textcolor{blue}{\underline{gecorrea@correo.ugr.es}}} }
+
+\vspace{0.15cm}
+
+\hspace{8.5cm}{Luis Gallego Quero \href{mailto:gecorrea@correo.ugr.es}{\textcolor{blue}{\underline{gecorrea@correo.ugr.es}}} }
+
+\vspace{0.15cm}
+
+\hspace{8.5cm}{Jonathan Martín Valera \href{mailto:gecorrea@correo.ugr.es}{\textcolor{blue}{\underline{gecorrea@correo.ugr.es}}} }
+
+\vspace{0.15cm}
+
+\hspace{8.5cm}{Andrea Morales Garzón \href{mailto:gecorrea@correo.ugr.es}{\textcolor{blue}{\underline{gecorrea@correo.ugr.es}}} }
+
+\vspace{0.15cm}
+
 \newpage 
 
-<!--- Índice --->
-
+<!----------------------------------------------------------------Indices------------------------------------------------------------------>
+####################
+\thispagestyle{empty}
 \tableofcontents
-
 \newpage 
+
+\thispagestyle{empty}
+\listoffigures
+\newpage 
+
+\thispagestyle{empty}
+\listoftables
+\newpage 
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{Proyecto}
+\rhead{\thepage}
+\setcounter{page}{1}
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -28,6 +95,7 @@ getwd()     # para saber el directorio de trabajo
 
 <!-----------------------------------------1. Comprender el problema a resolver------------------------------------------------------>
 
+<!--------------------------------------------1. Comprender el problema a resolver--------------------------------------------------------->
 # 1. Comprender el problema a resolver
 
 Para la realización y aplicación de las técnicas explicadas a lo largo del curso, hemos seleccionado un _dataset_ proporcionado por [*UCI Machine Learning Repository*](https://archive.ics.uci.edu/ml/index.php). En concreto, hemos escogido [**Drug Review Dataset**](https://archive.ics.uci.edu/ml/datasets/Drug+Review+Dataset+%28Druglib.com%29), una exhaustiva base de datos de medicamentos organizada por relevancia para medicamentos específicos. El conjunto de datos proporciona revisiones de pacientes sobre medicamentos específicos junto con las condiciones relacionadas. Además, las revisiones se agrupan en informes sobre tres aspectos: beneficios, efectos secundarios y comentarios generales. De igual modo, las calificaciones están disponibles con respecto a la satisfacción general, así como una calificación de efectos secundarios de 5 pasos y una calificación de eficacia de 5 pasos. Los datos se obtuvieron rastreando los sitios de revisión farmacéutica en línea. 

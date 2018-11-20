@@ -15,7 +15,7 @@ Repositorio para las prácticas de la asignatura TID.
   - [P4. Clasificación](#p4-clasificaci%C3%B3n)
   - [P5. Regresión](#p5-regresi%C3%B3n)
   - [P6. Reglas de asociación](#p6-reglas-de-asociaci%C3%B3n)
-- [Tareas](#tareas)
+- [Tareas](https://github.com/Gecofer/MII_TID_1819/issues)
 - [Enlaces](#enlaces)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -62,18 +62,6 @@ Repositorio para las prácticas de la asignatura TID.
 ### P5. Regresión
 
 ### P6. Reglas de asociación
-
-
-## Tareas
-
-- [x] Portada (**que alguien lo compruebe**)
-- [x] Índices (**que alguien lo compruebe**)
-- [ ] Cambiar encabezado de página
-- [ ] Añadir cada uno el correo en la portada
-- [ ] Hacer la tabla del apartado 1
-- [ ] ¿Queremos mostrar las ejecuciones/salidas del código? ¿Queremos poner capturas de pantalla? ¿Qué código queremos mostrar en el PDF?
-- [x] Descripción del conjunto de datos (**que alguien lo compruebe**)
-
 
 
 ## Enlaces

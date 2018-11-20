@@ -1,4 +1,4 @@
-\documentclass[]{article}
+\documentclass[spanish,]{article}
 \usepackage{lmodern}
 \usepackage{amssymb,amsmath}
 \usepackage{ifxetex,ifluatex}
@@ -24,11 +24,16 @@
 \usepackage[margin=1in]{geometry}
 \usepackage{hyperref}
 \hypersetup{unicode=true,
-            pdftitle={Proyecto TID},
             pdfauthor={Alejandro Campoy Nieves; Gema Correa Fernández; Luis Gallego Quero; Jonathan Martín Valera; Andrea Morales Garzón},
             pdfborder={0 0 0},
             breaklinks=true}
 \urlstyle{same}  % don't use monospace font for urls
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[shorthands=off,main=spanish]{babel}
+\else
+  \usepackage{polyglossia}
+  \setmainlanguage[]{spanish}
+\fi
 \usepackage{color}
 \usepackage{fancyvrb}
 \newcommand{\VerbBar}{|}
@@ -115,9 +120,9 @@
 
 \setlength{\droptitle}{-2em}
 
-  \title{Proyecto TID}
-    \pretitle{\vspace{\droptitle}\centering\huge}
-  \posttitle{\par}
+  \title{}
+    \pretitle{\vspace{\droptitle}}
+  \posttitle{}
     \author{Alejandro Campoy Nieves \\ Gema Correa Fernández \\ Luis Gallego Quero \\ Jonathan Martín Valera \\ Andrea Morales Garzón}
     \preauthor{\centering\large\emph}
   \postauthor{\par}
@@ -125,15 +130,76 @@
   \postdate{\par}
     \date{14 de noviembre de 2018}
 
+\usepackage{fancyhdr}
+\fancyfoot[CO,CE]{My footer}
 
 \begin{document}
-\maketitle
+
+\thispagestyle{empty}
+
+\begin{center} \huge \textbf{Tratamiento Inteligente de datos} \end{center}
+
+\vspace{0.3cm}
+
+\begin{center} \huge \textbf{(TID)} \end{center}
+
+\vspace{1.7cm}
+
+\begin{center} \Large \textbf{\textsc{Prácticas de la asignatura}} \end{center}
+
+\vspace{0.2cm}
+
+\begin{center} \large \textbf{2018-2019} \end{center}
+
+\vspace{2.5cm}
+
+\textbf{\large En colaboración con:} \vspace{0.2cm}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.7\textwidth]{imagenes/logoUGR.jpg}
+    \label{imagen2}
+\end{figure}
+
+\vspace{2.5cm}
+
+\hspace{8.5cm}{\large \textbf{Participantes}}
+
+\vspace{0.25cm}
+
+\hspace{8.5cm}{Alejandro Campoy Nieves \href{mailto:gecorrea@correo.ugr.es}{\textcolor{blue}{\underline{gecorrea@correo.ugr.es}}} }
+
+\vspace{0.15cm}
+
+\hspace{8.5cm}{Gema Correa Fernández \href{mailto:gecorrea@correo.ugr.es}{\textcolor{blue}{\underline{gecorrea@correo.ugr.es}}} }
+
+\vspace{0.15cm}
+
+\hspace{8.5cm}{Luis Gallego Quero \href{mailto:gecorrea@correo.ugr.es}{\textcolor{blue}{\underline{gecorrea@correo.ugr.es}}} }
+
+\vspace{0.15cm}
+
+\hspace{8.5cm}{Jonathan Martín Valera \href{mailto:gecorrea@correo.ugr.es}{\textcolor{blue}{\underline{gecorrea@correo.ugr.es}}} }
+
+\vspace{0.15cm}
+
+\hspace{8.5cm}{Andrea Morales Garzón \href{mailto:gecorrea@correo.ugr.es}{\textcolor{blue}{\underline{gecorrea@correo.ugr.es}}} }
+
+\vspace{0.15cm}
 
 \newpage 
 
-\tableofcontents
-
+\thispagestyle{empty} \tableofcontents
 \newpage 
+
+\thispagestyle{empty} \listoffigures
+\newpage 
+
+\thispagestyle{empty} \listoftables
+\newpage 
+
+\pagestyle{fancy} \fancyhf{} \lhead{Proyecto} \rhead{\thepage}
+\setcounter{page}{1}
 
 \section{1. Comprender el problema a
 resolver}\label{comprender-el-problema-a-resolver}

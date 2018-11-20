@@ -66,13 +66,13 @@ Repositorio para las prácticas de la asignatura TID.
 
 ## Tareas
 
-- [x] Portada **comprobacion por alguien**
-- [x] Índices **comprobacion por alguien**
+- [x] Portada (**que alguien lo compruebe**)
+- [x] Índices (**que alguien lo compruebe**)
 - [ ] Cambiar encabezado de página
 - [ ] Añadir cada uno el correo en la portada
 - [ ] Hacer la tabla del apartado 1
 - [ ] ¿Queremos mostrar las ejecuciones/salidas del código? ¿Queremos poner capturas de pantalla? ¿Qué código queremos mostrar en el PDF?
-- [x] Descripción del conjunto de datos **comprobacion por alguien**
+- [x] Descripción del conjunto de datos (**que alguien lo compruebe**)
 
 
 

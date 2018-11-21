@@ -130,32 +130,55 @@ Los datos se dividen en un conjunto train (75%) y otro conjunto test (25%) y se 
 8. **effectiveness** (categorical): clasificación de efectividad de 5 pasos
 
 
-<!--------------------------------------------2. Prepocesamiento de datos------------------------------------------------------------>
 
-# 2. Prepocesamiento de datos
+## 2.2. Falta de datos, categorizaciÃ³n, normalizaciÃ³n, reducciÃ³n de dimensionalidad.
 
-Para poder analizar el dataset y realizar el prepocesamiento al mismo, lo primero que se va hacer es leer tanto el conjunto de datos train como de test. Primero, leeremos los datos con los que se va a entrenar y luego los datos test.
+<!--- Borrar si aÃ±gÃºn atributo no nos da informaciÃ³n como un ID, hacer una transformaciÃ³n con los atributos asimÃ©tricos, ya que son necesarios para la aplicaciÃ³n de algunos mÃ©todos de aprendizaje sensibles a distancias. Se consideran asimÃ©tricos cuando el valor skewness se aleja de 0, podemos eliminar las variables con varianza 0 o muy prÃ³ximas. --->
 
-## 2.1. Lectura de datos
 
-A continuación, leemos nuestro dataset train y test:
+```{r}
+# Procesar datos
 
-```{r lectura , eval=FALSE}
-# Lectura de datos train
-datos_train <- read.table("datos/drugLibTrain_raw.tsv", sep="\t", comment.char="",
-                          quote = "\"", header=TRUE)
-head(datos_train, 5) # visualizar las 5 primeras filas
-summary(datos_train) # información sobre los datos
-View(datos_train)    # vista de la tabla
+# 1. Eliminamos la columna del ID. Esa columna es la número 1, por tanto la quitamos directamente del data_frame
+datos_test = datos_test[-1]
 
-# Lectura de datos test
-datos_test <- read.table("./datos/drugLibTest_raw.tsv", sep="\t", comment.char="",
-                         quote = "\"", header=TRUE)
-head(datos_test, 5) # visualizar las 5 primeras filas
-summary(datos_test) # información sobre los datos
-View(datos_test)    # vista de la tabla
+
 ```
 
-## 2.2. Falta de datos, categorización, normalización, reducción de dimensionalidad.
 
-<!--- Borrar si añgún atributo no nos da información como un ID, hacer una transformación con los atributos asimétricos, ya que son necesarios para la aplicación de algunos métodos de aprendizaje sensibles a distancias. Se consideran asimétricos cuando el valor skewness se aleja de 0, podemos eliminar las variables con varianza 0 o muy próximas. --->
+```{r}
+
+# 2. Primero tenemos que usar la librería que procese los datos de tipo texto en R. La más conocida se llama tm. Si no la tenemos instalada en R, tnemos que hacerlo previamente. Para eso hacemos:
+# install.packages("tm")
+library("tm")
+
+# 3. Los datos que vamos a leer se cargan haciendo un vector de mensajitos. Para eso, nos creamos un vector de documentos a partir de un vector de string. Podemos usar la función VectorSource para hacer esta conversión.
+
+# Nos quedamos con la única columna del dataset que nos interesa. Necesitamos obtenerla en forma de vector, y no como un dataframe de una columna, por lo que usamos asvector para hacer la conversión
+beneficts_review_data = as.vector(datos_test$benefitsReview)
+
+# Lo convertimos en la estructura de documento, y lo guardamos ya en el corpus que lo vamos a utilizar.
+corpus = (VectorSource(beneficts_review_data))
+
+# Creamos el propio corpus
+corpus <- Corpus(corpus)
+#summary(corpus)
+
+
+# Podemos ver que funciona accediendo a uno cualquiera. Si nos fijamos en el contenido, vemos que tiene signos de puntuación y exclamación.
+inspect(corpus[4])
+corpus[[4]]$content
+
+# 4. Una vez que tenemos el corpus creado, continuamos con el procesamiento. En data mining no tiene sentido contemplar los signos de puntuación, por lo que los quitamos.
+corpus <- tm_map(corpus, content_transformer(removePunctuation))
+
+# Si volvemos a mostrar la opinión cuarta, vemos como todos los signos han desaparecido. De hecho, podemos inspeccionar el corpus, y se ve como todos los signos de puntuación, exclamación y derivados ya no están.
+inspect(corpus[4])
+
+# 5. Stopwords. En cualquier idioma, hay palabras tan tan tan comunes que no nos aportan información relevante. Por ejemplo, en español, las palabras "la", "a", "en", "de" son ejemplos de lo que se conoce como Stopwords. Este tipo de palabras, tenemos que suprimirlas de nuestro corpus. Como el contenido del corpus está en inglés, debemos especificar el idioma para que nos elimine del corpus las palabras adecuadas. 
+corpus <- tm_map(corpus, content_transformer(removeWords), 
+          stopwords("english"))
+
+```
+
+

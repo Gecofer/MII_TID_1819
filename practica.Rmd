@@ -83,7 +83,7 @@ header-includes:
 
 \pagestyle{fancy}
 \fancyhf{}
-\lhead{Proyecto}
+\lhead{Proyecto: Técnicas aplicadas para análisis inteligente de datos}
 \rhead{\thepage}
 \setcounter{page}{1}
 

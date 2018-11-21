@@ -1,0 +1,208 @@
+---
+title:
+author:
+- "Alejandro Campoy Nieves"
+- "Gema Correa Fernández"
+- "Luis Gallego Quero"
+- "Jonathan Martín Valera"
+- "Andrea Morales Garzón"
+date: "14 de noviembre de 2018"
+output:
+  pdf_document:
+    keep_tex: true
+lang: es-ES
+geometry: margin=1in
+header-includes:
+  - \usepackage{fancyhdr}
+  - \fancyfoot[CO,CE]{My footer}
+---
+
+<!----------------------------------------------------------------Portada------------------------------------------------------------------>
+####################
+\thispagestyle{empty}
+
+\begin{center} \huge \textbf{Tratamiento Inteligente de datos} \end{center}
+\vspace{0.3cm}
+\begin{center} \huge \textbf{(TID)} \end{center}
+\vspace{1.7cm}
+\begin{center} \Large \textbf{\textsc{Prácticas de la asignatura}} \end{center}
+\vspace{0.2cm}
+\begin{center} \large \textbf{2018-2019} \end{center}
+
+\vspace{2.5cm}
+
+\textbf{\large En colaboración con:}
+\vspace{0.2cm}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.7\textwidth]{imagenes/logoUGR.jpg}
+    \label{imagen2}
+\end{figure}
+
+\vspace{2.5cm}
+
+\hspace{8.5cm}{\large \textbf{Participantes}}
+
+\vspace{0.25cm}
+
+\hspace{8.5cm}{Alejandro Campoy Nieves:  \href{mailto:alejandroac79@correo.ugr.es}{\textcolor{blue}{\underline{alejandroac79@correo.ugr.es}}}}
+
+\vspace{0.15cm}
+
+\hspace{8.5cm}{Gema Correa Fernández:  \href{mailto:gecorrea@correo.ugr.es}{\textcolor{blue}{\underline{gecorrea@correo.ugr.es}}} }
+
+\vspace{0.15cm}
+
+\hspace{8.5cm}{Luis Gallego Quero:  \href{mailto:lgaq94@correo.ugr.es}{\textcolor{blue}{\underline{lgaq94@correo.ugr.es}}} }
+
+\vspace{0.15cm}
+
+\hspace{8.5cm}{Jonathan Martín Valera:  \href{mailto:jmv742@correo.ugr.es}{\textcolor{blue}{\underline{jmv742@correo.ugr.es}}} }
+
+\vspace{0.15cm}
+
+\hspace{8.5cm}{Andrea Morales Garzón:  \href{mailto:andreamgmg@correo.ugr.es}{\textcolor{blue}{\underline{andreamgmg@correo.ugr.es}}} }
+
+\vspace{0.15cm}
+
+\newpage
+
+<!----------------------------------------------------------------Indices------------------------------------------------------------------>
+####################
+\thispagestyle{empty}
+\tableofcontents
+\newpage
+
+\thispagestyle{empty}
+\listoffigures
+\newpage
+
+\thispagestyle{empty}
+\listoftables
+\newpage
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{Proyecto: Técnicas aplicadas para análisis inteligente de datos}
+\rhead{\thepage}
+\setcounter{page}{1}
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+set.seed(3) # semilla para obtención de los mismos resultados
+getwd()     # para saber el directorio de trabajo
+```
+
+<!-----------------------------------------1. Comprender el problema a resolver------------------------------------------------------>
+
+<!--------------------------------------------1. Comprender el problema a resolver--------------------------------------------------------->
+# 1. Comprender el problema a resolver
+
+Para la realización y aplicación de las técnicas explicadas a lo largo del curso, hemos seleccionado un _dataset_ proporcionado por [*UCI Machine Learning Repository*](https://archive.ics.uci.edu/ml/index.php). En concreto, hemos escogido [**Drug Review Dataset**](https://archive.ics.uci.edu/ml/datasets/Drug+Review+Dataset+%28Druglib.com%29), una exhaustiva base de datos de medicamentos organizada por relevancia para medicamentos específicos. El conjunto de datos proporciona revisiones de pacientes sobre medicamentos específicos junto con las condiciones relacionadas. Además, las revisiones se agrupan en informes sobre tres aspectos: beneficios, efectos secundarios y comentarios generales. De igual modo, las calificaciones están disponibles con respecto a la satisfacción general, así como una calificación de efectos secundarios y de eficacia de 5 pasos. Los datos se obtuvieron rastreando los sitios de revisión farmacéutica en línea.
+
+El objetivo principal del estudio es:
+
+ - Realizar un análisis de sentimientos en relación con la experiencia en el uso de dichos medicamentos, como por ejemplo la efectividad, efectos secundarios...
+ 
+ - Compatibilizar dicho modelo de datos con otros conjuntos de datos aportados en: [**Drugs.com**](https://www.drugs.com/)
+ 
+En este proyecto nos centraremos en el **análisis y experiencia de los usuarios** en el uso de los distintos medicamentos.
+
+Las características de este conjunto de datos vienen descritas en la siguiente tabla:
+
+<!--- Tabla --->
+
+| DataSet Characteristics:   | Multivariate, Text                     | Number of Instances:  | 4143 | Area:               | N/A        |
+|----------------------------|----------------------------------------|-----------------------|------|---------------------|------------|
+| Attribute Characteristics: | Integer                                | Number of Attributes: | 8    | Date Donated        | 2018-10-02 |
+|----------------------------|----------------------------------------|-----------------------|------|---------------------|------------|
+| Associated Tasks:          | Classification, Regression, Clustering | Missing Values?       | N/A  | Number of Web Hits: | 7001       |
+
+Los datos se dividen en un conjunto train (75%) y otro conjunto test (25%) y se almacenan en dos archivos.tsv (tab-separated-values), respectivamente. Los atributos que tenemos en este dataset son:
+
+1. **urlDrugName** (categorical): nombre de la droga
+2. **condition** (categorical): nombre de la condición
+3. **benefitsReview** (text): paciente sobre beneficios
+4. **sideEffectsReview** (text): paciente sobre los efectos secundarios
+5. **commentsReview** (text): comentario general del paciente
+6. **rating** (numerical): clasificación de paciente de 10 estrellas
+7. **sideEffects** (categorical): clasificación de 5 pasos de efectos secundarios
+8. **effectiveness** (categorical): clasificación de efectividad de 5 pasos
+
+
+<!--------------------------------------------2. Prepocesamiento de datos------------------------------------------------------------>
+
+# 2. Prepocesamiento de datos
+
+Para poder analizar el dataset y realizar el prepocesamiento al mismo, lo primero que se va hacer es leer tanto el conjunto de datos train como de test. Primero, leeremos los datos con los que se va a entrenar y luego los datos test.
+
+## 2.1. Lectura de datos
+
+A continuación, leemos nuestro dataset train y test:
+
+```{r lectura }
+# Lectura de datos train
+datos_train <- read.table("datos/drugLibTrain_raw.tsv", sep="\t", comment.char="",
+                          quote = "\"", header=TRUE)
+head(datos_train, 5) # visualizar las 5 primeras filas
+summary(datos_train) # información sobre los datos
+View(datos_train)    # vista de la tabla
+
+# Lectura de datos test
+datos_test <- read.table("./datos/drugLibTest_raw.tsv", sep="\t", comment.char="",
+                         quote = "\"", header=TRUE)
+head(datos_test, 5) # visualizar las 5 primeras filas
+summary(datos_test) # información sobre los datos
+View(datos_test)    # vista de la tabla
+```
+
+## 2.2. Falta de datos, categorización, normalización, reducción de dimensionalidad.
+
+<!--- Borrar si añgún atributo no nos da información como un ID, hacer una transformación con los atributos asimétricos, ya que son necesarios para la aplicación de algunos métodos de aprendizaje sensibles a distancias. Se consideran asimétricos cuando el valor skewness se aleja de 0, podemos eliminar las variables con varianza 0 o muy próximas. --->
+
+
+```{r}
+# Procesar datos
+
+# 1. Eliminamos la columna del ID. Esa columna es la n�mero 1, por tanto la quitamos directamente del data_frame
+datos_test = datos_test[-1]
+
+
+```
+
+
+```{r}
+
+# 2. Primero tenemos que usar la librer�a que procese los datos de tipo texto en R. La m�s conocida se llama tm. Si no la tenemos instalada en R, tnemos que hacerlo previamente. Para eso hacemos:
+# install.packages("tm")
+library("tm")
+
+# 3. Los datos que vamos a leer se cargan haciendo un vector de mensajitos. Para eso, nos creamos un vector de documentos a partir de un vector de string. Podemos usar la funci�n VectorSource para hacer esta conversi�n.
+
+# Nos quedamos con la �nica columna del dataset que nos interesa. Necesitamos obtenerla en forma de vector, y no como un dataframe de una columna, por lo que usamos asvector para hacer la conversi�n
+beneficts_review_data = as.vector(datos_test$benefitsReview)
+
+# Lo convertimos en la estructura de documento, y lo guardamos ya en el corpus que lo vamos a utilizar.
+corpus = (VectorSource(beneficts_review_data))
+
+# Creamos el propio corpus
+corpus <- Corpus(corpus)
+#summary(corpus)
+
+
+# Podemos ver que funciona accediendo a uno cualquiera. Si nos fijamos en el contenido, vemos que tiene signos de puntuaci�n y exclamaci�n.
+inspect(corpus[4])
+corpus[[4]]$content
+
+# 4. Una vez que tenemos el corpus creado, continuamos con el procesamiento. En data mining no tiene sentido contemplar los signos de puntuaci�n, por lo que los quitamos.
+corpus <- tm_map(corpus, content_transformer(removePunctuation))
+
+# Si volvemos a mostrar la opini�n cuarta, vemos como todos los signos han desaparecido. De hecho, podemos inspeccionar el corpus, y se ve como todos los signos de puntuaci�n, exclamaci�n y derivados ya no est�n.
+inspect(corpus[4])
+
+# 5. Stopwords. En cualquier idioma, hay palabras tan tan tan comunes que no nos aportan informaci�n relevante. Por ejemplo, en espa�ol, las palabras "la", "a", "en", "de" son ejemplos de lo que se conoce como Stopwords. Este tipo de palabras, tenemos que suprimirlas de nuestro corpus. Como el contenido del corpus est� en ingl�s, debemos especificar el idioma para que nos elimine del corpus las palabras adecuadas. 
+corpus <- tm_map(corpus, content_transformer(removeWords), 
+          stopwords("english"))
+
+```
+

@@ -24,7 +24,7 @@
 \usepackage[margin=1in]{geometry}
 \usepackage{hyperref}
 \hypersetup{unicode=true,
-            pdfauthor={Alejandro Campoy Nieves; Gema Correa FernÃ¡ndez; Luis Gallego Quero; Jonathan MartÃ­n Valera; Andrea Morales GarzÃ³n},
+            pdfauthor={Alejandro Campoy Nieves; Gema Correa Fernández; Luis Gallego Quero; Jonathan Martín Valera; Andrea Morales Garzón},
             pdfborder={0 0 0},
             breaklinks=true}
 \urlstyle{same}  % don't use monospace font for urls
@@ -123,7 +123,7 @@
   \title{}
     \pretitle{\vspace{\droptitle}}
   \posttitle{}
-    \author{Alejandro Campoy Nieves \\ Gema Correa FernÃ¡ndez \\ Luis Gallego Quero \\ Jonathan MartÃ­n Valera \\ Andrea Morales GarzÃ³n}
+    \author{Alejandro Campoy Nieves \\ Gema Correa Fernández \\ Luis Gallego Quero \\ Jonathan Martín Valera \\ Andrea Morales Garzón}
     \preauthor{\centering\large\emph}
   \postauthor{\par}
       \predate{\centering\large\emph}
@@ -145,7 +145,7 @@
 
 \vspace{1.7cm}
 
-\begin{center} \Large \textbf{\textsc{PrÃ¡cticas de la asignatura}} \end{center}
+\begin{center} \Large \textbf{\textsc{Prácticas de la asignatura}} \end{center}
 
 \vspace{0.2cm}
 
@@ -153,7 +153,7 @@
 
 \vspace{2.5cm}
 
-\textbf{\large En colaboraciÃ³n con:} \vspace{0.2cm}
+\textbf{\large En colaboración con:} \vspace{0.2cm}
 
 \begin{figure}[h]
     \centering
@@ -171,7 +171,7 @@
 
 \vspace{0.15cm}
 
-\hspace{8.5cm}{Gema Correa FernÃ¡ndez:  \href{mailto:gecorrea@correo.ugr.es}{\textcolor{blue}{\underline{gecorrea@correo.ugr.es}}} }
+\hspace{8.5cm}{Gema Correa Fernández:  \href{mailto:gecorrea@correo.ugr.es}{\textcolor{blue}{\underline{gecorrea@correo.ugr.es}}} }
 
 \vspace{0.15cm}
 
@@ -179,11 +179,11 @@
 
 \vspace{0.15cm}
 
-\hspace{8.5cm}{Jonathan Martín Valera:  \href{mailto:jmv742@correo.ugr.es}{\textcolor{blue}{\underline{jmv742@correo.ugr.es}}} }
+\hspace{8.5cm}{Jonathan Mart?n Valera:  \href{mailto:jmv742@correo.ugr.es}{\textcolor{blue}{\underline{jmv742@correo.ugr.es}}} }
 
 \vspace{0.15cm}
 
-\hspace{8.5cm}{Andrea Morales GarzÃ³n:  \href{mailto:andreamgmg@correo.ugr.es}{\textcolor{blue}{\underline{andreamgmg@correo.ugr.es}}} }
+\hspace{8.5cm}{Andrea Morales Garzón:  \href{mailto:andreamgmg@correo.ugr.es}{\textcolor{blue}{\underline{andreamgmg@correo.ugr.es}}} }
 
 \vspace{0.15cm}
 
@@ -199,44 +199,43 @@
 \newpage
 
 \pagestyle{fancy} \fancyhf{}
-\lhead{Proyecto: TÃ©cnicas aplicadas para anÃ¡lisis inteligente de datos}
+\lhead{Proyecto: Técnicas aplicadas para análisis inteligente de datos}
 \rhead{\thepage} \setcounter{page}{1}
 
 \section{1. Comprender el problema a
 resolver}\label{comprender-el-problema-a-resolver}
 
-Para la realizaciÃ³n y aplicaciÃ³n de las tÃ©cnicas explicadas a lo
-largo del curso, hemos seleccionado un \emph{dataset} proporcionado por
+Para la realización y aplicación de las técnicas explicadas a lo largo
+del curso, hemos seleccionado un \emph{dataset} proporcionado por
 \href{https://archive.ics.uci.edu/ml/index.php}{\emph{UCI Machine
 Learning Repository}}. En concreto, hemos escogido
 \href{https://archive.ics.uci.edu/ml/datasets/Drug+Review+Dataset+\%28Druglib.com\%29}{\textbf{Drug
 Review Dataset}}, una exhaustiva base de datos de medicamentos
-organizada por relevancia para medicamentos especÃ­ficos. El conjunto de
-datos proporciona revisiones de pacientes sobre medicamentos
-especÃ­ficos junto con las condiciones relacionadas. AdemÃ¡s, las
-revisiones se agrupan en informes sobre tres aspectos: beneficios,
-efectos secundarios y comentarios generales. De igual modo, las
-calificaciones estÃ¡n disponibles con respecto a la satisfacciÃ³n
-general, asÃ­ como una calificaciÃ³n de efectos secundarios y de
-eficacia de 5 pasos. Los datos se obtuvieron rastreando los sitios de
-revisiÃ³n farmacÃ©utica en lÃ­nea.
+organizada por relevancia para medicamentos específicos. El conjunto de
+datos proporciona revisiones de pacientes sobre medicamentos específicos
+junto con las condiciones relacionadas. Además, las revisiones se
+agrupan en informes sobre tres aspectos: beneficios, efectos secundarios
+y comentarios generales. De igual modo, las calificaciones están
+disponibles con respecto a la satisfacción general, así como una
+calificación de efectos secundarios y de eficacia de 5 pasos. Los datos
+se obtuvieron rastreando los sitios de revisión farmacéutica en línea.
 
 El objetivo principal del estudio es:
 
 \begin{itemize}
 \item
-  Realizar un anÃ¡lisis de sentimientos en relaciÃ³n con la experiencia
-  en el uso de dichos medicamentos, como por ejemplo la efectividad,
+  Realizar un análisis de sentimientos en relación con la experiencia en
+  el uso de dichos medicamentos, como por ejemplo la efectividad,
   efectos secundarios\ldots{}
 \item
   Compatibilizar dicho modelo de datos con otros conjuntos de datos
   aportados en: \href{https://www.drugs.com/}{\textbf{Drugs.com}}
 \end{itemize}
 
-En este proyecto nos centraremos en el \textbf{anÃ¡lisis y experiencia
-de los usuarios} en el uso de los distintos medicamentos.
+En este proyecto nos centraremos en el \textbf{análisis y experiencia de
+los usuarios} en el uso de los distintos medicamentos.
 
-Las caracterÃ­sticas de este conjunto de datos vienen descritas en la
+Las características de este conjunto de datos vienen descritas en la
 siguiente tabla:
 
 \begin{longtable}[]{@{}llllll@{}}
@@ -308,7 +307,7 @@ respectivamente. Los atributos que tenemos en este dataset son:
 \item
   \textbf{urlDrugName} (categorical): nombre de la droga
 \item
-  \textbf{condition} (categorical): nombre de la condiciÃ³n
+  \textbf{condition} (categorical): nombre de la condición
 \item
   \textbf{benefitsReview} (text): paciente sobre beneficios
 \item
@@ -317,13 +316,12 @@ respectivamente. Los atributos que tenemos en este dataset son:
 \item
   \textbf{commentsReview} (text): comentario general del paciente
 \item
-  \textbf{rating} (numerical): clasificaciÃ³n de paciente de 10
-  estrellas
+  \textbf{rating} (numerical): clasificación de paciente de 10 estrellas
 \item
-  \textbf{sideEffects} (categorical): clasificaciÃ³n de 5 pasos de
+  \textbf{sideEffects} (categorical): clasificación de 5 pasos de
   efectos secundarios
 \item
-  \textbf{effectiveness} (categorical): clasificaciÃ³n de efectividad de
+  \textbf{effectiveness} (categorical): clasificación de efectividad de
   5 pasos
 \end{enumerate}
 
@@ -336,7 +334,7 @@ luego los datos test.
 
 \subsection{2.1. Lectura de datos}\label{lectura-de-datos}
 
-A continuaciÃ³n, leemos nuestro dataset train y test:
+A continuación, leemos nuestro dataset train y test:
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -382,7 +380,7 @@ A continuaciÃ³n, leemos nuestro dataset train y test:
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\KeywordTok{summary}\NormalTok{(datos_train) }\CommentTok{# informaciÃ³n sobre los datos}
+\KeywordTok{summary}\NormalTok{(datos_train) }\CommentTok{# información sobre los datos}
 \end{Highlighting}
 \end{Shaded}
 
@@ -475,7 +473,7 @@ A continuaciÃ³n, leemos nuestro dataset train y test:
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\KeywordTok{summary}\NormalTok{(datos_test) }\CommentTok{# informaciÃ³n sobre los datos}
+\KeywordTok{summary}\NormalTok{(datos_test) }\CommentTok{# información sobre los datos}
 \end{Highlighting}
 \end{Shaded}
 
@@ -536,47 +534,99 @@ A continuaciÃ³n, leemos nuestro dataset train y test:
 \end{Highlighting}
 \end{Shaded}
 
-\subsection{2.2. Falta de datos, categorizaciÃ³n, normalizaciÃ³n,
-reducciÃ³n de
-dimensionalidad.}\label{falta-de-datos-categorizacian-normalizacian-reduccian-de-dimensionalidad.}
+\subsection{2.2. Falta de datos, categorización, normalización,
+reducción de
+dimensionalidad.}\label{falta-de-datos-categorizacion-normalizacion-reduccion-de-dimensionalidad.}
+
+\section{Procesar datos}\label{procesar-datos}
+
+\subsubsection{Eliminar columna del ID.}\label{eliminar-columna-del-id.}
+
+Como ya se ha comentado previamente, al conjunto de datos utilizado se
+le ha añadido de forma automática una novena columna, que representa un
+ID para cada uno de los datos con los que estamos trabajando. Como no
+nos aporta información, hemos decidido quitarla directamente del
+dataframe. Esta columna se corresponde con la primera columna del
+dataframe, por lo cuál, debemos eliminar la columna que se corresponde
+con la posición 1.
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\CommentTok{# Procesar datos}
-
-\CommentTok{# 1. Eliminamos la columna del ID. Esa columna es la número 1, por tanto la quitamos directamente del data_frame}
 \NormalTok{datos_test =}\StringTok{ }\NormalTok{datos_test[}\OperatorTok{-}\DecValTok{1}\NormalTok{]}
 \end{Highlighting}
 \end{Shaded}
 
+Una vez eliminada la columna anterior, ya podemos continuar con el
+procesamiento de los datos.
+
+Primero tenemos que usar la librería que procese los datos de tipo texto
+en R. La más conocida se llama tm. Si no la tenemos instalada en R,
+tnemos que hacerlo previamente. Para eso hacemos lo siguiente:
+
 \begin{Shaded}
 \begin{Highlighting}[]
-\CommentTok{# 2. Primero tenemos que usar la librería que procese los datos de tipo texto en R. La más conocida se llama tm. Si no la tenemos instalada en R, tnemos que hacerlo previamente. Para eso hacemos:}
 \CommentTok{# install.packages("tm")}
+\CommentTok{# install.packages("SnowballC")}
+
 \KeywordTok{library}\NormalTok{(}\StringTok{"tm"}\NormalTok{)}
 \end{Highlighting}
 \end{Shaded}
 
 \begin{verbatim}
+## Warning: package 'tm' was built under R version 3.4.4
+\end{verbatim}
+
+\begin{verbatim}
 ## Loading required package: NLP
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: package 'NLP' was built under R version 3.4.4
 \end{verbatim}
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\CommentTok{# 3. Los datos que vamos a leer se cargan haciendo un vector de mensajitos. Para eso, nos creamos un vector de documentos a partir de un vector de string. Podemos usar la función VectorSource para hacer esta conversión.}
+\KeywordTok{library}\NormalTok{(}\StringTok{"SnowballC"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
 
+\begin{verbatim}
+## Warning: package 'SnowballC' was built under R version 3.4.4
+\end{verbatim}
+
+\subsubsection{Creación del corpus}\label{creacion-del-corpus}
+
+Para poder obtener la estructura con la que vamos a procesar nuestra
+información, debemos obtener un vector con documentos. En nuestro caso,
+cada uno de los documentos se corresponde con una opinión sobre un
+fármaco. Para ello, primero debemos obtener un vector con todas los
+opiniones (o lo que es lo mismo, con todas). Para ello debemos extraerlo
+del dataframe en forma de vector.
+
+Sólo nos faltaría convertir cada elemento del vector al formato de
+documento. Podemos usar la función VectorSource para hacer esta
+conversión.
+
+\begin{Shaded}
+\begin{Highlighting}[]
 \CommentTok{# Nos quedamos con la única columna del dataset que nos interesa. Necesitamos obtenerla en forma de vector, y no como un dataframe de una columna, por lo que usamos asvector para hacer la conversión}
-\NormalTok{beneficts_review_data =}\StringTok{ }\KeywordTok{as.vector}\NormalTok{(datos_test}\OperatorTok{$}\NormalTok{benefitsReview)}
+\NormalTok{benefits_review_data =}\StringTok{ }\KeywordTok{as.vector}\NormalTok{(datos_test}\OperatorTok{$}\NormalTok{benefitsReview)}
 
 \CommentTok{# Lo convertimos en la estructura de documento, y lo guardamos ya en el corpus que lo vamos a utilizar.}
-\NormalTok{corpus =}\StringTok{ }\NormalTok{(}\KeywordTok{VectorSource}\NormalTok{(beneficts_review_data))}
+\NormalTok{corpus =}\StringTok{ }\NormalTok{(}\KeywordTok{VectorSource}\NormalTok{(benefits_review_data))}
 
 \CommentTok{# Creamos el propio corpus}
 \NormalTok{corpus <-}\StringTok{ }\KeywordTok{Corpus}\NormalTok{(corpus)}
 \CommentTok{#summary(corpus)}
+\end{Highlighting}
+\end{Shaded}
 
+Podemos ver que funciona accediendo a uno cualquiera, por ejemplo, vamos
+a acceder al cuarto comentario almacenado.
 
-\CommentTok{# Podemos ver que funciona accediendo a uno cualquiera. Si nos fijamos en el contenido, vemos que tiene signos de puntuación y exclamación.}
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# P Si nos fijamos en el contenido, vemos que tiene signos de puntuación y exclamación.}
 \KeywordTok{inspect}\NormalTok{(corpus[}\DecValTok{4}\NormalTok{])}
 \end{Highlighting}
 \end{Shaded}
@@ -599,9 +649,18 @@ dimensionalidad.}\label{falta-de-datos-categorizacian-normalizacian-reduccian-de
 ## [1] "It controlls my mood swings. It helps me think before i act or speak. It controlls amxiety. IT FREED ME TO LIVE MY LIFE HAPPILY!!! I cared about my life more. Everything had more meaning to me. I lived a very dull life before taking prozac."
 \end{verbatim}
 
+\subsubsection{Eliminar signos de
+puntuación.}\label{eliminar-signos-de-puntuacion.}
+
+Como hemos podido ver en el documento que se ha mostrado por pantalla,
+en él se aprecia el uso de signos de puntuación y exclamación. En un
+principio, no tiene sentido en \textit{Data Mining}contemplar los signos
+de puntuación, ya que no nos van a aportar información. Por ello, los
+quitamos, como se puede ver a continuación.
+
 \begin{Shaded}
 \begin{Highlighting}[]
-\CommentTok{# 4. Una vez que tenemos el corpus creado, continuamos con el procesamiento. En data mining no tiene sentido contemplar los signos de puntuación, por lo que los quitamos.}
+\CommentTok{# 4. Una vez que tenemos el corpus creado, continuamos con el procesamiento. }
 \NormalTok{corpus <-}\StringTok{ }\KeywordTok{tm_map}\NormalTok{(corpus, }\KeywordTok{content_transformer}\NormalTok{(removePunctuation))}
 \end{Highlighting}
 \end{Shaded}
@@ -611,9 +670,13 @@ dimensionalidad.}\label{falta-de-datos-categorizacian-normalizacian-reduccian-de
 ## content_transformer(removePunctuation)): transformation drops documents
 \end{verbatim}
 
+Si volvemos a mostrar la opinión número cuatro, vemos como todos los
+signos han desaparecido. De hecho, podemos inspeccionar el corpus, y se
+ve como todos los signos de puntuación, exclamación y derivados ya no
+están.
+
 \begin{Shaded}
 \begin{Highlighting}[]
-\CommentTok{# Si volvemos a mostrar la opinión cuarta, vemos como todos los signos han desaparecido. De hecho, podemos inspeccionar el corpus, y se ve como todos los signos de puntuación, exclamación y derivados ya no están.}
 \KeywordTok{inspect}\NormalTok{(corpus[}\DecValTok{4}\NormalTok{])}
 \end{Highlighting}
 \end{Shaded}
@@ -626,9 +689,17 @@ dimensionalidad.}\label{falta-de-datos-categorizacian-normalizacian-reduccian-de
 ## [1] It controlls my mood swings It helps me think before i act or speak It controlls amxiety IT FREED ME TO LIVE MY LIFE HAPPILY I cared about my life more Everything had more meaning to me I lived a very dull life before taking prozac
 \end{verbatim}
 
+\subsubsection{Stopwords.}\label{stopwords.}
+
+En cualquier idioma, hay palabras tan tan tan comunes que no nos aportan
+informaci?n relevante. Por ejemplo, en espa?ol, las palabras ``la'',
+``a'', ``en'', ``de'' son ejemplos de lo que se conoce como Stopwords.
+Este tipo de palabras, tenemos que suprimirlas de nuestro corpus. Como
+el contenido del corpus está en inglés, debemos especificar el idioma
+correcto para que nos elimine del corpus las palabras adecuadas.
+
 \begin{Shaded}
 \begin{Highlighting}[]
-\CommentTok{# 5. Stopwords. En cualquier idioma, hay palabras tan tan tan comunes que no nos aportan información relevante. Por ejemplo, en español, las palabras "la", "a", "en", "de" son ejemplos de lo que se conoce como Stopwords. Este tipo de palabras, tenemos que suprimirlas de nuestro corpus. Como el contenido del corpus está en inglés, debemos especificar el idioma para que nos elimine del corpus las palabras adecuadas. }
 \NormalTok{corpus <-}\StringTok{ }\KeywordTok{tm_map}\NormalTok{(corpus, }\KeywordTok{content_transformer}\NormalTok{(removeWords), }
           \KeywordTok{stopwords}\NormalTok{(}\StringTok{"english"}\NormalTok{))}
 \end{Highlighting}
@@ -637,6 +708,166 @@ dimensionalidad.}\label{falta-de-datos-categorizacian-normalizacian-reduccian-de
 \begin{verbatim}
 ## Warning in tm_map.SimpleCorpus(corpus, content_transformer(removeWords), :
 ## transformation drops documents
+\end{verbatim}
+
+Sin embargo, tenemos otro problema, y es que no todas las stopwords se
+han borrado. Sí se han borrado todas las stopwords cuyas letras que la
+componen están en minúscula, pero no si una de las letras están en
+mayúscula. Por ejemplo: todas las ``the'' se han borrado, pero no las
+``The''. Esto nos obliga a tener que pasar todos los caracteres del
+texto a letras minúscula, y a repetir de nuevo el proceso que elimina
+las stopwords.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{corpus <-}\StringTok{ }\KeywordTok{tm_map}\NormalTok{(corpus, }\KeywordTok{content_transformer}\NormalTok{(tolower))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Warning in tm_map.SimpleCorpus(corpus, content_transformer(tolower)):
+## transformation drops documents
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{inspect}\NormalTok{(corpus[}\DecValTok{1}\NormalTok{])}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## <<SimpleCorpus>>
+## Metadata:  corpus specific: 1, document level (indexed): 0
+## Content:  documents: 1
+## 
+## [1] the antibiotic may  destroyed bacteria causing  sinus infection  but  may also   caused   virus   hard  say
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{corpus <-}\StringTok{ }\KeywordTok{tm_map}\NormalTok{(corpus, }\KeywordTok{content_transformer}\NormalTok{(removeWords),}\KeywordTok{stopwords}\NormalTok{(}\StringTok{"english"}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Warning in tm_map.SimpleCorpus(corpus, content_transformer(removeWords), :
+## transformation drops documents
+\end{verbatim}
+
+Ahora ya hemos eliminado las stopwords de forma correcta.
+
+\subsubsection{Stemming}\label{stemming}
+
+El siguiente paso consiste en reducir el número de palabras totales con
+las que estamos trabajando. En este caso, se trata de reducir aquellas
+que no nos aportan nada relevante a lo que ya tenemos. En la columna con
+la que estamos trabajando en este dataframe, se repite una gran cantidad
+de veces la palabra ``benefit'', al igual que ``benefits''.
+
+Sin embargo, realizar el análisis de nuestros datos con ambas palabras
+no tiene gran relevancia, ya que una no aporta nada respecto a la otra.
+Este es un ejemplo del tipo de casos que se nos dan en nuestro dataset;
+por ejemplo. Igual ocurre con ``reduce'' y ``reduced'', por ejemplo.
+Este tipo de situaciones son las que intentamos corregir con este paso.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{inspect}\NormalTok{(corpus[}\DecValTok{340}\NormalTok{])}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## <<SimpleCorpus>>
+## Metadata:  corpus specific: 1, document level (indexed): 0
+## Content:  documents: 1
+## 
+## [1]  benefit   drug   yes   work   crazy locked   mental ward    usage became normal  crazy againhowever  treatment plan   good plan
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{inspect}\NormalTok{(corpus[}\DecValTok{272}\NormalTok{])}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## <<SimpleCorpus>>
+## Metadata:  corpus specific: 1, document level (indexed): 0
+## Content:  documents: 1
+## 
+## [1] benefits  protonix   greatly reduced incidence  heartburn  spams   esophagus
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{corpus <-}\StringTok{ }\KeywordTok{tm_map}\NormalTok{(corpus, stemDocument)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Warning in tm_map.SimpleCorpus(corpus, stemDocument): transformation drops
+## documents
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{inspect}\NormalTok{(corpus[}\DecValTok{340}\NormalTok{])}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## <<SimpleCorpus>>
+## Metadata:  corpus specific: 1, document level (indexed): 0
+## Content:  documents: 1
+## 
+## [1] benefit drug yes work crazi lock mental ward usag becam normal crazi againhowev treatment plan good plan
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{inspect}\NormalTok{(corpus[}\DecValTok{272}\NormalTok{])}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## <<SimpleCorpus>>
+## Metadata:  corpus specific: 1, document level (indexed): 0
+## Content:  documents: 1
+## 
+## [1] benefit protonix great reduc incid heartburn spam esophagus
+\end{verbatim}
+
+Si ahora volvemos a mostrar el contenido de dichas opiniones, podemos
+ver como el stemming se ha hecho efectivo: donde ponía \textit{benefits}
+ahora pone \textit{benefit}, y la misma operación se ha llevado a cabo
+para todos los comentarios en el dataset.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{inspect}\NormalTok{(corpus[}\DecValTok{340}\NormalTok{])}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## <<SimpleCorpus>>
+## Metadata:  corpus specific: 1, document level (indexed): 0
+## Content:  documents: 1
+## 
+## [1] benefit drug yes work crazi lock mental ward usag becam normal crazi againhowev treatment plan good plan
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{inspect}\NormalTok{(corpus[}\DecValTok{272}\NormalTok{])}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## <<SimpleCorpus>>
+## Metadata:  corpus specific: 1, document level (indexed): 0
+## Content:  documents: 1
+## 
+## [1] benefit protonix great reduc incid heartburn spam esophagus
 \end{verbatim}
 
 

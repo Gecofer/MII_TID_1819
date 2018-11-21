@@ -162,49 +162,124 @@ View(datos_test)    # vista de la tabla
 
 <!--- Borrar si añgún atributo no nos da información como un ID, hacer una transformación con los atributos asimétricos, ya que son necesarios para la aplicación de algunos métodos de aprendizaje sensibles a distancias. Se consideran asimétricos cuando el valor skewness se aleja de 0, podemos eliminar las variables con varianza 0 o muy próximas. --->
 
-
-```{r}
 # Procesar datos
 
-# 1. Eliminamos la columna del ID. Esa columna es la n?mero 1, por tanto la quitamos directamente del data_frame
+## Eliminar columna del ID.
+Como ya se ha comentado previamente, al conjunto de datos utilizado se le ha añadido de forma automática una novena columna, que representa un ID para cada uno de los datos con los que estamos trabajando. Como no nos aporta información, hemos decidido quitarla directamente del dataframe. Esta columna se corresponde con la primera columna del dataframe, por lo cuál, debemos eliminar la columna que se corresponde con la posición 1. 
+```{r}
+
 datos_test = datos_test[-1]
 
 
 ```
 
+Una vez eliminada la columna anterior, ya podemos continuar con el procesamiento de los datos. 
+
+Primero tenemos que usar la librería que procese los datos de tipo texto en R. La más conocida se llama \textbf{tm}. Si no la tenemos instalada en R, tnemos que hacerlo previamente. Para eso hacemos lo siguiente:
+```{r}
+
+
+# install.packages("tm")
+# install.packages("SnowballC")
+
+library("tm")
+library("SnowballC")
+```
+
+## Creación del corpus
+
+Para poder obtener la estructura con la que vamos a procesar nuestra información, debemos obtener un vector con documentos. En nuestro caso, cada uno de los documentos se corresponde con una opinión sobre un fármaco. Para ello, primero debemos obtener un vector con todas los opiniones (o lo que es lo mismo, con todas). Para ello debemos extraerlo del dataframe en forma de vector.
+
+Sólo nos faltaría convertir cada elemento del vector al formato de documento. Podemos usar la función VectorSource para hacer esta conversión.
 
 ```{r}
 
-# 2. Primero tenemos que usar la librer?a que procese los datos de tipo texto en R. La m?s conocida se llama tm. Si no la tenemos instalada en R, tnemos que hacerlo previamente. Para eso hacemos:
-# install.packages("tm")
-library("tm")
-
-# 3. Los datos que vamos a leer se cargan haciendo un vector de mensajitos. Para eso, nos creamos un vector de documentos a partir de un vector de string. Podemos usar la funci?n VectorSource para hacer esta conversi?n.
-
-# Nos quedamos con la ?nica columna del dataset que nos interesa. Necesitamos obtenerla en forma de vector, y no como un dataframe de una columna, por lo que usamos asvector para hacer la conversi?n
-beneficts_review_data = as.vector(datos_test$benefitsReview)
+# Nos quedamos con la única columna del dataset que nos interesa. Necesitamos obtenerla en forma de vector, y no como un dataframe de una columna, por lo que usamos asvector para hacer la conversión
+benefits_review_data = as.vector(datos_test$benefitsReview)
 
 # Lo convertimos en la estructura de documento, y lo guardamos ya en el corpus que lo vamos a utilizar.
-corpus = (VectorSource(beneficts_review_data))
+corpus = (VectorSource(benefits_review_data))
 
 # Creamos el propio corpus
 corpus <- Corpus(corpus)
 #summary(corpus)
 
+``` 
 
-# Podemos ver que funciona accediendo a uno cualquiera. Si nos fijamos en el contenido, vemos que tiene signos de puntuaci?n y exclamaci?n.
+Podemos ver que funciona accediendo a uno cualquiera, por ejemplo, vamos a acceder al cuarto comentario almacenado. 
+```{r}
+
+# P Si nos fijamos en el contenido, vemos que tiene signos de puntuación y exclamación.
 inspect(corpus[4])
 corpus[[4]]$content
+```
 
-# 4. Una vez que tenemos el corpus creado, continuamos con el procesamiento. En data mining no tiene sentido contemplar los signos de puntuaci?n, por lo que los quitamos.
+## Eliminar signos de puntuación. 
+
+Como hemos podido ver en el documento que se ha mostrado por pantalla, en él se aprecia el uso de signos de puntuación y exclamación. En un principio, no tiene sentido en \textit{Data Mining}contemplar los signos de puntuación, ya que no nos van a aportar información. Por ello, los quitamos, como se puede ver a continuación.
+
+```{r}
+# 4. Una vez que tenemos el corpus creado, continuamos con el procesamiento. 
 corpus <- tm_map(corpus, content_transformer(removePunctuation))
 
-# Si volvemos a mostrar la opini?n cuarta, vemos como todos los signos han desaparecido. De hecho, podemos inspeccionar el corpus, y se ve como todos los signos de puntuaci?n, exclamaci?n y derivados ya no est?n.
+```
+Si volvemos a mostrar la opinión número cuatro, vemos como todos los signos han desaparecido. De hecho, podemos inspeccionar el corpus, y se ve como todos los signos de puntuación, exclamación y derivados ya no están.
+
+```{r}
 inspect(corpus[4])
 
-# 5. Stopwords. En cualquier idioma, hay palabras tan tan tan comunes que no nos aportan informaci?n relevante. Por ejemplo, en espa?ol, las palabras "la", "a", "en", "de" son ejemplos de lo que se conoce como Stopwords. Este tipo de palabras, tenemos que suprimirlas de nuestro corpus. Como el contenido del corpus est? en ingl?s, debemos especificar el idioma para que nos elimine del corpus las palabras adecuadas. 
+```
+
+## Stopwords. 
+
+En cualquier idioma, hay palabras tan tan tan comunes que no nos aportan información relevante. Por ejemplo, en español, las palabras "la", "a", "en", "de" son ejemplos de lo que se conoce como \textit{stopwords}. Este tipo de palabras debemos de suprimirlas de nuestro corpus. Como el contenido del corpus está en inglés, debemos especificar el idioma correcto para que nos elimine del corpus las palabras adecuadas en dicho idioma.
+
+```{r}
 corpus <- tm_map(corpus, content_transformer(removeWords), 
           stopwords("english"))
 
 ```
+
+Sin embargo, tenemos otro problema, y es que no todas las \textit{stopwords} se han borrado. Sí se han borrado todas las \textit{stopwords} cuyas letras que la componen están en minúscula, pero no si una de las letras están en mayúscula. Por ejemplo: todas las "the" se han borrado, pero no las "The". Esto nos obliga a tener que pasar todos los caracteres del texto a letras minúscula, y a repetir de nuevo el proceso que elimina las \textit{stopwords}. 
+
+```{r}
+
+corpus <- tm_map(corpus, content_transformer(tolower))
+inspect(corpus[1])
+corpus <- tm_map(corpus, content_transformer(removeWords),stopwords("english"))
+
+```
+
+Ahora ya hemos eliminado las stopwords de forma correcta.
+
+
+## Stemming
+El siguiente paso consiste en reducir el número de palabras totales con las que estamos trabajando. En este caso, se trata de reducir aquellas que no nos aportan nada relevante a lo que ya tenemos. En la columna con la que estamos trabajando en este dataframe, se repite una gran cantidad de veces la palabra "benefit", al igual que "benefits". 
+
+Sin embargo, realizar el análisis de nuestros datos con ambas palabras no tiene gran relevancia, ya que una no aporta nada respecto a la otra. Este es un ejemplo del tipo de casos que se nos dan en nuestro dataset; por ejemplo. Igual ocurre con "reduce" y "reduced", por ejemplo. Este tipo de situaciones son las que intentamos corregir con este paso. 
+
+```{r}
+inspect(corpus[340])
+inspect(corpus[272])
+
+corpus <- tm_map(corpus, stemDocument)
+
+inspect(corpus[340])
+inspect(corpus[272])
+```
+
+Si ahora volvemos a mostrar el contenido de dichas opiniones, podemos ver como el stemming se ha hecho efectivo: donde ponía \textit{benefits} ahora pone \textit{benefit}, y la misma operación se ha llevado a cabo para todos los comentarios en el dataset. 
+```{r}
+inspect(corpus[340])
+inspect(corpus[272])
+```
+
+## Borrar espacios en blanco innecesarios
+Hasta el momento hemos hecho distintos cambios en el texto de nuestro dataset. No solo hemos modificado algunas palabras, sino que también hemos borrado otras muchas. Por ello, es adecuado asegurarnos que no hay más espacios en blanco que los que separan las palabras del texto. Para asegurarnos de ello, podemos ejecutar la siguiente orden, que se encarga de suprimir los espacios en blanco sobrantes.
+
+```{r}
+corpus <- tm_map(corpus, stripWhitespace) 
+```
+
+
 

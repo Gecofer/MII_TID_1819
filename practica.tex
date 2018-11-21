@@ -540,7 +540,7 @@ dimensionalidad.}\label{falta-de-datos-categorizacion-normalizacion-reduccion-de
 
 \section{Procesar datos}\label{procesar-datos}
 
-\subsubsection{Eliminar columna del ID.}\label{eliminar-columna-del-id.}
+\subsection{Eliminar columna del ID.}\label{eliminar-columna-del-id.}
 
 Como ya se ha comentado previamente, al conjunto de datos utilizado se
 le ha añadido de forma automática una novena columna, que representa un
@@ -560,8 +560,8 @@ Una vez eliminada la columna anterior, ya podemos continuar con el
 procesamiento de los datos.
 
 Primero tenemos que usar la librería que procese los datos de tipo texto
-en R. La más conocida se llama tm. Si no la tenemos instalada en R,
-tnemos que hacerlo previamente. Para eso hacemos lo siguiente:
+en R. La más conocida se llama \textbf{tm}. Si no la tenemos instalada
+en R, tnemos que hacerlo previamente. Para eso hacemos lo siguiente:
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -594,7 +594,7 @@ tnemos que hacerlo previamente. Para eso hacemos lo siguiente:
 ## Warning: package 'SnowballC' was built under R version 3.4.4
 \end{verbatim}
 
-\subsubsection{Creación del corpus}\label{creacion-del-corpus}
+\subsection{Creación del corpus}\label{creacion-del-corpus}
 
 Para poder obtener la estructura con la que vamos a procesar nuestra
 información, debemos obtener un vector con documentos. En nuestro caso,
@@ -649,7 +649,7 @@ a acceder al cuarto comentario almacenado.
 ## [1] "It controlls my mood swings. It helps me think before i act or speak. It controlls amxiety. IT FREED ME TO LIVE MY LIFE HAPPILY!!! I cared about my life more. Everything had more meaning to me. I lived a very dull life before taking prozac."
 \end{verbatim}
 
-\subsubsection{Eliminar signos de
+\subsection{Eliminar signos de
 puntuación.}\label{eliminar-signos-de-puntuacion.}
 
 Como hemos podido ver en el documento que se ha mostrado por pantalla,
@@ -689,14 +689,15 @@ están.
 ## [1] It controlls my mood swings It helps me think before i act or speak It controlls amxiety IT FREED ME TO LIVE MY LIFE HAPPILY I cared about my life more Everything had more meaning to me I lived a very dull life before taking prozac
 \end{verbatim}
 
-\subsubsection{Stopwords.}\label{stopwords.}
+\subsection{Stopwords.}\label{stopwords.}
 
 En cualquier idioma, hay palabras tan tan tan comunes que no nos aportan
-informaci?n relevante. Por ejemplo, en espa?ol, las palabras ``la'',
-``a'', ``en'', ``de'' son ejemplos de lo que se conoce como Stopwords.
-Este tipo de palabras, tenemos que suprimirlas de nuestro corpus. Como
-el contenido del corpus está en inglés, debemos especificar el idioma
-correcto para que nos elimine del corpus las palabras adecuadas.
+información relevante. Por ejemplo, en español, las palabras ``la'',
+``a'', ``en'', ``de'' son ejemplos de lo que se conoce como
+\textit{stopwords}. Este tipo de palabras debemos de suprimirlas de
+nuestro corpus. Como el contenido del corpus está en inglés, debemos
+especificar el idioma correcto para que nos elimine del corpus las
+palabras adecuadas en dicho idioma.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -710,13 +711,13 @@ correcto para que nos elimine del corpus las palabras adecuadas.
 ## transformation drops documents
 \end{verbatim}
 
-Sin embargo, tenemos otro problema, y es que no todas las stopwords se
-han borrado. Sí se han borrado todas las stopwords cuyas letras que la
-componen están en minúscula, pero no si una de las letras están en
-mayúscula. Por ejemplo: todas las ``the'' se han borrado, pero no las
-``The''. Esto nos obliga a tener que pasar todos los caracteres del
-texto a letras minúscula, y a repetir de nuevo el proceso que elimina
-las stopwords.
+Sin embargo, tenemos otro problema, y es que no todas las
+\textit{stopwords} se han borrado. Sí se han borrado todas las
+\textit{stopwords} cuyas letras que la componen están en minúscula, pero
+no si una de las letras están en mayúscula. Por ejemplo: todas las
+``the'' se han borrado, pero no las ``The''. Esto nos obliga a tener que
+pasar todos los caracteres del texto a letras minúscula, y a repetir de
+nuevo el proceso que elimina las \textit{stopwords}.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -756,7 +757,7 @@ las stopwords.
 
 Ahora ya hemos eliminado las stopwords de forma correcta.
 
-\subsubsection{Stemming}\label{stemming}
+\subsection{Stemming}\label{stemming}
 
 El siguiente paso consiste en reducir el número de palabras totales con
 las que estamos trabajando. En este caso, se trata de reducir aquellas
@@ -868,6 +869,27 @@ para todos los comentarios en el dataset.
 ## Content:  documents: 1
 ## 
 ## [1] benefit protonix great reduc incid heartburn spam esophagus
+\end{verbatim}
+
+\subsection{Borrar espacios en blanco
+innecesarios}\label{borrar-espacios-en-blanco-innecesarios}
+
+Hasta el momento hemos hecho distintos cambios en el texto de nuestro
+dataset. No solo hemos modificado algunas palabras, sino que también
+hemos borrado otras muchas. Por ello, es adecuado asegurarnos que no hay
+más espacios en blanco que los que separan las palabras del texto. Para
+asegurarnos de ello, podemos ejecutar la siguiente orden, que se encarga
+de suprimir los espacios en blanco sobrantes.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{corpus <-}\StringTok{ }\KeywordTok{tm_map}\NormalTok{(corpus, stripWhitespace) }
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Warning in tm_map.SimpleCorpus(corpus, stripWhitespace): transformation
+## drops documents
 \end{verbatim}
 
 

@@ -57,7 +57,7 @@ header-includes:
 
 \vspace{0.15cm}
 
-\hspace{8.5cm}{Jonathan MartÃ­n Valera:  \href{mailto:jmv742@correo.ugr.es}{\textcolor{blue}{\underline{jmv742@correo.ugr.es}}} }
+\hspace{8.5cm}{Jonathan Martín Valera:  \href{mailto:jmv742@correo.ugr.es}{\textcolor{blue}{\underline{jmv742@correo.ugr.es}}} }
 
 \vspace{0.15cm}
 

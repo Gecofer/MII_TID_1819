@@ -57,7 +57,7 @@ header-includes:
 
 \vspace{0.15cm}
 
-\hspace{8.5cm}{Jonathan MartÌn Valera:  \href{mailto:jmv742@correo.ugr.es}{\textcolor{blue}{\underline{jmv742@correo.ugr.es}}} }
+\hspace{8.5cm}{Jonathan Mart?n Valera:  \href{mailto:jmv742@correo.ugr.es}{\textcolor{blue}{\underline{jmv742@correo.ugr.es}}} }
 
 \vspace{0.15cm}
 
@@ -99,6 +99,8 @@ getwd()     # para saber el directorio de trabajo
 # 1. Comprender el problema a resolver
 
 Para la realizaci√≥n y aplicaci√≥n de las t√©cnicas explicadas a lo largo del curso, hemos seleccionado un _dataset_ proporcionado por [*UCI Machine Learning Repository*](https://archive.ics.uci.edu/ml/index.php). En concreto, hemos escogido [**Drug Review Dataset**](https://archive.ics.uci.edu/ml/datasets/Drug+Review+Dataset+%28Druglib.com%29), una exhaustiva base de datos de medicamentos organizada por relevancia para medicamentos espec√≠ficos. El conjunto de datos proporciona revisiones de pacientes sobre medicamentos espec√≠ficos junto con las condiciones relacionadas. Adem√°s, las revisiones se agrupan en informes sobre tres aspectos: beneficios, efectos secundarios y comentarios generales. De igual modo, las calificaciones est√°n disponibles con respecto a la satisfacci√≥n general, as√≠ como una calificaci√≥n de efectos secundarios y de eficacia de 5 pasos. Los datos se obtuvieron rastreando los sitios de revisi√≥n farmac√©utica en l√≠nea.
+
+
 
 El objetivo principal del estudio es:
 
@@ -164,7 +166,7 @@ View(datos_test)    # vista de la tabla
 ```{r}
 # Procesar datos
 
-# 1. Eliminamos la columna del ID. Esa columna es la n˙mero 1, por tanto la quitamos directamente del data_frame
+# 1. Eliminamos la columna del ID. Esa columna es la n?mero 1, por tanto la quitamos directamente del data_frame
 datos_test = datos_test[-1]
 
 
@@ -173,13 +175,13 @@ datos_test = datos_test[-1]
 
 ```{r}
 
-# 2. Primero tenemos que usar la librerÌa que procese los datos de tipo texto en R. La m·s conocida se llama tm. Si no la tenemos instalada en R, tnemos que hacerlo previamente. Para eso hacemos:
+# 2. Primero tenemos que usar la librer?a que procese los datos de tipo texto en R. La m?s conocida se llama tm. Si no la tenemos instalada en R, tnemos que hacerlo previamente. Para eso hacemos:
 # install.packages("tm")
 library("tm")
 
-# 3. Los datos que vamos a leer se cargan haciendo un vector de mensajitos. Para eso, nos creamos un vector de documentos a partir de un vector de string. Podemos usar la funciÛn VectorSource para hacer esta conversiÛn.
+# 3. Los datos que vamos a leer se cargan haciendo un vector de mensajitos. Para eso, nos creamos un vector de documentos a partir de un vector de string. Podemos usar la funci?n VectorSource para hacer esta conversi?n.
 
-# Nos quedamos con la ˙nica columna del dataset que nos interesa. Necesitamos obtenerla en forma de vector, y no como un dataframe de una columna, por lo que usamos asvector para hacer la conversiÛn
+# Nos quedamos con la ?nica columna del dataset que nos interesa. Necesitamos obtenerla en forma de vector, y no como un dataframe de una columna, por lo que usamos asvector para hacer la conversi?n
 beneficts_review_data = as.vector(datos_test$benefitsReview)
 
 # Lo convertimos en la estructura de documento, y lo guardamos ya en el corpus que lo vamos a utilizar.
@@ -190,17 +192,17 @@ corpus <- Corpus(corpus)
 #summary(corpus)
 
 
-# Podemos ver que funciona accediendo a uno cualquiera. Si nos fijamos en el contenido, vemos que tiene signos de puntuaciÛn y exclamaciÛn.
+# Podemos ver que funciona accediendo a uno cualquiera. Si nos fijamos en el contenido, vemos que tiene signos de puntuaci?n y exclamaci?n.
 inspect(corpus[4])
 corpus[[4]]$content
 
-# 4. Una vez que tenemos el corpus creado, continuamos con el procesamiento. En data mining no tiene sentido contemplar los signos de puntuaciÛn, por lo que los quitamos.
+# 4. Una vez que tenemos el corpus creado, continuamos con el procesamiento. En data mining no tiene sentido contemplar los signos de puntuaci?n, por lo que los quitamos.
 corpus <- tm_map(corpus, content_transformer(removePunctuation))
 
-# Si volvemos a mostrar la opiniÛn cuarta, vemos como todos los signos han desaparecido. De hecho, podemos inspeccionar el corpus, y se ve como todos los signos de puntuaciÛn, exclamaciÛn y derivados ya no est·n.
+# Si volvemos a mostrar la opini?n cuarta, vemos como todos los signos han desaparecido. De hecho, podemos inspeccionar el corpus, y se ve como todos los signos de puntuaci?n, exclamaci?n y derivados ya no est?n.
 inspect(corpus[4])
 
-# 5. Stopwords. En cualquier idioma, hay palabras tan tan tan comunes que no nos aportan informaciÛn relevante. Por ejemplo, en espaÒol, las palabras "la", "a", "en", "de" son ejemplos de lo que se conoce como Stopwords. Este tipo de palabras, tenemos que suprimirlas de nuestro corpus. Como el contenido del corpus est· en inglÈs, debemos especificar el idioma para que nos elimine del corpus las palabras adecuadas. 
+# 5. Stopwords. En cualquier idioma, hay palabras tan tan tan comunes que no nos aportan informaci?n relevante. Por ejemplo, en espa?ol, las palabras "la", "a", "en", "de" son ejemplos de lo que se conoce como Stopwords. Este tipo de palabras, tenemos que suprimirlas de nuestro corpus. Como el contenido del corpus est? en ingl?s, debemos especificar el idioma para que nos elimine del corpus las palabras adecuadas. 
 corpus <- tm_map(corpus, content_transformer(removeWords), 
           stopwords("english"))
 

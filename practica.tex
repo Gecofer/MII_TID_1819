@@ -548,10 +548,13 @@ ID para cada uno de los datos con los que estamos trabajando. Como no
 nos aporta información, hemos decidido quitarla directamente del
 dataframe. Esta columna se corresponde con la primera columna del
 dataframe, por lo cuál, debemos eliminar la columna que se corresponde
-con la posición 1.
+con la posición 1. Los cambios que hacemos en el dataset deben
+modificarse tanto en el conjunto de test como el de train, para que los
+resultados sean consistentes.
 
 \begin{Shaded}
 \begin{Highlighting}[]
+\NormalTok{datos_train =}\StringTok{ }\NormalTok{datos_train[}\OperatorTok{-}\DecValTok{1}\NormalTok{]}
 \NormalTok{datos_test =}\StringTok{ }\NormalTok{datos_test[}\OperatorTok{-}\DecValTok{1}\NormalTok{]}
 \end{Highlighting}
 \end{Shaded}
@@ -610,7 +613,7 @@ conversión.
 \begin{Shaded}
 \begin{Highlighting}[]
 \CommentTok{# Nos quedamos con la única columna del dataset que nos interesa. Necesitamos obtenerla en forma de vector, y no como un dataframe de una columna, por lo que usamos asvector para hacer la conversión}
-\NormalTok{benefits_review_data =}\StringTok{ }\KeywordTok{as.vector}\NormalTok{(datos_test}\OperatorTok{$}\NormalTok{benefitsReview)}
+\NormalTok{benefits_review_data =}\StringTok{ }\KeywordTok{as.vector}\NormalTok{(datos_train}\OperatorTok{$}\NormalTok{benefitsReview)}
 
 \CommentTok{# Lo convertimos en la estructura de documento, y lo guardamos ya en el corpus que lo vamos a utilizar.}
 \NormalTok{corpus =}\StringTok{ }\NormalTok{(}\KeywordTok{VectorSource}\NormalTok{(benefits_review_data))}
@@ -636,7 +639,7 @@ a acceder al cuarto comentario almacenado.
 ## Metadata:  corpus specific: 1, document level (indexed): 0
 ## Content:  documents: 1
 ## 
-## [1] It controlls my mood swings. It helps me think before i act or speak. It controlls amxiety. IT FREED ME TO LIVE MY LIFE HAPPILY!!! I cared about my life more. Everything had more meaning to me. I lived a very dull life before taking prozac.
+## [1] The acid reflux went away for a few months after just a few days of being on the drug. The heartburn started again as soon as I stopped taking it. So I began treatment again. 6 months passed and I stopped taking it. The heartburn came back, and seemed worse even. The doctor said I should try another 6 month treatment. I did, and the same exact thing happened. This went on for about three years. I asked why this wasn't curing my reflux. The doctor quite frankly told me that it wasn't a cure, but a "treatment for the symptoms". I was told that I would probably be on it for the rest of my life.
 \end{verbatim}
 
 \begin{Shaded}
@@ -646,7 +649,7 @@ a acceder al cuarto comentario almacenado.
 \end{Shaded}
 
 \begin{verbatim}
-## [1] "It controlls my mood swings. It helps me think before i act or speak. It controlls amxiety. IT FREED ME TO LIVE MY LIFE HAPPILY!!! I cared about my life more. Everything had more meaning to me. I lived a very dull life before taking prozac."
+## [1] "The acid reflux went away for a few months after just a few days of being on the drug. The heartburn started again as soon as I stopped taking it. So I began treatment again. 6 months passed and I stopped taking it. The heartburn came back, and seemed worse even. The doctor said I should try another 6 month treatment. I did, and the same exact thing happened. This went on for about three years. I asked why this wasn't curing my reflux. The doctor quite frankly told me that it wasn't a cure, but a \"treatment for the symptoms\". I was told that I would probably be on it for the rest of my life."
 \end{verbatim}
 
 \subsection{Eliminar signos de
@@ -686,7 +689,7 @@ están.
 ## Metadata:  corpus specific: 1, document level (indexed): 0
 ## Content:  documents: 1
 ## 
-## [1] It controlls my mood swings It helps me think before i act or speak It controlls amxiety IT FREED ME TO LIVE MY LIFE HAPPILY I cared about my life more Everything had more meaning to me I lived a very dull life before taking prozac
+## [1] The acid reflux went away for a few months after just a few days of being on the drug The heartburn started again as soon as I stopped taking it So I began treatment again 6 months passed and I stopped taking it The heartburn came back and seemed worse even The doctor said I should try another 6 month treatment I did and the same exact thing happened This went on for about three years I asked why this wasnt curing my reflux The doctor quite frankly told me that it wasnt a cure but a treatment for the symptoms I was told that I would probably be on it for the rest of my life
 \end{verbatim}
 
 \subsection{Stopwords.}\label{stopwords.}
@@ -741,7 +744,7 @@ nuevo el proceso que elimina las \textit{stopwords}.
 ## Metadata:  corpus specific: 1, document level (indexed): 0
 ## Content:  documents: 1
 ## 
-## [1] the antibiotic may  destroyed bacteria causing  sinus infection  but  may also   caused   virus   hard  say
+## [1] slowed  progression  left ventricular dysfunction  overt heart failure \nalone    agents   managment  hypertension \nmangagement  congestive heart failur
 \end{verbatim}
 
 \begin{Shaded}
@@ -771,9 +774,12 @@ Este es un ejemplo del tipo de casos que se nos dan en nuestro dataset;
 por ejemplo. Igual ocurre con ``reduce'' y ``reduced'', por ejemplo.
 Este tipo de situaciones son las que intentamos corregir con este paso.
 
+Vamos a ver un ejemplo de este suceso, que se da por ejemplo en los
+siguientes valores del corpus (y en muchos más).
+
 \begin{Shaded}
 \begin{Highlighting}[]
-\KeywordTok{inspect}\NormalTok{(corpus[}\DecValTok{340}\NormalTok{])}
+\KeywordTok{inspect}\NormalTok{(corpus[}\DecValTok{183}\NormalTok{])}
 \end{Highlighting}
 \end{Shaded}
 
@@ -782,12 +788,12 @@ Este tipo de situaciones son las que intentamos corregir con este paso.
 ## Metadata:  corpus specific: 1, document level (indexed): 0
 ## Content:  documents: 1
 ## 
-## [1]  benefit   drug   yes   work   crazy locked   mental ward    usage became normal  crazy againhowever  treatment plan   good plan
+## [1]  treatment benefits   temporary    made sneezing  watery eyes diminish    address  issue  respiratory difficulties   found   may  even increased  respiratory symptoms   process
 \end{verbatim}
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\KeywordTok{inspect}\NormalTok{(corpus[}\DecValTok{272}\NormalTok{])}
+\KeywordTok{inspect}\NormalTok{(corpus[}\DecValTok{213}\NormalTok{])}
 \end{Highlighting}
 \end{Shaded}
 
@@ -796,8 +802,17 @@ Este tipo de situaciones son las que intentamos corregir con este paso.
 ## Metadata:  corpus specific: 1, document level (indexed): 0
 ## Content:  documents: 1
 ## 
-## [1] benefits  protonix   greatly reduced incidence  heartburn  spams   esophagus
+## [1] overall   ease mantally    true benefit  felt
 \end{verbatim}
+
+Si ahora volvemos a mostrar el contenido de dichas opiniones, podemos
+ver que el stemming se ha hecho efectivo: donde ponía \textit{benefits},
+ahora pone \textit{benefit}, como se puede comprobar si volvemos a
+mostrar dichos elementos del corpus. De hecho, si nos fihamos, no solo
+esta palabra ha resultado modificada, sino que se han resumido muchas
+más palabras en comparación a como teníamos los documentos en el momento
+previo a la aplicación del método \textit{Stem}. Desde este momento, ya
+tenemos nuestro conjunto reducido a nivel de concepto.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -812,7 +827,7 @@ Este tipo de situaciones son las que intentamos corregir con este paso.
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\KeywordTok{inspect}\NormalTok{(corpus[}\DecValTok{340}\NormalTok{])}
+\KeywordTok{inspect}\NormalTok{(corpus[}\DecValTok{183}\NormalTok{])}
 \end{Highlighting}
 \end{Shaded}
 
@@ -821,12 +836,12 @@ Este tipo de situaciones son las que intentamos corregir con este paso.
 ## Metadata:  corpus specific: 1, document level (indexed): 0
 ## Content:  documents: 1
 ## 
-## [1] benefit drug yes work crazi lock mental ward usag becam normal crazi againhowev treatment plan good plan
+## [1] treatment benefit temporari made sneez wateri eye diminish address issu respiratori difficulti found may even increas respiratori symptom process
 \end{verbatim}
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\KeywordTok{inspect}\NormalTok{(corpus[}\DecValTok{272}\NormalTok{])}
+\KeywordTok{inspect}\NormalTok{(corpus[}\DecValTok{213}\NormalTok{])}
 \end{Highlighting}
 \end{Shaded}
 
@@ -835,40 +850,7 @@ Este tipo de situaciones son las que intentamos corregir con este paso.
 ## Metadata:  corpus specific: 1, document level (indexed): 0
 ## Content:  documents: 1
 ## 
-## [1] benefit protonix great reduc incid heartburn spam esophagus
-\end{verbatim}
-
-Si ahora volvemos a mostrar el contenido de dichas opiniones, podemos
-ver como el stemming se ha hecho efectivo: donde ponía \textit{benefits}
-ahora pone \textit{benefit}, y la misma operación se ha llevado a cabo
-para todos los comentarios en el dataset.
-
-\begin{Shaded}
-\begin{Highlighting}[]
-\KeywordTok{inspect}\NormalTok{(corpus[}\DecValTok{340}\NormalTok{])}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-## <<SimpleCorpus>>
-## Metadata:  corpus specific: 1, document level (indexed): 0
-## Content:  documents: 1
-## 
-## [1] benefit drug yes work crazi lock mental ward usag becam normal crazi againhowev treatment plan good plan
-\end{verbatim}
-
-\begin{Shaded}
-\begin{Highlighting}[]
-\KeywordTok{inspect}\NormalTok{(corpus[}\DecValTok{272}\NormalTok{])}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-## <<SimpleCorpus>>
-## Metadata:  corpus specific: 1, document level (indexed): 0
-## Content:  documents: 1
-## 
-## [1] benefit protonix great reduc incid heartburn spam esophagus
+## [1] overal eas mantal true benefit felt
 \end{verbatim}
 
 \subsection{Borrar espacios en blanco

@@ -165,9 +165,9 @@ View(datos_test)    # vista de la tabla
 # Procesar datos
 
 ## Eliminar columna del ID.
-Como ya se ha comentado previamente, al conjunto de datos utilizado se le ha añadido de forma automática una novena columna, que representa un ID para cada uno de los datos con los que estamos trabajando. Como no nos aporta información, hemos decidido quitarla directamente del dataframe. Esta columna se corresponde con la primera columna del dataframe, por lo cuál, debemos eliminar la columna que se corresponde con la posición 1. 
+Como ya se ha comentado previamente, al conjunto de datos utilizado se le ha añadido de forma automática una novena columna, que representa un ID para cada uno de los datos con los que estamos trabajando. Como no nos aporta información, hemos decidido quitarla directamente del dataframe. Esta columna se corresponde con la primera columna del dataframe, por lo cuál, debemos eliminar la columna que se corresponde con la posición 1. Los cambios que hacemos en el dataset deben modificarse tanto en el conjunto de test como el de train, para que los resultados sean consistentes.
 ```{r}
-
+datos_train = datos_train[-1]
 datos_test = datos_test[-1]
 
 
@@ -195,7 +195,7 @@ Sólo nos faltaría convertir cada elemento del vector al formato de documento. 
 ```{r}
 
 # Nos quedamos con la única columna del dataset que nos interesa. Necesitamos obtenerla en forma de vector, y no como un dataframe de una columna, por lo que usamos asvector para hacer la conversión
-benefits_review_data = as.vector(datos_test$benefitsReview)
+benefits_review_data = as.vector(datos_train$benefitsReview)
 
 # Lo convertimos en la estructura de documento, y lo guardamos ya en el corpus que lo vamos a utilizar.
 corpus = (VectorSource(benefits_review_data))
@@ -258,20 +258,20 @@ El siguiente paso consiste en reducir el número de palabras totales con las que
 
 Sin embargo, realizar el análisis de nuestros datos con ambas palabras no tiene gran relevancia, ya que una no aporta nada respecto a la otra. Este es un ejemplo del tipo de casos que se nos dan en nuestro dataset; por ejemplo. Igual ocurre con "reduce" y "reduced", por ejemplo. Este tipo de situaciones son las que intentamos corregir con este paso. 
 
+Vamos a ver un ejemplo de este suceso, que se da por ejemplo en los siguientes valores del corpus (y en muchos más). 
+
 ```{r}
-inspect(corpus[340])
-inspect(corpus[272])
+inspect(corpus[183])
+inspect(corpus[213])
 
-corpus <- tm_map(corpus, stemDocument)
 
-inspect(corpus[340])
-inspect(corpus[272])
 ```
 
-Si ahora volvemos a mostrar el contenido de dichas opiniones, podemos ver como el stemming se ha hecho efectivo: donde ponía \textit{benefits} ahora pone \textit{benefit}, y la misma operación se ha llevado a cabo para todos los comentarios en el dataset. 
+Si ahora volvemos a mostrar el contenido de dichas opiniones, podemos ver que el stemming se ha hecho efectivo: donde ponía \textit{benefits}, ahora pone \textit{benefit}, como se puede comprobar si volvemos a mostrar dichos elementos del corpus. De hecho, si nos fihamos, no solo esta palabra ha resultado modificada, sino que se han resumido muchas más palabras en comparación a como teníamos los documentos en el momento previo a la aplicación del método \textit{Stem}. Desde este momento, ya tenemos nuestro conjunto reducido a nivel de concepto.
 ```{r}
-inspect(corpus[340])
-inspect(corpus[272])
+corpus <- tm_map(corpus, stemDocument)
+inspect(corpus[183])
+inspect(corpus[213])
 ```
 
 ## Borrar espacios en blanco innecesarios

@@ -188,7 +188,7 @@ library("SnowballC")
 
 ## Creación del corpus
 
-Para poder obtener la estructura con la que vamos a procesar nuestra información, debemos obtener un vector con documentos. En nuestro caso, cada uno de los documentos se corresponde con una opinión sobre un fármaco. Para ello, primero debemos obtener un vector con todas los opiniones (o lo que es lo mismo, con todas). Para ello debemos extraerlo del dataframe en forma de vector.
+Para poder obtener la estructura con la que vamos a procesar nuestra información, debemos obtener un vector con documentos. En nuestro caso, cada uno de los documentos se corresponde con una opinión sobre un fármaco. Para ello, primero debemos de construir un vector con todas los opiniones del dataframe.
 
 Sólo nos faltaría convertir cada elemento del vector al formato de documento. Podemos usar la función VectorSource para hacer esta conversión.
 
@@ -267,9 +267,15 @@ inspect(corpus[213])
 
 ```
 
-Si ahora volvemos a mostrar el contenido de dichas opiniones, podemos ver que el stemming se ha hecho efectivo: donde ponía \textit{benefits}, ahora pone \textit{benefit}, como se puede comprobar si volvemos a mostrar dichos elementos del corpus. De hecho, si nos fihamos, no solo esta palabra ha resultado modificada, sino que se han resumido muchas más palabras en comparación a como teníamos los documentos en el momento previo a la aplicación del método \textit{Stem}. Desde este momento, ya tenemos nuestro conjunto reducido a nivel de concepto.
+A continuación, aplicamos el proceso de stemming mediante la siguiente orden:
+
 ```{r}
 corpus <- tm_map(corpus, stemDocument)
+```
+
+Si ahora volvemos a mostrar el contenido de dichas opiniones, podemos ver que el stemming se ha hecho efectivo: donde ponía \textit{benefits}, ahora pone \textit{benefit}, como se puede comprobar si volvemos a mostrar dichos elementos del corpus. De hecho, si nos fijamos, no solo esta palabra ha resultado modificada, sino que se han resumido muchas más palabras en comparación a como teníamos los documentos en el momento previo a la aplicación del método \textit{Stem}. Desde este momento, ya tenemos nuestro conjunto reducido a nivel de concepto.
+
+```{r}
 inspect(corpus[183])
 inspect(corpus[213])
 ```

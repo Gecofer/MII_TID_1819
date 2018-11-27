@@ -3,7 +3,7 @@ title:
 author:
 - "Alejandro Campoy Nieves"
 - "Gema Correa Fernández"
-- "Luis Gallego Quero."
+- "Luis Gallego Quero"
 - "Jonathan Martín Valera"
 - "Andrea Morales Garzón"
 date: "14 de noviembre de 2018"
@@ -124,8 +124,8 @@ Los datos se dividen en un conjunto train (75%) y otro conjunto test (25%) y se 
 
 1. **urlDrugName** (categorical): nombre de la droga
 2. **condition** (categorical): nombre de la condición
-3. **benefitsReview** (text): paciente sobre beneficios
-4. **sideEffectsReview** (text): paciente sobre los efectos secundarios
+3. **benefitsReview** (text): opinión del paciente sobre los beneficios
+4. **sideEffectsReview** (text): opinión del paciente sobre los efectos secundarios
 5. **commentsReview** (text): comentario general del paciente
 6. **rating** (numerical): clasificación de paciente de 10 estrellas
 7. **sideEffects** (categorical): clasificación de 5 pasos de efectos secundarios
@@ -194,7 +194,7 @@ Sólo nos faltaría convertir cada elemento del vector al formato de documento. 
 
 ```{r}
 
-# Nos quedamos con la única columna del dataset que nos interesa. Necesitamos obtenerla en forma de vector, y no como un dataframe de una columna, por lo que usamos asvector para hacer la conversión
+# Nos quedamos con la única columna del dataset que nos interesa. Necesitamos obtenerla en forma de vector, y no como un dataframe de una columna, por lo que usamos as.vector para hacer la conversión
 benefits_review_data = as.vector(datos_train$benefitsReview)
 
 # Lo convertimos en la estructura de documento, y lo guardamos ya en el corpus que lo vamos a utilizar.

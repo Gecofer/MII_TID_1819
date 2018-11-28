@@ -287,5 +287,73 @@ Hasta el momento hemos hecho distintos cambios en el texto de nuestro dataset. N
 corpus <- tm_map(corpus, stripWhitespace) 
 ```
 
+# Term Document Matrix
+Ahora vamos a mapear nuestro corpus creando una matriz de términos, donde las filas corresponden a los documentos y las columnas a los términos. Para ello usaremos la función TermDocumentMatrix:
+```{r}
+matrix_corpus <- TermDocumentMatrix(corpus)
+```
+Podemos observar que tenemos 5838 términos, esto quiere decir que tenemos 5838 palabras diferentes en nuestro Corpus,
+## Frecuencia de palabras
+```{r}
+class(matrix_corpus)
+```
+Como podemos ver, actualmente aún no tenemos nuestros datos en la matriz que buscamos, sino en un vector, por tanto:
+```{r}
+matrix_corpus <- as.matrix(matrix_corpus)
+class(matrix_corpus)
+dim(matrix_corpus) 
+```
+Con este método, hemos obtenido la ocurrencia de las palabras que tenemos en nuestro dataset para cada uno de los documentos/comentarios. Esta matriz tiene 5838 columnas, que representa la totalidad de palabras diferentes que hay en los comentarios de la columna \textit{benefitsReview}, y 3107 filas, donde cada una representa un comentario. 
+Por tanto, en la fila iésima la matriz, tendremos la ocurrencia de las palabras en \textit{benefitsReview} que existen en el comentario \textit{i}.
+
+```{r}
+# suma las filas
+suma_matrix_corpus <- rowSums(matrix_corpus)
+head(suma_matrix_corpus,5)
+
+# los ordena de mayor a menor y muestra los 10 primeros
+ordena_mayor_matrix_corpus <- sort(suma_matrix_corpus, decreasing = TRUE)
+head(ordena_mayor_matrix_corpus,10)
+copia_ordena_mayor = ordena_mayor_matrix_corpus # Para graficos (evitando data.frame)
+
+# los ordena de menor a mayor y muestra los 10 primeros
+ordena_menor_matrix_corpus <- sort(suma_matrix_corpus, decreasing = FALSE)
+head(ordena_menor_matrix_corpus,10)
+
+```
+
+
+```{r}
+# Transformamos a objeto data.frame, con dos columnas (palabra, frec), para posteriormente graficarlo.
+ordena_mayor_matrix_corpus <- data.frame(palabra = names(ordena_mayor_matrix_corpus), frec = ordena_mayor_matrix_corpus)
+```
+
+Creamos nube de palabras:
+```{r}
+# instalar paquete worldcloud
+wordcloud(
+  words = ordena_mayor_matrix_corpus$palabra, 
+  freq = ordena_mayor_matrix_corpus$frec, 
+  max.words = 80, 
+  random.order = F, 
+  colors=brewer.pal(name = "Dark2", n = 8)
+  )
+```
+
+Mostramos las más frecuentes:
+```{r}
+ordena_mayor_matrix_corpus[1:20,]
+```
+
+### Gráficas
+
+```{r}
+copia_ordena_mayor <- as.matrix(copia_ordena_mayor)
+barplot(copia_ordena_mayor[1:10,],  xlab="Palabras", ylab="Número de frecuencia",
+        col = c("lightblue", "mistyrose", "lightcyan",
+                "lavender", "cornsilk"))
+title(main = list("Las diez palabras más frecuentes", font = 4))
+```
+
 
 

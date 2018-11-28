@@ -97,7 +97,15 @@ set.seed(3) # semilla para obtención de los mismos resultados
 getwd()     # para saber el directorio de trabajo
 ```
 
-<!-----------------------------------------1. Comprender el problema a resolver------------------------------------------------------>
+<!-----------------------------------------0. Paquetes necesarios ------------------------------------------------------>
+
+# Paquetes necesarios
+
+- `tm` : Paquete específico para minería de datos. Se puede instalar usando : install.packages("tm")
+- `SnowballC` : Paquete adicional para minería de datos. Se puede instalar usando : install.packages("SnowballC")
+- `wordcloud` : Para graficar nubes de palabras.
+
+\newpage
 
 <!--------------------------------------------1. Comprender el problema a resolver--------------------------------------------------------->
 # 1. Comprender el problema a resolver

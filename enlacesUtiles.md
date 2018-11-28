@@ -7,8 +7,12 @@ También usa una librería para mostrar los resultados gráficamente. Parece muy
 * [Enlace 2](https://analytics4all.org/2016/12/22/r-text-mining-pre-processing/): en este enlace se habla del procesamiento de los textos,
 con la misma herramienta que el enlace de arriba pero redactado y explicado de otra forma.
 
+* [Enlace 3](https://blogs.ubc.ca/coetoolbox/2015/04/27/the-text-mining-tm-package-in-r/): sirve para poder tratar palabras abreviadas, como didnt y didn't. Es el apartado llamado *Dealing with Spelling Mistakes*
 
 # ENLACES PARA APLICAR AGRUPAMIENTO JERÁRQUICO
 
 * [Enlace 1](https://rpubs.com/jboscomendoza/mineria-de-textos-con-r): desde el apartado "Agrupamiento Jerárquico" podemos ver como se hace,
 y además viene muy bien aplicado. También viene lo de quitar las palabras con menos frecuencia, que me suena que el profesor lo ha comentado en clase. 
+
+
+

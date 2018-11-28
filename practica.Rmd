@@ -190,9 +190,20 @@ datos_test = datos_test[-1]
 
 ```
 
-Una vez eliminada la columna anterior, ya podemos continuar con el procesamiento de los datos. 
+## Eliminar columna de commentsReview
 
-Primero tenemos que usar la librería que procese los datos de tipo texto en R. La más conocida se llama \textbf{tm}. Si no la tenemos instalada en R, tnemos que hacerlo previamente. Para eso hacemos lo siguiente:
+Consideramos que este tipo de información en las instancias de nuestros datos no es de nuestro interés. En este atributo se alamcena texto, los consumidores de las drogas suelen poner en la mayoría de casos la frecuencia con la que consumen la misma. En otros casos menos frecuentes, se establecen comentarios más arbitrarios en el que muestran sus sensaciones o información sin relevancia. Incluso en algunos casos este campo aparece vacío.
+
+```{r}
+datos_train = datos_train[-8]
+datos_test = datos_test[-8]
+
+
+```
+
+Una vez eliminadas las columnas anteriores, ya podemos continuar con el procesamiento de los datos. 
+
+Primero tenemos que usar la librería que procese los datos de tipo texto en R. La más conocida se llama \textbf{tm}. Si no la tenemos instalada en R, tenemos que hacerlo previamente. Para eso hacemos lo siguiente:
 ```{r}
 
 

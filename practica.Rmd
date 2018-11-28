@@ -15,6 +15,10 @@ geometry: margin=1in
 header-includes:
   - \usepackage{fancyhdr}
   - \fancyfoot[CO,CE]{My footer}
+  - \usepackage{color}
+  - \usepackage{colortbl}
+  - \usepackage{multicol}
+  - \usepackage{multirow}
 ---
 
 <!----------------------------------------------------------------Portada------------------------------------------------------------------>
@@ -114,11 +118,24 @@ Las características de este conjunto de datos vienen descritas en la siguiente 
 
 <!--- Tabla --->
 
-| DataSet Characteristics:   | Multivariate, Text                     | Number of Instances:  | 4143 | Area:               | N/A        |
-|----------------------------|----------------------------------------|-----------------------|------|---------------------|------------|
-| Attribute Characteristics: | Integer                                | Number of Attributes: | 8    | Date Donated        | 2018-10-02 |
-|----------------------------|----------------------------------------|-----------------------|------|---------------------|------------|
-| Associated Tasks:          | Classification, Regression, Clustering | Missing Values?       | N/A  | Number of Web Hits: | 7001       |
+\begin{table}[h]
+	\begin{center}
+		\begin{tabular}{|>{\columncolor[rgb]{0.506,0.545,0.792}}l|c|}
+			\hline 
+			\textbf{Características del Data Set} & Multivariable, texto \\ \hline
+			\textbf{Características de los atributos} & Discreto, texto \\ \hline
+			\textbf{Tareas asociadas} & Clasificación, regresión, Clustering \\ \hline
+			\textbf{Número de instancias} & 4143 \\ \hline
+			\textbf{Número de atributos} & 8 \\ \hline
+			\textbf{Valores vacíos} & N/A \\ \hline
+			\textbf{Área} & N/A \\ \hline
+			\textbf{Fecha de donación} & 10/02/2018 \\ \hline
+			\textbf{Veces visualizado} & 9130 \\ \hline
+		\end{tabular}
+		\caption{Relevancia de requisitos para preselección de candidatos.}
+		\label{tabla:preseleccion}
+	\end{center}
+\end{table}
 
 Los datos se dividen en un conjunto train (75%) y otro conjunto test (25%) y se almacenan en dos archivos.tsv (tab-separated-values), respectivamente. Los atributos que tenemos en este dataset son:
 
@@ -331,13 +348,14 @@ ordena_mayor_matrix_corpus <- data.frame(palabra = names(ordena_mayor_matrix_cor
 Creamos nube de palabras:
 ```{r}
 # instalar paquete worldcloud
-wordcloud(
-  words = ordena_mayor_matrix_corpus$palabra, 
-  freq = ordena_mayor_matrix_corpus$frec, 
-  max.words = 80, 
-  random.order = F, 
-  colors=brewer.pal(name = "Dark2", n = 8)
-  )
+
+#wordcloud(
+#  words = ordena_mayor_matrix_corpus$palabra, 
+#  freq = ordena_mayor_matrix_corpus$frec, 
+#  max.words = 80, 
+#  random.order = F, 
+#  colors=brewer.pal(name = "Dark2", n = 8)
+#  )
 ```
 
 Mostramos las más frecuentes:

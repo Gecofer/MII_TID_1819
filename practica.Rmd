@@ -61,7 +61,7 @@ header-includes:
 
 \vspace{0.15cm}
 
-\hspace{8.5cm}{Jonathan Mart?n Valera:  \href{mailto:jmv742@correo.ugr.es}{\textcolor{blue}{\underline{jmv742@correo.ugr.es}}} }
+\hspace{8.5cm}{Jonathan Martín Valera:  \href{mailto:jmv742@correo.ugr.es}{\textcolor{blue}{\underline{jmv742@correo.ugr.es}}} }
 
 \vspace{0.15cm}
 
@@ -99,28 +99,30 @@ getwd()     # para saber el directorio de trabajo
 
 <!-----------------------------------------0. Paquetes necesarios ------------------------------------------------------>
 
-# Paquetes necesarios
+# Descripción de los paquetes necesarios
 
-- `tm` : Paquete específico para minería de datos. Se puede instalar usando : install.packages("tm")
-- `SnowballC` : Paquete adicional para minería de datos. Se puede instalar usando : install.packages("SnowballC")
-- `wordcloud` : Para graficar nubes de palabras.
+A continuación, se describen los paquetes necesarios para el desarollo del proyecto:
+
+- [`tm`](https://cran.r-project.org/web/packages/tm/tm.pdf) : Paquete específico para minería de datos, permite procesar datos de tipo texto. Se puede instalar usando : _install.packages("tm")_.
+
+- [`SnowballC`](https://cran.r-project.org/web/packages/SnowballC/SnowballC.pdf) : Paquete adicional para minería de datos, implementa un algoritmo que permite reducir el número de términos con lo que trabajar, es decir, agrupa aquellos términos que contienen la misma raíz. El paquete soporta los siguientes idiomas: alemán, danés, español, finlandés, francés, húngaro, inglés, italiano, noruego, portugués, rumano, ruso, sueco y turco. Se puede instalar usando : _install.packages("SnowballC")_.
+
+- [`wordcloud`](https://cran.r-project.org/web/packages/wordcloud/wordcloud.pdf) : Paquete para crear gráficas de nubes de palabras, permitiendo visualizar las diferencias y similitudes entre documentos. Se puede instalar usando : _install.packages("wordcloud")_.
+
 
 \newpage
 
-<!--------------------------------------------1. Comprender el problema a resolver--------------------------------------------------------->
+<!----------------------------1. Comprender el problema a resolver---------------------------------->
+
 # 1. Comprender el problema a resolver
 
-Para la realización y aplicación de las técnicas explicadas a lo largo del curso, hemos seleccionado un _dataset_ proporcionado por [*UCI Machine Learning Repository*](https://archive.ics.uci.edu/ml/index.php). En concreto, hemos escogido [**Drug Review Dataset**](https://archive.ics.uci.edu/ml/datasets/Drug+Review+Dataset+%28Druglib.com%29), una exhaustiva base de datos de medicamentos organizada por relevancia para medicamentos específicos. El conjunto de datos proporciona revisiones de pacientes sobre medicamentos específicos junto con las condiciones relacionadas. Además, las revisiones se agrupan en informes sobre tres aspectos: beneficios, efectos secundarios y comentarios generales. De igual modo, las calificaciones están disponibles con respecto a la satisfacción general, así como una calificación de efectos secundarios y de eficacia de 5 pasos. Los datos se obtuvieron rastreando los sitios de revisión farmacéutica en línea.
+Para la realización y aplicación de las técnicas explicadas a lo largo del curso, se ha seleccionado el _dataset_ [**Drug Review Dataset**](https://archive.ics.uci.edu/ml/datasets/Drug+Review+Dataset+%28Druglib.com%29), proporcionado por [*UCI Machine Learning Repository*](https://archive.ics.uci.edu/ml/index.php). Dicho _dataset_ contiene una exhaustiva base de datos de medicamentos específicos, en donde, el conjunto de datos proporciona revisiones de pacientes sobre medicamentos específicos para unas condiciones particulares. Las revisiones se encuentran desglosadas en función del tema que se esté tratando : beneficios, efectos secundarios y comentarios generales. De igual modo, se dispone de una calificación de satisfacción general, es decir, una calificación en base a los efectos secundarios y otra a la efectividad del medicamento.
 
+En este proyecto nos centraremos en el **análisis y experiencia de los usuarios**, obtenido mediante la ingesta de ciertos medicamentos. Para ello, se proponen los siguientes objetivos principales del estudio:
 
-
-El objetivo principal del estudio es:
-
- - Realizar un análisis de sentimientos en relación con la experiencia en el uso de dichos medicamentos, como por ejemplo la efectividad, efectos secundarios...
+ - Realizar un análisis de sentimientos en relación con la experiencia en el uso de dichos medicamentos, como por ejemplo ver la efectividad del medicamento con los efectos secundarios o beneficios del mismo.
  
- - Compatibilizar dicho modelo de datos con otros conjuntos de datos aportados en: [**Drugs.com**](https://www.drugs.com/)
- 
-En este proyecto nos centraremos en el **análisis y experiencia de los usuarios** en el uso de los distintos medicamentos.
+ - Compatibilizar dicho modelo de datos con otros conjuntos de datos aportados en [**Drugs.com**](https://www.drugs.com/).
 
 Las características de este conjunto de datos vienen descritas en la siguiente tabla:
 
@@ -128,7 +130,7 @@ Las características de este conjunto de datos vienen descritas en la siguiente 
 
 \begin{table}[h]
 	\begin{center}
-		\begin{tabular}{|>{\columncolor[rgb]{0.506,0.545,0.792}}l|c|}
+		\begin{tabular}{|>{\columncolor[rgb]{0.94,0.97,1.0}}l|c|}
 			\hline 
 			\textbf{Características del Data Set} & Multivariable, texto \\ \hline
 			\textbf{Características de los atributos} & Discreto, texto \\ \hline
@@ -147,186 +149,259 @@ Las características de este conjunto de datos vienen descritas en la siguiente 
 
 Los datos se dividen en un conjunto train (75%) y otro conjunto test (25%) y se almacenan en dos archivos.tsv (tab-separated-values), respectivamente. Los atributos que tenemos en este dataset son:
 
-1. **urlDrugName** (categorical): nombre de la droga
-2. **condition** (categorical): nombre de la condición
-3. **benefitsReview** (text): opinión del paciente sobre los beneficios
-4. **sideEffectsReview** (text): opinión del paciente sobre los efectos secundarios
-5. **commentsReview** (text): comentario general del paciente
-6. **rating** (numerical): clasificación de paciente de 10 estrellas
-7. **sideEffects** (categorical): clasificación de 5 pasos de efectos secundarios
-8. **effectiveness** (categorical): clasificación de efectividad de 5 pasos
+1. **urlDrugName** (categorical): nombre del medicamento
+2. **rating** (numerical): clasificación de 1 a 10 del medicamento según el paciente
+3. **effectiveness** (categorical): clasificación de la efectividad del medicamento según el paciente (5 posibles valores)
+4. **sideEffects** (categorical): clasificación de los efectos secundarios del medicamento según el paciente (5 posibles valores)
+5. **condition** (categorical): nombre de la condición (diagnóstico)
+6. **benefitsReview** (text): opinión del paciente sobre los beneficios
+7. **sideEffectsReview** (text): opinión del paciente sobre los efectos secundarios
+8. **commentsReview** (text): comentario general del paciente
 
 
-<!--------------------------------------------2. Prepocesamiento de datos------------------------------------------------------------>
 
-# 2. Prepocesamiento de datos
+<!----------------------------2. Preprocesamiento de datos------------------------------------>
 
-Para poder analizar el dataset y realizar el prepocesamiento al mismo, lo primero que se va hacer es leer tanto el conjunto de datos train como de test. Primero, leeremos los datos con los que se va a entrenar y luego los datos test.
+# 2. Preprocesamiento de datos
+
+En este apartado, pondremos los datos a puntos para la aplicación de técnicas. Para poder analizar el _dataset_ y realizar el preprocesamiento al mismo, lo primero que se va hacer es leer el conjunto de datos _train_ y _test_.
+
+<!-------------------------------------------------------------------------------------------->
 
 ## 2.1. Lectura de datos
 
-A continuación, leemos nuestro dataset train y test:
+<!---DEBERÍAMOS VER QUE QUEREMOS MOSTRAR EN LA SALIDA DEL DOCUMENTO, YA QUE APARECEN MUCHAS COSAS O HACER UNA CAPTURA Y PONER LA IMAGEM---->
 
-```{r lectura }
+```{r, warning=FALSE}
 # Lectura de datos train
 datos_train <- read.table("datos/drugLibTrain_raw.tsv", sep="\t", comment.char="",
                           quote = "\"", header=TRUE)
-head(datos_train, 5) # visualizar las 5 primeras filas
-summary(datos_train) # información sobre los datos
-View(datos_train)    # vista de la tabla
+```
 
+```{r, warning=FALSE}
+# Visualizar las 5 primeras filas para los datos train
+head(datos_train, 5) 
+# Resumen sobre los datos train
+summary(datos_train) 
+```
+
+```{r, warning=FALSE}
 # Lectura de datos test
 datos_test <- read.table("./datos/drugLibTest_raw.tsv", sep="\t", comment.char="",
                          quote = "\"", header=TRUE)
-head(datos_test, 5) # visualizar las 5 primeras filas
-summary(datos_test) # información sobre los datos
+```
+
+```{r, warning=FALSE}
+# Visualizar las 5 primeras filas para los datos test
+head(datos_test, 5) 
+# información sobre los datos test
+summary(datos_test) 
+```
+
+<!---PARA QUE NO APAREZCAN EN LA SALIDAS------->
+```{r lectura, warning=FALSE, eval=FALSE}
+View(datos_train)    # vista de la tabla
 View(datos_test)    # vista de la tabla
 ```
 
-## 2.2. Falta de datos, categorización, normalización, reducción de dimensionalidad.
+
+<!-------------------------------------------------------------------------------------------->
+
+<!--- ## 2.2. Falta de datos, categorización, normalización, reducción de dimensionalidad. --->
 
 <!--- Borrar si añgún atributo no nos da información como un ID, hacer una transformación con los atributos asimétricos, ya que son necesarios para la aplicación de algunos métodos de aprendizaje sensibles a distancias. Se consideran asimétricos cuando el valor skewness se aleja de 0, podemos eliminar las variables con varianza 0 o muy próximas. --->
 
-# Procesar datos
+## 2.2. Procesar datos
 
-## Eliminar columna del ID.
-Como ya se ha comentado previamente, al conjunto de datos utilizado se le ha añadido de forma automática una novena columna, que representa un ID para cada uno de los datos con los que estamos trabajando. Como no nos aporta información, hemos decidido quitarla directamente del dataframe. Esta columna se corresponde con la primera columna del dataframe, por lo cuál, debemos eliminar la columna que se corresponde con la posición 1. Los cambios que hacemos en el dataset deben modificarse tanto en el conjunto de test como el de train, para que los resultados sean consistentes.
+### 2.2.1. Eliminar columnas
+
+#### Eliminar columna ID
+
+Al conjunto de datos utilizado se le ha añadido de forma automática una novena columna, que representa un ID para cada uno de los datos con los que estamos trabajando. Como este ID no nos aporta información, hemos decidido quitarla directamente del _dataframe_. Esta columna se corresponde con la primera columna, por lo cuál, debemos eliminar la columna que se corresponde con la posición 1. Los cambios que hacemos en el dataset deben modificarse tanto en el conjunto de test como el de train, para que los resultados sean consistentes.
+
 ```{r}
+# Eliminar columna para el ID en el train
 datos_train = datos_train[-1]
+# Eliminar columna para el ID en el test
 datos_test = datos_test[-1]
-
-
 ```
 
-## Eliminar columna de commentsReview
+#### Eliminar columna de commentsReview
 
-Consideramos que este tipo de información en las instancias de nuestros datos no es de nuestro interés. En este atributo se alamcena texto, los consumidores de las drogas suelen poner en la mayoría de casos la frecuencia con la que consumen la misma. En otros casos menos frecuentes, se establecen comentarios más arbitrarios en el que muestran sus sensaciones o información sin relevancia. Incluso en algunos casos este campo aparece vacío.
+Consideramos que este tipo de información en las instancias de nuestros datos no es de nuestro interés. En este atributo se almacena texto, los consumidores de las drogas suelen poner en la mayoría de casos la frecuencia con la que consumen la misma. En otros casos menos frecuentes, se establecen comentarios más arbitrarios en el que muestran sus sensaciones o información sin relevancia. Incluso en algunos casos este campo aparece vacío.
 
 ```{r}
+# Eliminar columna para el commentsReview en el train
 datos_train = datos_train[-8]
+# Eliminar columna para el commentsReview en el test
 datos_test = datos_test[-8]
-
-
 ```
 
-Una vez eliminadas las columnas anteriores, ya podemos continuar con el procesamiento de los datos. 
+Una vez eliminadas las columnas anteriores, ya podemos continuar con el procesamiento de los datos. Para ello, lo primero tenemos que hacer es cargar la librería que procesa los datos de tipo texto en R. La más conocida se llama \textbf{tm}, aunque también haremos uso del paquete \textbf{SnowballC} para realizar el _Stemming_. Si no tenemos instaladas las librerías:
 
-Primero tenemos que usar la librería que procese los datos de tipo texto en R. La más conocida se llama \textbf{tm}. Si no la tenemos instalada en R, tenemos que hacerlo previamente. Para eso hacemos lo siguiente:
-```{r}
-
-
-# install.packages("tm")
-# install.packages("SnowballC")
-
+```{r, warning=FALSE}
+# Paquete para minería de datos, permite procesar datos de tipo texto
 library("tm")
+# Paquete para minería de datos, agrupa aquellos términos que contienen la misma raíz
 library("SnowballC")
 ```
 
-## Creación del corpus
+<!-------------------------------------------------------------------------------------------->
 
-Para poder obtener la estructura con la que vamos a procesar nuestra información, debemos obtener un vector con documentos. En nuestro caso, cada uno de los documentos se corresponde con una opinión sobre un fármaco. Para ello, primero debemos de construir un vector con todas los opiniones del dataframe.
+### 2.2.2. Creación del corpus
 
-Sólo nos faltaría convertir cada elemento del vector al formato de documento. Podemos usar la función VectorSource para hacer esta conversión.
+<!--DBERÍAMOS HACER ESTE APARTADO PARA CADA COLUMNA DE TEXTO------->
+
+Para poder obtener la estructura con la que vamos a procesar nuestra información, debemos obtener un vector con documentos. En nuestro caso, cada uno de los documentos se corresponde con una opinión sobre un fármaco. Para ello, primero debemos de construir un vector con todas los opiniones del dataframe. Sólo nos faltaría convertir cada elemento del vector al formato de documento. Podemos usar la función VectorSource para hacer esta conversión.
 
 ```{r}
-
-# Nos quedamos con la única columna del dataset que nos interesa. Necesitamos obtenerla en forma de vector, y no como un dataframe de una columna, por lo que usamos as.vector para hacer la conversión
+# Nos quedamos con la única columna del dataset que nos interesa. 
+# Necesitamos obtenerla en forma de vector, y no como un dataframe de una columna, 
+# por lo que usamos as.vector para hacer la conversión
 benefits_review_data = as.vector(datos_train$benefitsReview)
 
-# Lo convertimos en la estructura de documento, y lo guardamos ya en el corpus que lo vamos a utilizar.
-corpus = (VectorSource(benefits_review_data))
+# Lo convertimos en la estructura de documento, y lo guardamos ya en el corpus 
+# que lo vamos a utilizar
+benefits_corpus = (VectorSource(benefits_review_data))
 
 # Creamos el propio corpus
-corpus <- Corpus(corpus)
-#summary(corpus)
-
+benefits_corpus <- Corpus(benefits_corpus)
 ``` 
 
-Podemos ver que funciona accediendo a uno cualquiera, por ejemplo, vamos a acceder al cuarto comentario almacenado. 
-```{r}
-
-# P Si nos fijamos en el contenido, vemos que tiene signos de puntuación y exclamación.
-inspect(corpus[4])
-corpus[[4]]$content
-```
-
-## Eliminar signos de puntuación. 
-
-Como hemos podido ver en el documento que se ha mostrado por pantalla, en él se aprecia el uso de signos de puntuación y exclamación. En un principio, no tiene sentido en \textit{Data Mining}contemplar los signos de puntuación, ya que no nos van a aportar información. Por ello, los quitamos, como se puede ver a continuación.
+Podemos ver que funciona accediendo a uno cualquiera, por ejemplo, vamos a acceder al cuarto comentario almacenado de la columna comentarios. 
 
 ```{r}
-# 4. Una vez que tenemos el corpus creado, continuamos con el procesamiento. 
-corpus <- tm_map(corpus, content_transformer(removePunctuation))
-
+# Si nos fijamos en el contenido, vemos que tiene signos de puntuación y exclamación
+inspect(benefits_corpus[4])
+benefits_corpus[[4]]$content
 ```
+
+<!-------------------------------------------------------------------------------------------->
+
+### 2.2.3. Eliminar signos de puntuación
+
+Como hemos podido ver en el documento que se ha mostrado por pantalla, en él se aprecia el uso de signos de puntuación y exclamación. En un principio, no tiene sentido en \textit{Data Mining} contemplar los signos de puntuación, ya que no nos van a aportar información. Por ello, los quitamos, como se puede ver a continuación.
+
+```{r, warning=FALSE}
+# Una vez que tenemos el corpus creado, continuamos con el procesamiento
+benefits_corpus <- tm_map(benefits_corpus, content_transformer(removePunctuation))
+```
+
 Si volvemos a mostrar la opinión número cuatro, vemos como todos los signos han desaparecido. De hecho, podemos inspeccionar el corpus, y se ve como todos los signos de puntuación, exclamación y derivados ya no están.
 
 ```{r}
-inspect(corpus[4])
-
+inspect(benefits_corpus[4])
 ```
 
-## Stopwords. 
+<!-------------------------------------------------------------------------------------------->
+
+### 2.2.4. Conversión de las mayúsculas en minúsculas
+
+Para poder hacer uso de los términos por igual, debemos convertir las mayúsculas en minúsculas.
+
+```{r, warning=FALSE}
+benefits_corpus <- tm_map(benefits_corpus, content_transformer(tolower))
+inspect(benefits_corpus[4])
+```
+<!-------------------------------------------------------------------------------------------->
+
+### 2.2.5. Agrupación de sinónimos:
+
+Si queremos hacer uso del paquete wordnet, se debe descargar
+
+https://stackoverflow.com/questions/25129073/wordnet-getdict-could-not-find-wordnet-dictionary
+
+
+```{r}
+# No funciona, parece que hay que instalar algo en Java
+#install.packages('wordnet')
+#Sys.setenv(WNHOME = file.path("/", "WordNet-3.0/dict"))
+#library(wordnet)
+#setDict("/usr/local/Cellar/wordnet/3.1")
+#initDict()
+#getDict()
+# synonyms(’write’, "VERB")
+```
+
+
+```{r}
+# Para que funcione ela rchivo tiene que estar en .bin
+#library(devtools)
+#install_github("mukul13/rword2vec")
+#library(rword2vec)
+#ls("package:rword2vec")
+#dist=distance(file_name = "vec.bin",search_word = "king",num = 10)
+# convert Stata to SPSS
+#library("magrittr")
+#library("rio")
+#convert("datos/drugLibTrain_raw.tsv", "datos/drugLibTrain.bin")
+#dist
+```
+
+
+<!-------------------------------------------------------------------------------------------->
+
+### 2.2.6. Eliminación de Stopwords
 
 En cualquier idioma, hay palabras tan tan tan comunes que no nos aportan información relevante. Por ejemplo, en español, las palabras "la", "a", "en", "de" son ejemplos de lo que se conoce como \textit{stopwords}. Este tipo de palabras debemos de suprimirlas de nuestro corpus. Como el contenido del corpus está en inglés, debemos especificar el idioma correcto para que nos elimine del corpus las palabras adecuadas en dicho idioma.
 
-```{r}
-corpus <- tm_map(corpus, content_transformer(removeWords), 
+```{r, warning=FALSE}
+benefits_corpus <- tm_map(benefits_corpus, content_transformer(removeWords), 
           stopwords("english"))
-
-```
-
-Sin embargo, tenemos otro problema, y es que no todas las \textit{stopwords} se han borrado. Sí se han borrado todas las \textit{stopwords} cuyas letras que la componen están en minúscula, pero no si una de las letras están en mayúscula. Por ejemplo: todas las "the" se han borrado, pero no las "The". Esto nos obliga a tener que pasar todos los caracteres del texto a letras minúscula, y a repetir de nuevo el proceso que elimina las \textit{stopwords}. 
-
-```{r}
-
-corpus <- tm_map(corpus, content_transformer(tolower))
-inspect(corpus[1])
-corpus <- tm_map(corpus, content_transformer(removeWords),stopwords("english"))
-
+inspect(benefits_corpus[4])
 ```
 
 Ahora ya hemos eliminado las stopwords de forma correcta.
 
+<!-------------------------------------------------------------------------------------------->
 
-## Stemming
+### 2.2.6. Stemming
+
 El siguiente paso consiste en reducir el número de palabras totales con las que estamos trabajando. En este caso, se trata de reducir aquellas que no nos aportan nada relevante a lo que ya tenemos. En la columna con la que estamos trabajando en este dataframe, se repite una gran cantidad de veces la palabra "benefit", al igual que "benefits". 
 
-Sin embargo, realizar el análisis de nuestros datos con ambas palabras no tiene gran relevancia, ya que una no aporta nada respecto a la otra. Este es un ejemplo del tipo de casos que se nos dan en nuestro dataset; por ejemplo. Igual ocurre con "reduce" y "reduced", por ejemplo. Este tipo de situaciones son las que intentamos corregir con este paso. 
-
-Vamos a ver un ejemplo de este suceso, que se da por ejemplo en los siguientes valores del corpus (y en muchos más). 
+Sin embargo, realizar el análisis de nuestros datos con ambas palabras no tiene gran relevancia, ya que una no aporta nada respecto a la otra. Este es un ejemplo del tipo de casos que se nos dan en nuestro dataset. Igual ocurre con "reduce" y "reduced", por ejemplo. Este tipo de situaciones son las que intentamos corregir con este paso. Vamos a ver un ejemplo de este suceso, que se da por ejemplo en los siguientes valores del corpus (y en muchos más). 
 
 ```{r}
-inspect(corpus[183])
-inspect(corpus[213])
-
-
+inspect(benefits_corpus[183])
+inspect(benefits_corpus[213])
 ```
 
 A continuación, aplicamos el proceso de stemming mediante la siguiente orden:
 
-```{r}
-corpus <- tm_map(corpus, stemDocument)
+```{r, warning=FALSE}
+benefits_corpus <- tm_map(benefits_corpus, stemDocument)
 ```
 
 Si ahora volvemos a mostrar el contenido de dichas opiniones, podemos ver que el stemming se ha hecho efectivo: donde ponía \textit{benefits}, ahora pone \textit{benefit}, como se puede comprobar si volvemos a mostrar dichos elementos del corpus. De hecho, si nos fijamos, no solo esta palabra ha resultado modificada, sino que se han resumido muchas más palabras en comparación a como teníamos los documentos en el momento previo a la aplicación del método \textit{Stem}. Desde este momento, ya tenemos nuestro conjunto reducido a nivel de concepto.
 
 ```{r}
-inspect(corpus[183])
-inspect(corpus[213])
+inspect(benefits_corpus[183])
+inspect(benefits_corpus[213])
 ```
 
-## Borrar espacios en blanco innecesarios
+<!-------------------------------------------------------------------------------------------->
+
+### 2.2.8. Borrar espacios en blanco innecesarios
+
 Hasta el momento hemos hecho distintos cambios en el texto de nuestro dataset. No solo hemos modificado algunas palabras, sino que también hemos borrado otras muchas. Por ello, es adecuado asegurarnos que no hay más espacios en blanco que los que separan las palabras del texto. Para asegurarnos de ello, podemos ejecutar la siguiente orden, que se encarga de suprimir los espacios en blanco sobrantes.
 
-```{r}
-corpus <- tm_map(corpus, stripWhitespace) 
+```{r, warning=FALSE}
+benefits_corpus <- tm_map(benefits_corpus, stripWhitespace) 
 ```
+
+
+
+
+
+
+
+
+
 
 # Term Document Matrix
 Ahora vamos a mapear nuestro corpus creando una matriz de términos, donde las filas corresponden a los documentos y las columnas a los términos. Para ello usaremos la función TermDocumentMatrix:
 ```{r}
-matrix_corpus <- TermDocumentMatrix(corpus)
+matrix_corpus <- TermDocumentMatrix(benefits_corpus)
 ```
 Podemos observar que tenemos 5838 términos, esto quiere decir que tenemos 5838 palabras diferentes en nuestro Corpus,
 ## Frecuencia de palabras

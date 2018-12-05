@@ -28,4 +28,7 @@ con la misma herramienta que el enlace de arriba pero redactado y explicado de o
 y además viene muy bien aplicado. También viene lo de quitar las palabras con menos frecuencia, que me suena que el profesor lo ha comentado en clase. 
 
 
+### ENLACES PARA APLICAR EXTRACCIÓN DE REGLAS DE ASOCIACIÓN
+* [Enlace 1](http://r-statistics.co/Association-Mining-With-R.html): el que estamos utilizando hasta ahora 
+
 

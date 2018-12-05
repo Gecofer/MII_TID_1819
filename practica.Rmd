@@ -217,7 +217,68 @@ View(datos_test)    # vista de la tabla
 
 ## 2.2. Procesar datos
 
-### 2.2.1. Eliminar columnas
+### 2.2.1. Cuantificación de variables
+
+Para poder analizar y trabajar más fácilmente con la información de *sideEffects* y  *effectiveness*, vamos a realizar una conversión de dichas columnas a forma cuantitativa.
+
+A continuación vamos a cuantificar la columna de *sideEffects*, añadiendo una nueva columna a nuestro conjunto de datos llamada *sideEffectsNumber* que nos clasifica los posibles valores de la columna sideEffects en un rango numérico. Este rango está comprendido entre 1 y 5, asignando los siguientes valores:
+
+```{r}
+
+# Datos de entrenamiento
+datos_train$sideEffectsNumber[datos_train$sideEffects == "Extremely Severe Side Effects"] <- 5
+datos_train$sideEffectsNumber[datos_train$sideEffects == "Severe Side Effects"] <- 4
+datos_train$sideEffectsNumber[datos_train$sideEffects == "Moderate Side Effects"] <- 3
+datos_train$sideEffectsNumber[datos_train$sideEffects == "Mild Side Effects"] <- 2
+datos_train$sideEffectsNumber[datos_train$sideEffects == "No Side Effects"] <- 1
+
+# Datos de test
+datos_test$sideEffectsNumber[datos_test$sideEffects == "Extremely Severe Side Effects"] <- 5
+datos_test$sideEffectsNumber[datos_test$sideEffects == "Severe Side Effects"] <- 4
+datos_test$sideEffectsNumber[datos_test$sideEffects == "Moderate Side Effects"] <- 3
+datos_test$sideEffectsNumber[datos_test$sideEffects == "Mild Side Effects"] <- 2
+datos_test$sideEffectsNumber[datos_test$sideEffects == "No Side Effects"] <- 1
+
+```
+
+Podemos comprobar que se ha creado la nueva columna *sideEffectsNumber*, y que se han añadido los nuevos cambios.
+
+
+```{r}
+
+head(datos_train$sideEffectsNumber, 10) 
+
+```
+
+
+Volvemos a aplicar el mismo proceso para la columna de *effectiveness*.
+
+```{r}
+
+# Datos de entrenamiento
+datos_train$effectivenessNumber[datos_train$effectiveness == "Highly Effective"] <- 5
+datos_train$effectivenessNumber[datos_train$effectiveness == "Considerably Effective"] <- 4
+datos_train$effectivenessNumber[datos_train$effectiveness == "Moderately Effective"] <- 3
+datos_train$effectivenessNumber[datos_train$effectiveness == "Marginally Effective"] <- 2
+datos_train$effectivenessNumber[datos_train$effectiveness == "Ineffective"] <- 1
+
+# Datos de test
+datos_test$effectivenessNumber[datos_test$effectiveness == "Highly Effective"] <- 5
+datos_test$effectivenessNumber[datos_test$effectiveness == "Considerably Effective"] <- 4
+datos_test$effectivenessNumber[datos_test$effectiveness == "Moderately Effective"] <- 3
+datos_test$effectivenessNumber[datos_test$effectiveness == "Marginally Effective"] <- 2
+datos_test$effectivenessNumber[datos_test$effectiveness == "Ineffective"] <- 1
+```
+
+Comprobamos que se ha creado la nueva columna *effectivenessNumber*, y que se han añadido los nuevos cambios.
+
+```{r}
+
+head(datos_train$effectivenessNumber, 10) 
+
+```
+
+### 2.2.2. Eliminar columnas
 
 #### Eliminar columna ID
 
@@ -252,7 +313,7 @@ library("SnowballC")
 
 <!-------------------------------------------------------------------------------------------->
 
-### 2.2.2. Creación del corpus
+### 2.2.3. Creación del corpus
 
 <!--DBERÍAMOS HACER ESTE APARTADO PARA CADA COLUMNA DE TEXTO------->
 
@@ -294,7 +355,7 @@ effects_corpus[[7]]$content
 
 <!-------------------------------------------------------------------------------------------->
 
-### 2.2.3. Eliminar signos de puntuación
+### 2.2.4. Eliminar signos de puntuación
 
 Como hemos podido ver en el documento que se ha mostrado por pantalla, en él se aprecia el uso de signos de puntuación y exclamación. En un principio, no tiene sentido en \textit{Data Mining} contemplar los signos de puntuación, ya que no nos van a aportar información. Por ello, los quitamos, como se puede ver a continuación.
 
@@ -318,7 +379,7 @@ inspect(effects_corpus[7])
 
 <!-------------------------------------------------------------------------------------------->
 
-### 2.2.4. Conversión de las mayúsculas en minúsculas
+### 2.2.5. Conversión de las mayúsculas en minúsculas
 
 Para poder hacer uso de los términos por igual, debemos convertir las mayúsculas en minúsculas.
 
@@ -328,7 +389,7 @@ inspect(benefits_corpus[4])
 ```
 <!-------------------------------------------------------------------------------------------->
 
-### 2.2.5. Agrupación de sinónimos:
+### 2.2.6. Agrupación de sinónimos:
 
 Si queremos hacer uso del paquete wordnet, se debe descargar
 
@@ -364,7 +425,7 @@ https://stackoverflow.com/questions/25129073/wordnet-getdict-could-not-find-word
 
 <!-------------------------------------------------------------------------------------------->
 
-### 2.2.6. Eliminación de Stopwords
+### 2.2.7. Eliminación de Stopwords
 
 En cualquier idioma, hay palabras tan tan tan comunes que no nos aportan información relevante. Por ejemplo, en español, las palabras "la", "a", "en", "de" son ejemplos de lo que se conoce como \textit{stopwords}. Este tipo de palabras debemos de suprimirlas de nuestro corpus. Como el contenido del corpus está en inglés, debemos especificar el idioma correcto para que nos elimine del corpus las palabras adecuadas en dicho idioma.
 
@@ -378,7 +439,7 @@ Ahora ya hemos eliminado las stopwords de forma correcta.
 
 <!-------------------------------------------------------------------------------------------->
 
-### 2.2.6. Stemming
+### 2.2.8. Stemming
 
 El siguiente paso consiste en reducir el número de palabras totales con las que estamos trabajando. En este caso, se trata de reducir aquellas que no nos aportan nada relevante a lo que ya tenemos. En la columna con la que estamos trabajando en este dataframe, se repite una gran cantidad de veces la palabra "benefit", al igual que "benefits". 
 
@@ -404,7 +465,7 @@ inspect(benefits_corpus[213])
 
 <!-------------------------------------------------------------------------------------------->
 
-### 2.2.8. Borrar espacios en blanco innecesarios
+### 2.2.9. Borrar espacios en blanco innecesarios
 
 Hasta el momento hemos hecho distintos cambios en el texto de nuestro dataset. No solo hemos modificado algunas palabras, sino que también hemos borrado otras muchas. Por ello, es adecuado asegurarnos que no hay más espacios en blanco que los que separan las palabras del texto. Para asegurarnos de ello, podemos ejecutar la siguiente orden, que se encarga de suprimir los espacios en blanco sobrantes.
 

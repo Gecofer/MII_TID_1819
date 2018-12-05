@@ -557,8 +557,87 @@ conjunto de datos \emph{train} y \emph{test}.
 \hypertarget{procesar-datos}{%
 \subsection{2.2. Procesar datos}\label{procesar-datos}}
 
+\hypertarget{cuantificacion-de-variables}{%
+\subsubsection{2.2.1. Cuantificación de
+variables}\label{cuantificacion-de-variables}}
+
+Para poder analizar y trabajar más fácilmente con la información de
+\emph{sideEffects} y \emph{effectiveness}, vamos a realizar una
+conversión de dichas columnas a forma cuantitativa.
+
+A continuación vamos a cuantificar la columna de \emph{sideEffects},
+añadiendo una nueva columna a nuestro conjunto de datos llamada
+\emph{sideEffectsNumber} que nos clasifica los posibles valores de la
+columna sideEffects en un rango numérico. Este rango está comprendido
+entre 1 y 5, asignando los siguientes valores:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# Datos de entrenamiento}
+\NormalTok{datos_train}\OperatorTok{$}\NormalTok{sideEffectsNumber[datos_train}\OperatorTok{$}\NormalTok{sideEffects }\OperatorTok{==}\StringTok{ "Extremely Severe Side Effects"}\NormalTok{] <-}\StringTok{ }\DecValTok{5}
+\NormalTok{datos_train}\OperatorTok{$}\NormalTok{sideEffectsNumber[datos_train}\OperatorTok{$}\NormalTok{sideEffects }\OperatorTok{==}\StringTok{ "Severe Side Effects"}\NormalTok{] <-}\StringTok{ }\DecValTok{4}
+\NormalTok{datos_train}\OperatorTok{$}\NormalTok{sideEffectsNumber[datos_train}\OperatorTok{$}\NormalTok{sideEffects }\OperatorTok{==}\StringTok{ "Moderate Side Effects"}\NormalTok{] <-}\StringTok{ }\DecValTok{3}
+\NormalTok{datos_train}\OperatorTok{$}\NormalTok{sideEffectsNumber[datos_train}\OperatorTok{$}\NormalTok{sideEffects }\OperatorTok{==}\StringTok{ "Mild Side Effects"}\NormalTok{] <-}\StringTok{ }\DecValTok{2}
+\NormalTok{datos_train}\OperatorTok{$}\NormalTok{sideEffectsNumber[datos_train}\OperatorTok{$}\NormalTok{sideEffects }\OperatorTok{==}\StringTok{ "No Side Effects"}\NormalTok{] <-}\StringTok{ }\DecValTok{1}
+
+\CommentTok{# Datos de test}
+\NormalTok{datos_test}\OperatorTok{$}\NormalTok{sideEffectsNumber[datos_test}\OperatorTok{$}\NormalTok{sideEffects }\OperatorTok{==}\StringTok{ "Extremely Severe Side Effects"}\NormalTok{] <-}\StringTok{ }\DecValTok{5}
+\NormalTok{datos_test}\OperatorTok{$}\NormalTok{sideEffectsNumber[datos_test}\OperatorTok{$}\NormalTok{sideEffects }\OperatorTok{==}\StringTok{ "Severe Side Effects"}\NormalTok{] <-}\StringTok{ }\DecValTok{4}
+\NormalTok{datos_test}\OperatorTok{$}\NormalTok{sideEffectsNumber[datos_test}\OperatorTok{$}\NormalTok{sideEffects }\OperatorTok{==}\StringTok{ "Moderate Side Effects"}\NormalTok{] <-}\StringTok{ }\DecValTok{3}
+\NormalTok{datos_test}\OperatorTok{$}\NormalTok{sideEffectsNumber[datos_test}\OperatorTok{$}\NormalTok{sideEffects }\OperatorTok{==}\StringTok{ "Mild Side Effects"}\NormalTok{] <-}\StringTok{ }\DecValTok{2}
+\NormalTok{datos_test}\OperatorTok{$}\NormalTok{sideEffectsNumber[datos_test}\OperatorTok{$}\NormalTok{sideEffects }\OperatorTok{==}\StringTok{ "No Side Effects"}\NormalTok{] <-}\StringTok{ }\DecValTok{1}
+\end{Highlighting}
+\end{Shaded}
+
+Podemos comprobar que se ha creado la nueva columna
+\emph{sideEffectsNumber}, y que se han añadido los nuevos cambios.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{head}\NormalTok{(datos_train}\OperatorTok{$}\NormalTok{sideEffectsNumber, }\DecValTok{10}\NormalTok{) }
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##  [1] 2 4 1 2 4 4 2 1 1 5
+\end{verbatim}
+
+Volvemos a aplicar el mismo proceso para la columna de
+\emph{effectiveness}.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# Datos de entrenamiento}
+\NormalTok{datos_train}\OperatorTok{$}\NormalTok{effectivenessNumber[datos_train}\OperatorTok{$}\NormalTok{effectiveness }\OperatorTok{==}\StringTok{ "Highly Effective"}\NormalTok{] <-}\StringTok{ }\DecValTok{5}
+\NormalTok{datos_train}\OperatorTok{$}\NormalTok{effectivenessNumber[datos_train}\OperatorTok{$}\NormalTok{effectiveness }\OperatorTok{==}\StringTok{ "Considerably Effective"}\NormalTok{] <-}\StringTok{ }\DecValTok{4}
+\NormalTok{datos_train}\OperatorTok{$}\NormalTok{effectivenessNumber[datos_train}\OperatorTok{$}\NormalTok{effectiveness }\OperatorTok{==}\StringTok{ "Moderately Effective"}\NormalTok{] <-}\StringTok{ }\DecValTok{3}
+\NormalTok{datos_train}\OperatorTok{$}\NormalTok{effectivenessNumber[datos_train}\OperatorTok{$}\NormalTok{effectiveness }\OperatorTok{==}\StringTok{ "Marginally Effective"}\NormalTok{] <-}\StringTok{ }\DecValTok{2}
+\NormalTok{datos_train}\OperatorTok{$}\NormalTok{effectivenessNumber[datos_train}\OperatorTok{$}\NormalTok{effectiveness }\OperatorTok{==}\StringTok{ "Ineffective"}\NormalTok{] <-}\StringTok{ }\DecValTok{1}
+
+\CommentTok{# Datos de test}
+\NormalTok{datos_test}\OperatorTok{$}\NormalTok{effectivenessNumber[datos_test}\OperatorTok{$}\NormalTok{effectiveness }\OperatorTok{==}\StringTok{ "Highly Effective"}\NormalTok{] <-}\StringTok{ }\DecValTok{5}
+\NormalTok{datos_test}\OperatorTok{$}\NormalTok{effectivenessNumber[datos_test}\OperatorTok{$}\NormalTok{effectiveness }\OperatorTok{==}\StringTok{ "Considerably Effective"}\NormalTok{] <-}\StringTok{ }\DecValTok{4}
+\NormalTok{datos_test}\OperatorTok{$}\NormalTok{effectivenessNumber[datos_test}\OperatorTok{$}\NormalTok{effectiveness }\OperatorTok{==}\StringTok{ "Moderately Effective"}\NormalTok{] <-}\StringTok{ }\DecValTok{3}
+\NormalTok{datos_test}\OperatorTok{$}\NormalTok{effectivenessNumber[datos_test}\OperatorTok{$}\NormalTok{effectiveness }\OperatorTok{==}\StringTok{ "Marginally Effective"}\NormalTok{] <-}\StringTok{ }\DecValTok{2}
+\NormalTok{datos_test}\OperatorTok{$}\NormalTok{effectivenessNumber[datos_test}\OperatorTok{$}\NormalTok{effectiveness }\OperatorTok{==}\StringTok{ "Ineffective"}\NormalTok{] <-}\StringTok{ }\DecValTok{1}
+\end{Highlighting}
+\end{Shaded}
+
+Comprobamos que se ha creado la nueva columna
+\emph{effectivenessNumber}, y que se han añadido los nuevos cambios.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{head}\NormalTok{(datos_train}\OperatorTok{$}\NormalTok{effectivenessNumber, }\DecValTok{10}\NormalTok{) }
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##  [1] 5 5 5 2 2 1 5 4 5 1
+\end{verbatim}
+
 \hypertarget{eliminar-columnas}{%
-\subsubsection{2.2.1. Eliminar columnas}\label{eliminar-columnas}}
+\subsubsection{2.2.2. Eliminar columnas}\label{eliminar-columnas}}
 
 \hypertarget{eliminar-columna-id}{%
 \paragraph{Eliminar columna ID}\label{eliminar-columna-id}}
@@ -628,7 +707,7 @@ instaladas las librerías:
 \end{Shaded}
 
 \hypertarget{creacion-del-corpus}{%
-\subsubsection{2.2.2. Creación del corpus}\label{creacion-del-corpus}}
+\subsubsection{2.2.3. Creación del corpus}\label{creacion-del-corpus}}
 
 Para poder obtener la estructura con la que vamos a procesar nuestra
 información, debemos obtener un vector con documentos. En nuestro caso,
@@ -716,7 +795,7 @@ de este tipo y comprobar su contenido.
 \end{verbatim}
 
 \hypertarget{eliminar-signos-de-puntuacion}{%
-\subsubsection{2.2.3. Eliminar signos de
+\subsubsection{2.2.4. Eliminar signos de
 puntuación}\label{eliminar-signos-de-puntuacion}}
 
 Como hemos podido ver en el documento que se ha mostrado por pantalla,
@@ -769,7 +848,7 @@ Ocurre lo mismo con el comentario de efectos número siete.
 \end{verbatim}
 
 \hypertarget{conversion-de-las-mayusculas-en-minusculas}{%
-\subsubsection{2.2.4. Conversión de las mayúsculas en
+\subsubsection{2.2.5. Conversión de las mayúsculas en
 minúsculas}\label{conversion-de-las-mayusculas-en-minusculas}}
 
 Para poder hacer uso de los términos por igual, debemos convertir las
@@ -791,7 +870,7 @@ mayúsculas en minúsculas.
 \end{verbatim}
 
 \hypertarget{agrupacion-de-sinonimos}{%
-\subsubsection{2.2.5. Agrupación de
+\subsubsection{2.2.6. Agrupación de
 sinónimos:}\label{agrupacion-de-sinonimos}}
 
 Si queremos hacer uso del paquete wordnet, se debe descargar
@@ -828,7 +907,7 @@ Si queremos hacer uso del paquete wordnet, se debe descargar
 \end{Shaded}
 
 \hypertarget{eliminacion-de-stopwords}{%
-\subsubsection{2.2.6. Eliminación de
+\subsubsection{2.2.7. Eliminación de
 Stopwords}\label{eliminacion-de-stopwords}}
 
 En cualquier idioma, hay palabras tan tan tan comunes que no nos aportan
@@ -858,7 +937,7 @@ palabras adecuadas en dicho idioma.
 Ahora ya hemos eliminado las stopwords de forma correcta.
 
 \hypertarget{stemming}{%
-\subsubsection{2.2.6. Stemming}\label{stemming}}
+\subsubsection{2.2.8. Stemming}\label{stemming}}
 
 El siguiente paso consiste en reducir el número de palabras totales con
 las que estamos trabajando. En este caso, se trata de reducir aquellas
@@ -949,7 +1028,7 @@ tenemos nuestro conjunto reducido a nivel de concepto.
 \end{verbatim}
 
 \hypertarget{borrar-espacios-en-blanco-innecesarios}{%
-\subsubsection{2.2.8. Borrar espacios en blanco
+\subsubsection{2.2.9. Borrar espacios en blanco
 innecesarios}\label{borrar-espacios-en-blanco-innecesarios}}
 
 Hasta el momento hemos hecho distintos cambios en el texto de nuestro
@@ -1136,7 +1215,7 @@ Mostramos las más frecuentes:
 \end{Highlighting}
 \end{Shaded}
 
-\includegraphics{practica_files/figure-latex/unnamed-chunk-29-1.pdf}
+\includegraphics{practica_files/figure-latex/unnamed-chunk-33-1.pdf}
 
 
 \end{document}

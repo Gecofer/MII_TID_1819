@@ -252,20 +252,23 @@ library("SnowballC")
 
 <!--DBERÍAMOS HACER ESTE APARTADO PARA CADA COLUMNA DE TEXTO------->
 
-Para poder obtener la estructura con la que vamos a procesar nuestra información, debemos obtener un vector con documentos. En nuestro caso, cada uno de los documentos se corresponde con una opinión sobre un fármaco. Para ello, primero debemos de construir un vector con todas los opiniones del dataframe. Sólo nos faltaría convertir cada elemento del vector al formato de documento. Podemos usar la función VectorSource para hacer esta conversión.
+Para poder obtener la estructura con la que vamos a procesar nuestra información, debemos obtener un vector con documentos. En nuestro caso, cada uno de los documentos se corresponde con una opinión sobre un fármaco(*benefitsReview*) y los efectos que tiene(*sideEffectsReview*). Para ello, primero debemos de construir un vector con todas los opiniones del dataframe. Sólo nos faltaría convertir cada elemento del vector al formato de documento. Podemos usar la función VectorSource para hacer esta conversión.
 
 ```{r}
 # Nos quedamos con la única columna del dataset que nos interesa. 
 # Necesitamos obtenerla en forma de vector, y no como un dataframe de una columna, 
 # por lo que usamos as.vector para hacer la conversión
 benefits_review_data = as.vector(datos_train$benefitsReview)
+effects_review_data = as.vector(datos_train$sideEffectsReview)
 
 # Lo convertimos en la estructura de documento, y lo guardamos ya en el corpus 
 # que lo vamos a utilizar
 benefits_corpus = (VectorSource(benefits_review_data))
+effects_corpus = (VectorSource(effects_review_data))
 
 # Creamos el propio corpus
 benefits_corpus <- Corpus(benefits_corpus)
+effects_corpus <- Corpus(effects_corpus)
 ``` 
 
 Podemos ver que funciona accediendo a uno cualquiera, por ejemplo, vamos a acceder al cuarto comentario almacenado de la columna comentarios. 
@@ -276,6 +279,15 @@ inspect(benefits_corpus[4])
 benefits_corpus[[4]]$content
 ```
 
+Tenémos los documentos relacionados con los efectos aislados en un contenedor distinto. Por ejemplo, podemos acceder al séptimo comentario de este tipo y comprobar su contenido.
+
+```{r}
+# Si nos fijamos en el contenido, vemos que tiene signos de puntuación y exclamación
+inspect(effects_corpus[7])
+effects_corpus[[7]]$content
+```
+
+
 <!-------------------------------------------------------------------------------------------->
 
 ### 2.2.3. Eliminar signos de puntuación
@@ -285,12 +297,19 @@ Como hemos podido ver en el documento que se ha mostrado por pantalla, en él se
 ```{r, warning=FALSE}
 # Una vez que tenemos el corpus creado, continuamos con el procesamiento
 benefits_corpus <- tm_map(benefits_corpus, content_transformer(removePunctuation))
+effects_corpus <- tm_map(effects_corpus, content_transformer(removePunctuation))
 ```
 
 Si volvemos a mostrar la opinión número cuatro, vemos como todos los signos han desaparecido. De hecho, podemos inspeccionar el corpus, y se ve como todos los signos de puntuación, exclamación y derivados ya no están.
 
 ```{r}
 inspect(benefits_corpus[4])
+```
+
+Ocurre lo mismo con el comentario de efectos número siete.
+
+```{r}
+inspect(effects_corpus[7])
 ```
 
 <!-------------------------------------------------------------------------------------------->

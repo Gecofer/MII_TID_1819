@@ -111,7 +111,7 @@ A continuación, se describen los paquetes necesarios para el desarollo del proy
 
 - [`arules`](https://cran.r-project.org/web/packages/arules/arules.pdf) : Paquete que proporciona la infraestructura para representar, manipular y analizar datos y patrones de transacción (conjuntos de elementos frecuentes y reglas de asociación). Se puede instalar usando : _install.packages("arules")_.
 
-- [`arulesViz`](https://cran.r-project.org/web/packages/arules/arules.pdf) : Paquete que extiende el paquete 'arules' con varias técnicas de visualización para reglas de asociación y conjuntos de elementos. El paquete también incluye varias visualizaciones interactivas para la exploración de reglas. Se puede instalar usando : _install.packages("arulesViz")_.
+- [`arulesViz`](https://cran.r-project.org/web/packages/arulesViz/arulesViz.pdf) : Paquete que extiende el paquete 'arules' con varias técnicas de visualización para reglas de asociación y conjuntos de elementos. El paquete también incluye varias visualizaciones interactivas para la exploración de reglas. Se puede instalar usando : _install.packages("arulesViz")_.
 
 
 \newpage

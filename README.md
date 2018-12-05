@@ -78,3 +78,5 @@ Repositorio para las prácticas de la asignatura TID.
 
 - UCI Machine Learning: https://archive.ics.uci.edu/ml/index.php
 - Drug Review Dataset Data Set: https://archive.ics.uci.edu/ml/datasets/Drug+Review+Dataset+%28Druglib.com%29 y http://www.druglib.com
+- Presentación sencilla y fácil sobre análisis exploratorio de datos: http://www.oldemarrodriguez.com/yahoo_site_admin/assets/docs/Tarea_1C_y_1D_An%C3%A1lisis_Exploratorio_de_Tablas_Predictivas.58130846.pdf
+- Gestión de datos en R: https://biocosas.github.io/R/020_gestion_datos.html 

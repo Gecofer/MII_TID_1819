@@ -113,6 +113,9 @@ A continuación, se describen los paquetes necesarios para el desarollo del proy
 
 - [`arulesViz`](https://cran.r-project.org/web/packages/arulesViz/arulesViz.pdf) : Paquete que extiende el paquete 'arules' con varias técnicas de visualización para reglas de asociación y conjuntos de elementos. El paquete también incluye varias visualizaciones interactivas para la exploración de reglas. Se puede instalar usando : _install.packages("arulesViz")_.
 
+- `devtools`
+
+- `rword2vec`
 
 \newpage
 
@@ -120,15 +123,15 @@ A continuación, se describen los paquetes necesarios para el desarollo del proy
 
 # 1. Comprender el problema a resolver
 
-Para la realización y aplicación de las técnicas explicadas a lo largo del curso, se ha seleccionado el _dataset_ [**Drug Review Dataset**](https://archive.ics.uci.edu/ml/datasets/Drug+Review+Dataset+%28Druglib.com%29), proporcionado por [*UCI Machine Learning Repository*](https://archive.ics.uci.edu/ml/index.php). Dicho _dataset_ contiene una exhaustiva base de datos de medicamentos específicos, en donde, el conjunto de datos proporciona revisiones de pacientes sobre medicamentos específicos para unas condiciones particulares. Las revisiones se encuentran desglosadas en función del tema que se esté tratando : beneficios, efectos secundarios y comentarios generales. De igual modo, se dispone de una calificación de satisfacción general, es decir, una calificación en base a los efectos secundarios y otra a la efectividad del medicamento.
+El _dataset_ [**Drug Review Dataset**](https://archive.ics.uci.edu/ml/datasets/Drug+Review+Dataset+%28Druglib.com%29), proporcionado por [*UCI Machine Learning Repository*](https://archive.ics.uci.edu/ml/index.php), contiene una exhaustiva base de datos de medicamentos específicos, en la cual, el conjunto de datos muestra revisiones de pacientes sobre medicamentos específicos para unas condiciones particulares. Dichas revisiones se encuentran desglosadas en función del tema que se esté tratando: beneficios, efectos secundarios y comentarios generales. De igual modo, se dispone de una calificación de satisfacción general, es decir, de una calificación en base a los efectos secundarios del medicamento y de otra en base a la efectividad del mismo.
 
-En este proyecto nos centraremos en el **análisis y experiencia de los usuarios**, obtenido mediante la ingesta de ciertos medicamentos. Para ello, se proponen los siguientes objetivos principales del estudio:
+En este proyecto nos centraremos en el **análisis y experiencia qué tienen los usuarios con ciertos tipos de medicamentos**, para la realización y aplicación de las técnicas explicadas a lo largo del curso. Para ello, se proponen los siguientes objetivos principales:
 
- - Realizar un análisis de sentimientos en relación con la experiencia en el uso de dichos medicamentos, como por ejemplo ver la efectividad del medicamento con los efectos secundarios o beneficios del mismo.
+ - Realizar un análisis de sentimientos a partir de la experiencia de dichos usuarios en el uso de ciertos medicamentos, como por ejemplo ver la efectividad del medicamento cuánto está relacionado con los efectos secundarios o beneficios del mismo.
  
  - Compatibilizar dicho modelo de datos con otros conjuntos de datos aportados en [**Drugs.com**](https://www.drugs.com/).
 
-Las características de este conjunto de datos vienen descritas en la siguiente tabla:
+Las características de este conjunto de datos vienen descritas en la siguiente tabla \ref{tabla:preseleccion}:
 
 <!--- Tabla --->
 
@@ -137,24 +140,24 @@ Las características de este conjunto de datos vienen descritas en la siguiente 
 		\begin{tabular}{|>{\columncolor[rgb]{0.94,0.97,1.0}}l|c|}
 			\hline 
 			\textbf{Características del Data Set} & Multivariable, texto \\ \hline
-			\textbf{Características de los atributos} & Discreto, texto \\ \hline
-			\textbf{Tareas asociadas} & Clasificación, regresión, Clustering \\ \hline
+			\textbf{Características de los atributos} & Entero \\ \hline
+			\textbf{Tareas asociadas} & Clasificación, regresión, clustering \\ \hline
 			\textbf{Número de instancias} & 4143 \\ \hline
 			\textbf{Número de atributos} & 8 \\ \hline
 			\textbf{Valores vacíos} & N/A \\ \hline
 			\textbf{Área} & N/A \\ \hline
 			\textbf{Fecha de donación} & 10/02/2018 \\ \hline
-			\textbf{Veces visualizado} & 9130 \\ \hline
+			\textbf{Veces visualizado} & 11047 \\ \hline
 		\end{tabular}
-		\caption{Relevancia de requisitos para preselección de candidatos.}
+		\caption{Información del conjunto de datos}
 		\label{tabla:preseleccion}
 	\end{center}
 \end{table}
 
 Los datos se dividen en un conjunto train (75%) y otro conjunto test (25%) y se almacenan en dos archivos.tsv (tab-separated-values), respectivamente. Los atributos que tenemos en este dataset son:
 
-1. **urlDrugName** (categorical): nombre del medicamento
-2. **rating** (numerical): clasificación de 1 a 10 del medicamento según el paciente
+1. **urlDrugName** (categorical): nombre del medicamento/fármaco
+2. **rating** (numerical): clasificación o puntuación del 1 a 10 del medicamento según el paciente
 3. **effectiveness** (categorical): clasificación de la efectividad del medicamento según el paciente (5 posibles valores)
 4. **sideEffects** (categorical): clasificación de los efectos secundarios del medicamento según el paciente (5 posibles valores)
 5. **condition** (categorical): nombre de la condición (diagnóstico)
@@ -168,11 +171,15 @@ Los datos se dividen en un conjunto train (75%) y otro conjunto test (25%) y se 
 
 # 2. Preprocesamiento de datos
 
-En este apartado, pondremos los datos a puntos para la aplicación de técnicas. Para poder analizar el _dataset_ y realizar el preprocesamiento al mismo, lo primero que se va hacer es leer el conjunto de datos _train_ y _test_.
+En este apartado, pondremos los datos a punto para la aplicación de técnicas. Así que para poder analizar el _dataset_ y realizar el preprocesamiento al mismo, lo primero que se va hacer es leer el conjunto de datos _train_ y _test_.
 
 <!-------------------------------------------------------------------------------------------->
 
 ## 2.1. Lectura de datos
+
+A continuación, mediante la función `read.table` procedemos a la lectura de los datos:
+
+### 2.1.1. Lectura de datos train
 
 <!---DEBERÍAMOS VER QUE QUEREMOS MOSTRAR EN LA SALIDA DEL DOCUMENTO, YA QUE APARECEN MUCHAS COSAS O HACER UNA CAPTURA Y PONER LA IMAGEM---->
 
@@ -188,6 +195,13 @@ head(datos_train, 5)
 # Resumen sobre los datos train
 summary(datos_train) 
 ```
+
+<!---Pondría una breve descripción de que es lo se observa en la tabla y que nos muestra---->
+
+### 2.1.2. Lectura de datos test
+
+<!---DEBERÍAMOS VER QUE QUEREMOS MOSTRAR EN LA SALIDA DEL DOCUMENTO, YA QUE APARECEN MUCHAS COSAS O HACER UNA CAPTURA Y PONER LA IMAGEM---->
+
 
 ```{r, warning=FALSE}
 # Lectura de datos test
@@ -215,16 +229,52 @@ View(datos_test)    # vista de la tabla
 
 <!--- Borrar si añgún atributo no nos da información como un ID, hacer una transformación con los atributos asimétricos, ya que son necesarios para la aplicación de algunos métodos de aprendizaje sensibles a distancias. Se consideran asimétricos cuando el valor skewness se aleja de 0, podemos eliminar las variables con varianza 0 o muy próximas. --->
 
-## 2.2. Procesar datos
+## 2.2. Procesamiento de los datos
 
-### 2.2.1. Cuantificación de variables
+<!----PONER UNA BREVE DESCRIPCIÓN DE LO QUE VAMOS HACER-------->
 
-Para poder analizar y trabajar más fácilmente con la información de *sideEffects* y  *effectiveness*, vamos a realizar una conversión de dichas columnas a forma cuantitativa.
+### 2.2.1. Eliminar columnas
 
-A continuación vamos a cuantificar la columna de *sideEffects*, añadiendo una nueva columna a nuestro conjunto de datos llamada *sideEffectsNumber* que nos clasifica los posibles valores de la columna sideEffects en un rango numérico. Este rango está comprendido entre 1 y 5, asignando los siguientes valores:
+#### Eliminar columna ID
+
+Al conjunto de datos utilizado se le ha añadido de forma automática una novena columna, que representa un ID para cada uno de los datos con los que estamos trabajando. Como este ID no nos aporta información alguna, hemos decidido quitarla directamente del _dataframe_. Esta columna se corresponde con la primera columna, por lo cuál, debemos eliminar la columna que se corresponde con la posición 1. Los cambios que hacemos en el _dataset_ deben modificarse tanto en el conjunto de test como el de train, para que los resultados sean consistentes.
 
 ```{r}
+# Eliminar columna para el ID en el train
+datos_train = datos_train[-1]
 
+# Eliminar columna para el ID en el test
+datos_test = datos_test[-1]
+```
+
+#### Eliminar columna de commentsReview
+
+Consideramos que este tipo de información en las instancias de nuestros datos no es de nuestro interés. En este atributo se almacena texto, los consumidores de las drogas suelen poner en la mayoría de casos la frecuencia con la que consumen la misma. En otros casos menos frecuentes, se establecen comentarios más arbitrarios en el que muestran sus sensaciones o información sin relevancia. Incluso en algunos casos este campo aparece vacío.
+
+```{r}
+# Eliminar columna para el commentsReview en el train
+datos_train = datos_train[-8]
+
+# Eliminar columna para el commentsReview en el test
+datos_test = datos_test[-8]
+```
+
+
+### 2.2.2. Categorización de variables
+
+<!----¿ES CUANTIFICAR O CATEGORIZAR VARIABLES?-------->
+
+Para poder analizar y trabajar más fácilmente con la información de *sideEffects* y  *effectiveness*, se va a realizar una conversión de dichas columnas a forma cuantitativa, es decir, vamos asignar una etiqueta numérica a cada valor pertinente, tanto para para _train_ como _test_. 
+
+A continuación, vamos a cuantificar la columna de *sideEffects*, para ello se añade una nueva columna a nuestro conjunto de datos denominada *sideEffectsNumber* que nos clasifica los posibles valores de la columna *sideEffects* en un rango numérico, comprendido entre 1 y 5. Dicha columna hace referencia a la clasificación de los efectos secundarios del medicamento según el paciente, en donde la etiqueta con valor 1 hará referencia a que no haya ningún efecto secundario y la etiqueta con valor 5 a que tiene efectos secundarios extremadamente graves:
+
+- Extremely Severe Side Effects (efectos secundarios extremadamente graves) : 5
+- Severe Side Effects (efectos secundarios graves): 4
+- Moderate Side Effects (efectos secundarios moderados) : 3
+- Mild Side Effects (efectos secundarios leves) : 2
+- No Side Effects (sin efectos secundarios) : 1
+
+```{r}
 # Datos de entrenamiento
 datos_train$sideEffectsNumber[datos_train$sideEffects == "Extremely Severe Side Effects"] <- 5
 datos_train$sideEffectsNumber[datos_train$sideEffects == "Severe Side Effects"] <- 4
@@ -238,23 +288,23 @@ datos_test$sideEffectsNumber[datos_test$sideEffects == "Severe Side Effects"] <-
 datos_test$sideEffectsNumber[datos_test$sideEffects == "Moderate Side Effects"] <- 3
 datos_test$sideEffectsNumber[datos_test$sideEffects == "Mild Side Effects"] <- 2
 datos_test$sideEffectsNumber[datos_test$sideEffects == "No Side Effects"] <- 1
-
 ```
 
-Podemos comprobar que se ha creado la nueva columna *sideEffectsNumber*, y que se han añadido los nuevos cambios.
-
+Podemos comprobar que se ha creado la nueva columna *sideEffectsNumber*, y que se han añadido los cambios comentados anteriormente.
 
 ```{r}
-
 head(datos_train$sideEffectsNumber, 10) 
-
 ```
 
+Volvemos a aplicar el mismo procedimiento para la columna de *effectiveness*, creándonos para ello una columna denominada *effectivenessNumber*. Dicha columna, hace referencia a la clasificación de la efectividad del medicamento según el paciente, en donde la etiqueta con valor 1 hace referencia que el medicamente es ineficaz y la etiqueta con valor 5 a que el medicamente es altamente eficaz:
 
-Volvemos a aplicar el mismo proceso para la columna de *effectiveness*.
+- Highly Effective (altamente efectivo): 5
+- Considerably Effective (considerablemente efectivo) : 4
+- Moderately Effective (moderadamente efectivo) : 3
+- Marginally Effective (marginalmente efectivo) : 2
+- Ineffective (ineficaz) : 1
 
 ```{r}
-
 # Datos de entrenamiento
 datos_train$effectivenessNumber[datos_train$effectiveness == "Highly Effective"] <- 5
 datos_train$effectivenessNumber[datos_train$effectiveness == "Considerably Effective"] <- 4
@@ -273,51 +323,28 @@ datos_test$effectivenessNumber[datos_test$effectiveness == "Ineffective"] <- 1
 Comprobamos que se ha creado la nueva columna *effectivenessNumber*, y que se han añadido los nuevos cambios.
 
 ```{r}
-
 head(datos_train$effectivenessNumber, 10) 
-
 ```
 
-### 2.2.2. Eliminar columnas
-
-#### Eliminar columna ID
-
-Al conjunto de datos utilizado se le ha añadido de forma automática una novena columna, que representa un ID para cada uno de los datos con los que estamos trabajando. Como este ID no nos aporta información, hemos decidido quitarla directamente del _dataframe_. Esta columna se corresponde con la primera columna, por lo cuál, debemos eliminar la columna que se corresponde con la posición 1. Los cambios que hacemos en el dataset deben modificarse tanto en el conjunto de test como el de train, para que los resultados sean consistentes.
-
-```{r}
-# Eliminar columna para el ID en el train
-datos_train = datos_train[-1]
-# Eliminar columna para el ID en el test
-datos_test = datos_test[-1]
-```
-
-#### Eliminar columna de commentsReview
-
-Consideramos que este tipo de información en las instancias de nuestros datos no es de nuestro interés. En este atributo se almacena texto, los consumidores de las drogas suelen poner en la mayoría de casos la frecuencia con la que consumen la misma. En otros casos menos frecuentes, se establecen comentarios más arbitrarios en el que muestran sus sensaciones o información sin relevancia. Incluso en algunos casos este campo aparece vacío.
-
-```{r}
-# Eliminar columna para el commentsReview en el train
-datos_train = datos_train[-8]
-# Eliminar columna para el commentsReview en el test
-datos_test = datos_test[-8]
-```
-
-Una vez eliminadas las columnas anteriores, ya podemos continuar con el procesamiento de los datos. Para ello, lo primero tenemos que hacer es cargar la librería que procesa los datos de tipo texto en R. La más conocida se llama \textbf{tm}, aunque también haremos uso del paquete \textbf{SnowballC} para realizar el _Stemming_. Si no tenemos instaladas las librerías:
+Por tanto, una vez eliminadas las columnas anteriores y modificadas las necesarias, ya podemos continuar con el procesamiento de los datos. Para ello, lo primero tenemos que hacer es cargar la librería que procesa los datos de tipo texto en R. La más conocida se llama \textbf{tm}, aunque también haremos uso del paquete \textbf{SnowballC} para realizar el _Stemming_. Si no tenemos instaladas las librerías:
 
 ```{r, warning=FALSE}
 # Paquete para minería de datos, permite procesar datos de tipo texto
 library("tm")
+
 # Paquete para minería de datos, agrupa aquellos términos que contienen la misma raíz
 library("SnowballC")
 ```
 
 <!-------------------------------------------------------------------------------------------->
 
+<!--HACER CON LOS DATOS TRAIN Y LOS DATOS TEST------->
+
 ### 2.2.3. Creación del corpus
 
 <!--DBERÍAMOS HACER ESTE APARTADO PARA CADA COLUMNA DE TEXTO------->
 
-Para poder obtener la estructura con la que vamos a procesar nuestra información, debemos obtener un vector con documentos. En nuestro caso, cada uno de los documentos se corresponde con una opinión sobre un fármaco(*benefitsReview*) y los efectos que tiene(*sideEffectsReview*). Para ello, primero debemos de construir un vector con todas los opiniones del dataframe. Sólo nos faltaría convertir cada elemento del vector al formato de documento. Podemos usar la función VectorSource para hacer esta conversión.
+Para poder obtener la estructura con la que vamos a procesar nuestra información, debemos obtener un vector con documentos. En nuestro caso, cada uno de los documentos se corresponde con una opinión sobre un fármaco (*benefitsReview*) y los efectos que tiene (*sideEffectsReview*). Para ello, primero debemos de construir un vector con todas los opiniones del dataframe. Sólo nos faltaría convertir cada elemento del vector al formato de documento. Podemos usar la función VectorSource para hacer esta conversión.
 
 ```{r}
 # Nos quedamos con la única columna del dataset que nos interesa. 
@@ -344,7 +371,7 @@ inspect(benefits_corpus[4])
 benefits_corpus[[4]]$content
 ```
 
-Tenémos los documentos relacionados con los efectos aislados en un contenedor distinto. Por ejemplo, podemos acceder al séptimo comentario de este tipo y comprobar su contenido.
+Tenemos los documentos relacionados con los efectos aislados en un contenedor distinto. Por ejemplo, podemos acceder al séptimo comentario de este tipo y comprobar su contenido.
 
 ```{r}
 # Si nos fijamos en el contenido, vemos que tiene signos de puntuación y exclamación
@@ -357,7 +384,7 @@ effects_corpus[[7]]$content
 
 ### 2.2.4. Eliminar signos de puntuación
 
-Como hemos podido ver en el documento que se ha mostrado por pantalla, en él se aprecia el uso de signos de puntuación y exclamación. En un principio, no tiene sentido en \textit{Data Mining} contemplar los signos de puntuación, ya que no nos van a aportar información. Por ello, los quitamos, como se puede ver a continuación.
+Como hemos podido ver en el documento que se ha mostrado por pantalla, en él se aprecia el uso de signos de puntuación y exclamación. En un principio, no tiene sentido en \textit{Data Mining} contemplar los signos de puntuación, ya que no nos van a aportar información. Por ello, los quitamos, como se puede ver a continuación. Con `tm_map(corpus, removePunctuation)`, se eliminan los símbolos: ! " $ % & ' () * + , - . / : ; < = > ? @ [ \ ] ^ _ ' { | } ~ 
 
 ```{r, warning=FALSE}
 # Una vez que tenemos el corpus creado, continuamos con el procesamiento
@@ -381,61 +408,123 @@ inspect(effects_corpus[7])
 
 ### 2.2.5. Conversión de las mayúsculas en minúsculas
 
-Para poder hacer uso de los términos por igual, debemos convertir las mayúsculas en minúsculas.
+Para poder hacer uso de los términos por igual, debemos convertir las mayúsculas en minúsculas. Ya que normalmente se convierte en minúsculas todas las letras para que los comienzos de oración no sean tratados de manera diferente por los algoritmos.
 
 ```{r, warning=FALSE}
 benefits_corpus <- tm_map(benefits_corpus, content_transformer(tolower))
 inspect(benefits_corpus[4])
+
+effects_corpus <- tm_map(effects_corpus, content_transformer(tolower))
 ```
-<!-------------------------------------------------------------------------------------------->
-
-### 2.2.6. Agrupación de sinónimos:
-
-Si queremos hacer uso del paquete wordnet, se debe descargar
-
-https://stackoverflow.com/questions/25129073/wordnet-getdict-could-not-find-wordnet-dictionary
-
-
-```{r}
-# No funciona, parece que hay que instalar algo en Java
-#install.packages('wordnet')
-#Sys.setenv(WNHOME = file.path("/", "WordNet-3.0/dict"))
-#library(wordnet)
-#setDict("/usr/local/Cellar/wordnet/3.1")
-#initDict()
-#getDict()
-# synonyms(’write’, "VERB")
-```
-
-
-```{r}
-# Para que funcione ela rchivo tiene que estar en .bin
-#library(devtools)
-#install_github("mukul13/rword2vec")
-#library(rword2vec)
-#ls("package:rword2vec")
-#dist=distance(file_name = "vec.bin",search_word = "king",num = 10)
-# convert Stata to SPSS
-#library("magrittr")
-#library("rio")
-#convert("datos/drugLibTrain_raw.tsv", "datos/drugLibTrain.bin")
-#dist
-```
-
 
 <!-------------------------------------------------------------------------------------------->
 
-### 2.2.7. Eliminación de Stopwords
+### 2.2.6. Eliminación de Stopwords
 
-En cualquier idioma, hay palabras tan tan tan comunes que no nos aportan información relevante. Por ejemplo, en español, las palabras "la", "a", "en", "de" son ejemplos de lo que se conoce como \textit{stopwords}. Este tipo de palabras debemos de suprimirlas de nuestro corpus. Como el contenido del corpus está en inglés, debemos especificar el idioma correcto para que nos elimine del corpus las palabras adecuadas en dicho idioma.
+En cualquier idioma, hay palabras que son tan comunes o muy utilizadas que no aportan información relevante, a dichas palabras se las conoce como _stopwords_ o palabras _stop_. Por ejemplo, en español, las palabras "la", "a", "en", "de" son ejemplos de _stopwords_. Este tipo de palabras debemos de suprimirlas de nuestro corpus. Como el contenido del corpus está en inglés, debemos especificar el idioma correcto para que nos elimine del corpus las palabras adecuadas en dicho idioma.
 
 ```{r, warning=FALSE}
-benefits_corpus <- tm_map(benefits_corpus, content_transformer(removeWords), 
-          stopwords("english"))
+benefits_corpus <- tm_map(benefits_corpus, content_transformer(removeWords), stopwords("english"))
 inspect(benefits_corpus[4])
+
+effects_corpus <- tm_map(effects_corpus, content_transformer(removeWords), stopwords("english"))
 ```
 
 Ahora ya hemos eliminado las stopwords de forma correcta.
+
+<!-------------------------------------------------------------------------------------------->
+
+### 2.2.7. Agrupación de sinónimos:
+
+Con el fin de disminuir la dimensión del espacio a trabajar, se pueden identificar palabras distintas con el mismo significado y reemplazarlas por una sola palabra. Para ello se toman los sinónimos de dicha palabra. Dentro de las librerías que podemos usar para agrupar sinónimos, destacamos dos: `wordnet` y `rword2vec`. Sin embargo, por su sencillez se va hacer uso de `rword2vec`. Pero previamente, debemos ver que palabras son las que mayor frecuencia presentan en nuestro texto, para ello nos quedamos con las 25 más representativas:
+
+```{r}
+matrix_benefits_corpus <- TermDocumentMatrix(benefits_corpus)
+matrix_benefits_corpus <- as.matrix(matrix_benefits_corpus)
+matrix_benefits_corpus <- rowSums(matrix_benefits_corpus)
+terms_frecuency_benefits_corpus <- sort(matrix_benefits_corpus, decreasing = TRUE)
+terms_frecuency_benefits_corpus[1:25]
+```
+
+```{r}
+terms_frecuency_benefits_corpus <- sort(matrix_benefits_corpus, decreasing = TRUE)
+terms_frecuency_benefits_corpus_10 <- terms_frecuency_benefits_corpus[1:10]
+terms_frecuency_benefits_corpus_10 <- as.matrix(terms_frecuency_benefits_corpus_10)
+terms_frecuency_benefits_corpus_10 <- terms_frecuency_benefits_corpus_10[,0]
+terms_frecuency_benefits_corpus_10 <- as.matrix(terms_frecuency_benefits_corpus_10)
+terms_frecuency_benefits_corpus_10
+```
+
+Y las visualizamos gráficamente:
+
+```{r}
+terms_frecuency_benefits_corpus <- as.matrix(terms_frecuency_benefits_corpus)
+barplot(terms_frecuency_benefits_corpus[1:25,],  xlab="Palabras", ylab="Número de frecuencia",
+        col = c("lightblue", "mistyrose", "lightcyan",
+                "lavender", "cornsilk"))
+title(main = list("Las 25 palabras más frecuentes", font = 2))
+```
+
+Una vez, que sabemos las palabras con mayor frecuencia, podemos proceder a agruparlas por sinónimos:
+
+
+
+```{r}
+# http://mccormickml.com/2016/04/12/googles-pretrained-word2vec-model-in-python/
+# https://github.com/mukul13/rword2vec
+
+#library(devtools) # hace falta esta librería para que funcione
+#install_github("mukul13/rword2vec") # nos instalamos la libreria desde Github
+#library(rword2vec)
+
+#terms = c("pain", "taking", "drug", "also")
+#dist_terms = c()
+#for (i in 1:4) # calculamos la distancia de la palabra a sus sinónimos
+#  dist_terms[i] = distance(file_name = "GoogleNews-vectors-negative300.bin", search_word = terms[i], num = 5)
+#  dist_terms
+```
+
+```{r, include=FALSE}
+#copia_dist_terms <- dist_terms
+```
+
+Para sustituir las palabras en el texto, se ha uso de la función `gsub(pattern, replacement, x, ignore.case = FALSE, perl = FALSE, fixed = FALSE, useBytes = FALSE)`. 
+
+```{r, include=FALSE}
+#library(stringr)
+
+# lo pasamos a matriz
+#dist_terms <- as.matrix(dist_terms)
+#dist_terms[2] <- as.vector(dist_terms[2])
+# str_to_lower(dist_terms[[2]][3])
+
+# terms = c("pain", "taking", "drug", "also")
+# dist_terms[1] <- as.vector(dist_terms[1])
+# dist_terms[1]
+# dist_terms[2] <- as.vector(dist_terms[2])
+# dist_terms[2]
+# dist_terms[3] <- as.vector(dist_terms[3])
+# dist_terms[3]
+# dist_terms[4] <- as.vector(dist_terms[4])
+# dist_terms[4]
+
+#benefits_corpus
+
+# for (i in 1:4)
+#   for (j in 1:5)
+#     dist_terms[i] <- as.vector(dist_terms[i])
+#     # Convertimos las palabras en minúsculas con "str_to_lower"
+#     dist_terms_to_lower <- str_to_lower(dist_terms[[i]][j], locale = "en")
+#     benefits_corpus <- gsub(dist_terms_to_lower, terms[i], benefits_corpus)
+
+# Sale de distinta manera
+#benefits_corpus
+
+#benefits_corpus[4]$content
+
+```
+
+
 
 <!-------------------------------------------------------------------------------------------->
 

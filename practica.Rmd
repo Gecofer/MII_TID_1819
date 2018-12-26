@@ -222,6 +222,7 @@ View(datos_train)    # vista de la tabla
 View(datos_test)    # vista de la tabla
 ```
 
+<!---PODRÍAMOS PONER UNA IMAGEN DE LA TABLA DEL TRAIN POR EJEMPLO, PARA VER QUE COLUMNAS TIENEN Y ASÍ CUANDO LAS QUITEMOS SE SEPA QUE SON------->
 
 <!-------------------------------------------------------------------------------------------->
 
@@ -261,8 +262,6 @@ datos_test = datos_test[-8]
 
 
 ### 2.2.2. Categorización de variables
-
-<!----¿ES CUANTIFICAR O CATEGORIZAR VARIABLES?-------->
 
 Para poder analizar y trabajar más fácilmente con la información de *sideEffects* y  *effectiveness*, se va a realizar una conversión de dichas columnas a forma cuantitativa, es decir, vamos asignar una etiqueta numérica a cada valor pertinente, tanto para para _train_ como _test_. 
 
@@ -344,7 +343,9 @@ library("SnowballC")
 
 <!--DBERÍAMOS HACER ESTE APARTADO PARA CADA COLUMNA DE TEXTO------->
 
-Para poder obtener la estructura con la que vamos a procesar nuestra información, debemos obtener un vector con documentos. En nuestro caso, cada uno de los documentos se corresponde con una opinión sobre un fármaco (*benefitsReview*) y los efectos que tiene (*sideEffectsReview*). Para ello, primero debemos de construir un vector con todas los opiniones del dataframe. Sólo nos faltaría convertir cada elemento del vector al formato de documento. Podemos usar la función VectorSource para hacer esta conversión.
+Para poder obtener la estructura con la que vamos a procesar nuestra información, debemos obtener un vector con documentos. En nuestro caso, cada uno de los documentos se corresponde con una opinión sobre un fármaco (*benefitsReview*) y los efectos que tiene (*sideEffectsReview*). Para ello, primero debemos de construir un vector con todas los opiniones del dataframe y convertir cada elemento del vector al formato de documento. Podemos usar la función VectorSource para hacer esta conversión.
+
+<!--DEBEMOS HACERLO TAMBIÉN PARA TEST------->
 
 ```{r}
 # Nos quedamos con la única columna del dataset que nos interesa. 
@@ -415,19 +416,21 @@ benefits_corpus <- tm_map(benefits_corpus, content_transformer(tolower))
 inspect(benefits_corpus[4])
 
 effects_corpus <- tm_map(effects_corpus, content_transformer(tolower))
+inspect(effects_corpus[7])
 ```
 
 <!-------------------------------------------------------------------------------------------->
 
 ### 2.2.6. Eliminación de Stopwords
 
-En cualquier idioma, hay palabras que son tan comunes o muy utilizadas que no aportan información relevante, a dichas palabras se las conoce como _stopwords_ o palabras _stop_. Por ejemplo, en español, las palabras "la", "a", "en", "de" son ejemplos de _stopwords_. Este tipo de palabras debemos de suprimirlas de nuestro corpus. Como el contenido del corpus está en inglés, debemos especificar el idioma correcto para que nos elimine del corpus las palabras adecuadas en dicho idioma.
+En cualquier idioma, hay palabras que son tan comunes o muy utilizadas que no aportan información relevante, a dichas palabras se las conoce como _stopwords_ o palabras _stop_. Por ejemplo, en español, las palabras "la", "a", "en", "de" son ejemplos de _stopwords_. Este tipo de palabras debemos de suprimirlas de nuestro corpus. Como, en nuestro caso, el contenido del corpus está en inglés, debemos especificar el idioma correcto para que nos elimine del corpus las palabras adecuadas en dicho idioma.
 
 ```{r, warning=FALSE}
 benefits_corpus <- tm_map(benefits_corpus, content_transformer(removeWords), stopwords("english"))
 inspect(benefits_corpus[4])
 
 effects_corpus <- tm_map(effects_corpus, content_transformer(removeWords), stopwords("english"))
+inspect(effects_corpus[7])
 ```
 
 Ahora ya hemos eliminado las stopwords de forma correcta.
@@ -436,7 +439,187 @@ Ahora ya hemos eliminado las stopwords de forma correcta.
 
 ### 2.2.7. Agrupación de sinónimos:
 
-Con el fin de disminuir la dimensión del espacio a trabajar, se pueden identificar palabras distintas con el mismo significado y reemplazarlas por una sola palabra. Para ello se toman los sinónimos de dicha palabra. Dentro de las librerías que podemos usar para agrupar sinónimos, destacamos dos: `wordnet` y `rword2vec`. Sin embargo, por su sencillez se va hacer uso de `rword2vec`. Pero previamente, debemos ver que palabras son las que mayor frecuencia presentan en nuestro texto, para ello nos quedamos con las 25 más representativas:
+Con el fin de disminuir la dimensión del espacio a trabajar, se pueden identificar palabras distintas con el mismo significado y reemplazarlas por una sola palabra. Para ello se toman los sinónimos de dicha palabra. Dentro de las librerías que podemos usar para agrupar sinónimos, destacamos dos: `wordnet` y `rword2vec`. Sin embargo, por su sencillez se va hacer uso de `rword2vec`. Previamente, se obtendrán que palabras son las que mayor frecuencia presentan en nuestro texto, para ello nos quedamos con las 100 más representativas tanto para *benefitsReview* como *sideEffectsReview* del conjunto train y test:
+
+```{r}
+# Columna benefitsReview del conjunto train
+
+# Obtenemos su matriz de términos
+matrix_benefits_corpus <- TermDocumentMatrix(benefits_corpus)
+# No tenemos los datos en la matriz que buscamos, sino en un vector
+# por tanto, lo convertimos en matriz
+matrix_benefits_corpus <- as.matrix(matrix_benefits_corpus)
+# Sumamos las filas para obtener la frecuencia de una palabra en benefitsReview
+matrix_benefits_corpus <- rowSums(matrix_benefits_corpus)
+# Ordenamos de mayor a menor los términos y nos quedamos con lso 100 primeros
+terms_frecuency_benefits_corpus <- sort(matrix_benefits_corpus, decreasing = TRUE)
+terms_frecuency_benefits_corpus_200 <- terms_frecuency_benefits_corpus[1:200]
+terms_frecuency_benefits_corpus_200
+```
+
+Y visualizamos dichos términos gráficamente:
+
+```{r}
+graph_terms_frecuency_benefits_corpus <- as.matrix(terms_frecuency_benefits_corpus_200)
+barplot(graph_terms_frecuency_benefits_corpus[1:200,],  xlab="Términos", ylab="Número de frecuencia",
+        col = c("lightblue", "mistyrose", "lightcyan", "lavender", "cornsilk"))
+title(main = list("Los 200 términos más frecuentes", font = 2))
+```
+
+Una vez que tenemos los 100 términos con mayor frecuencia en nuestra columna *benefitsReview* y su frecuencia asociada, pasamos a matriz dichos datos, con el fin de obtener solo las palabras y descartar su frecuencia.
+
+```{r}
+# Convertimos a matriz "terms_frecuency_benefits_corpus_100"
+terms_frecuency_benefits_corpus_200 <- as.matrix(terms_frecuency_benefits_corpus_200)
+terms_frecuency_benefits_corpus_200
+# Me quedo solo con los términos
+terms_benefits_corpus_200 <- rownames(terms_frecuency_benefits_corpus_200)
+terms_benefits_corpus_200
+```
+
+Como ya sabemos las palabras a usar, es decir, los 100 términos que más se repite, procedemos a la agrupación por sinónimos. En donde, mediante la función *distance(...)* de la libería *rword2vec*, obtendremos todas palabras más similares de nuestro conjunto, en nuestro caso nos vamos a quedar con las 2 primeras:
+
+```{r}
+# http://mccormickml.com/2016/04/12/googles-pretrained-word2vec-model-in-python/
+# https://github.com/mukul13/rword2vec
+# http://www.rpubs.com/mukul13/rword2vec
+
+library(devtools)                   # hace falta esta librería para que funcione
+install_github("mukul13/rword2vec") # nos instalamos la libreria desde Github
+library(rword2vec)
+
+# Escribo en un fichero la columna "benefitsReview"
+write.table(datos_train$benefitsReview, "benefitsReview.txt", sep = "\t", quote = F, row.names = F)
+
+# Entreno los datos del texto para obtener los vectores de palabras
+model = word2vec(train_file = "benefitsReview.txt", output_file = "benefitsReview.bin", binary=1)
+
+dist_terms_benefits_corpus_200 = c()
+# Obtengo la distancia de las 100 palabras con mayor frecuencia
+for (i in 1:length(terms_benefits_corpus_200)){ # calculamos la distancia de la palabra a sus sinónimos
+  dist_terms_benefits_corpus_200[i] = distance(file_name = "benefitsReview.bin", search_word = terms_benefits_corpus_200[i], num = 2)
+}
+```
+
+Una vez, que tenemos todas las palabras con los 3 términos más similares, procedemos a sustituir todos esos términos por el término general, es decir:
+
+```{r}
+# Obtenemos el primer término -> "pain"
+terms_benefits_corpus_200[1]
+
+# Vamos a sustituir "pain" por "swelling" y "nausea"
+dist_terms_benefits_corpus_200[[1]]
+```
+
+Por último, ya solo nos queda hacer el reemplazamiento, para ello se usará la función *gsub(...)* sobre el corpus (benefits_corpus).
+
+```{r, warning=FALSE}
+# Para la columna benefitsReview del conjunto train
+as.character(dist_terms_benefits_corpus_200[[2]][3])
+
+for (i in 1:length(terms_benefits_corpus_200)) # iteramos sobre los terminos
+  for (j in 1:2) # iteramos sobre los sinónimos, en este caso solo tenemos 2
+    # Con "tm_map" NO FUNCIONA
+    #x1 <- tm_map(benefits_corpus, content_transformer(gsub), pattern = as.character(dist_terms_benefits_corpus_200[[i]][j]), 
+    #             replacement = as.character(terms_benefits_corpus_200[i]))
+    x1 <- gsub(as.character(dist_terms_benefits_corpus_200[[i]][j]), as.character(terms_benefits_corpus_200[i]),
+               benefits_corpus)
+
+write.table(benefits_corpus$content, "sinSinonimos.txt")
+write.table(x1$content, "conSinonimos.txt")
+
+```
+
+
+
+```{r}
+# Para la columna benefitsReview del conjunto train
+
+for (i in 1:length(terms_benefits_corpus_200)) # iteramos sobre los terminos
+  for (j in 1:2) # iteramos sobre los sinónimos, en este caso solo tenemos 2
+    hola <- gsub(subdf[i,j], terminos[i], hola, fixed = TRUE)
+    #gsub(subdf[i,j], terminos[i], benefits_corpus)
+    #x1 <- tm_map(benefits_corpus, content_transformer(gsub), pattern = as.character(subdf[i,j]), replacement = as.character(terminos[i]))
+hola
+sin <- write.table(benefits_corpus$content, "sinSinonimos.txt")
+write.table(hola, "conSinonimos9.txt")
+benefits_corpus$content
+x1$content
+```
+
+
+
+
+
+
+
+
+
+
+con su valor correspondiente de distancia, nos quedamos con las que superan un umbral de 0.7:
+
+```{r}
+dist_terms_benefits_corpus_100[[1]]$dist
+(dim(dist_terms_benefits_corpus_100)[1])[2]
+as.vector(dist_terms_benefits_corpus_100)
+matrix_dist_terms_benefits_corpus_100 <- as.matrix(dist_terms_benefits_corpus_100)
+matrix_dist_terms_benefits_corpus_100[100][2]
+
+temp = c()
+if (as.vector(dist_terms_benefits_corpus_100[[1]]$dist) > 0.70) {
+  temp[1] = dist_terms_benefits_corpus_100[1]
+}
+
+temp = c()
+for (i in 1:length(terms_benefits_corpus_100)){
+  aux <- as.matrix(dist_terms_benefits_corpus_100[[i]])
+  for (j in 1:dim(dist_terms_benefits_corpus_100)[1]){
+    if (as.vector(dist_terms_benefits_corpus_100[[j]]$dist) > 0.70) 
+      temp[j] = aux[j]
+  }
+}
+
+dim(temp)
+
+```
+
+
+
+```{r}
+
+a <- as.matrix(dist_terms_benefits_corpus_100)
+nueva = c()
+
+for (i in 1:dim(dist_terms_benefits_corpus_100)[1]){
+  if (as.vector(dist_terms_benefits_corpus_100$dist[i]) > 0.70 ) nueva[i] =a[i]
+}
+nueva
+
+
+a[1]
+[i:i]
+
+
+```
+
+
+
+
+
+```{r}
+ana = word_analogy(file_name = "vec.bin", search_words = "weeks times year",num = 10)
+ana
+```
+
+
+
+
+
+
+
+
+
+
 
 ```{r}
 matrix_benefits_corpus <- TermDocumentMatrix(benefits_corpus)

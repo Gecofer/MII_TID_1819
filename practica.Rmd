@@ -507,206 +507,25 @@ Una vez, que tenemos todas las palabras con los 3 términos más similares, proc
 # Obtenemos el primer término -> "pain"
 terms_benefits_corpus_200[1]
 
-# Vamos a sustituir "pain" por "swelling" y "nausea"
+# Vamos a sustituir "pain" por sus dos palabras más similares
 dist_terms_benefits_corpus_200[[1]]
 ```
 
-Por último, ya solo nos queda hacer el reemplazamiento, para ello se usará la función *gsub(...)* sobre el corpus (benefits_corpus).
+Por último, ya solo nos queda hacer el reemplazamiento, para ello se usará la función *gsub(...)* sobre el corpus (benefits_corpus). Para sustituir las palabras en el texto, se ha uso de la función `gsub(pattern, replacement, x, ignore.case = FALSE, perl = FALSE, fixed = FALSE, useBytes = FALSE)`. 
 
 ```{r, warning=FALSE}
 # Para la columna benefitsReview del conjunto train
-as.character(dist_terms_benefits_corpus_200[[2]][3])
 
-for (i in 1:length(terms_benefits_corpus_200)) # iteramos sobre los terminos
+for (i in 1:10) # iteramos sobre los terminos # SE DEBE CAMBIAR PARA VER CUANTOS TÉRMINOS COGEMO
   for (j in 1:2) # iteramos sobre los sinónimos, en este caso solo tenemos 2
-    # Con "tm_map" NO FUNCIONA
-    #x1 <- tm_map(benefits_corpus, content_transformer(gsub), pattern = as.character(dist_terms_benefits_corpus_200[[i]][j]), 
-    #             replacement = as.character(terms_benefits_corpus_200[i]))
-    x1 <- gsub(as.character(dist_terms_benefits_corpus_200[[i]][j]), as.character(terms_benefits_corpus_200[i]),
-               benefits_corpus)
+    benefits_corpus_new <- tm_map(benefits_corpus, content_transformer(gsub), 
+                                  pattern = as.character(dist_terms_benefits_corpus_200[[i]][j]), 
+                                  replacement = as.character(terms_benefits_corpus_200[i]))
 
+# Comprobamos que efectivamente se han producido cambios, por ejemplo al revisar el término "medication""
 write.table(benefits_corpus$content, "sinSinonimos.txt")
-write.table(x1$content, "conSinonimos.txt")
-
+write.table(benefits_corpus_new$content, "conSinonimos.txt")
 ```
-
-
-
-```{r}
-# Para la columna benefitsReview del conjunto train
-
-for (i in 1:length(terms_benefits_corpus_200)) # iteramos sobre los terminos
-  for (j in 1:2) # iteramos sobre los sinónimos, en este caso solo tenemos 2
-    hola <- gsub(subdf[i,j], terminos[i], hola, fixed = TRUE)
-    #gsub(subdf[i,j], terminos[i], benefits_corpus)
-    #x1 <- tm_map(benefits_corpus, content_transformer(gsub), pattern = as.character(subdf[i,j]), replacement = as.character(terminos[i]))
-hola
-sin <- write.table(benefits_corpus$content, "sinSinonimos.txt")
-write.table(hola, "conSinonimos9.txt")
-benefits_corpus$content
-x1$content
-```
-
-
-
-
-
-
-
-
-
-
-con su valor correspondiente de distancia, nos quedamos con las que superan un umbral de 0.7:
-
-```{r}
-dist_terms_benefits_corpus_100[[1]]$dist
-(dim(dist_terms_benefits_corpus_100)[1])[2]
-as.vector(dist_terms_benefits_corpus_100)
-matrix_dist_terms_benefits_corpus_100 <- as.matrix(dist_terms_benefits_corpus_100)
-matrix_dist_terms_benefits_corpus_100[100][2]
-
-temp = c()
-if (as.vector(dist_terms_benefits_corpus_100[[1]]$dist) > 0.70) {
-  temp[1] = dist_terms_benefits_corpus_100[1]
-}
-
-temp = c()
-for (i in 1:length(terms_benefits_corpus_100)){
-  aux <- as.matrix(dist_terms_benefits_corpus_100[[i]])
-  for (j in 1:dim(dist_terms_benefits_corpus_100)[1]){
-    if (as.vector(dist_terms_benefits_corpus_100[[j]]$dist) > 0.70) 
-      temp[j] = aux[j]
-  }
-}
-
-dim(temp)
-
-```
-
-
-
-```{r}
-
-a <- as.matrix(dist_terms_benefits_corpus_100)
-nueva = c()
-
-for (i in 1:dim(dist_terms_benefits_corpus_100)[1]){
-  if (as.vector(dist_terms_benefits_corpus_100$dist[i]) > 0.70 ) nueva[i] =a[i]
-}
-nueva
-
-
-a[1]
-[i:i]
-
-
-```
-
-
-
-
-
-```{r}
-ana = word_analogy(file_name = "vec.bin", search_words = "weeks times year",num = 10)
-ana
-```
-
-
-
-
-
-
-
-
-
-
-
-```{r}
-matrix_benefits_corpus <- TermDocumentMatrix(benefits_corpus)
-matrix_benefits_corpus <- as.matrix(matrix_benefits_corpus)
-matrix_benefits_corpus <- rowSums(matrix_benefits_corpus)
-terms_frecuency_benefits_corpus <- sort(matrix_benefits_corpus, decreasing = TRUE)
-terms_frecuency_benefits_corpus[1:25]
-```
-
-```{r}
-terms_frecuency_benefits_corpus <- sort(matrix_benefits_corpus, decreasing = TRUE)
-terms_frecuency_benefits_corpus_10 <- terms_frecuency_benefits_corpus[1:10]
-terms_frecuency_benefits_corpus_10 <- as.matrix(terms_frecuency_benefits_corpus_10)
-terms_frecuency_benefits_corpus_10 <- terms_frecuency_benefits_corpus_10[,0]
-terms_frecuency_benefits_corpus_10 <- as.matrix(terms_frecuency_benefits_corpus_10)
-terms_frecuency_benefits_corpus_10
-```
-
-Y las visualizamos gráficamente:
-
-```{r}
-terms_frecuency_benefits_corpus <- as.matrix(terms_frecuency_benefits_corpus)
-barplot(terms_frecuency_benefits_corpus[1:25,],  xlab="Palabras", ylab="Número de frecuencia",
-        col = c("lightblue", "mistyrose", "lightcyan",
-                "lavender", "cornsilk"))
-title(main = list("Las 25 palabras más frecuentes", font = 2))
-```
-
-Una vez, que sabemos las palabras con mayor frecuencia, podemos proceder a agruparlas por sinónimos:
-
-
-
-```{r}
-# http://mccormickml.com/2016/04/12/googles-pretrained-word2vec-model-in-python/
-# https://github.com/mukul13/rword2vec
-
-#library(devtools) # hace falta esta librería para que funcione
-#install_github("mukul13/rword2vec") # nos instalamos la libreria desde Github
-#library(rword2vec)
-
-#terms = c("pain", "taking", "drug", "also")
-#dist_terms = c()
-#for (i in 1:4) # calculamos la distancia de la palabra a sus sinónimos
-#  dist_terms[i] = distance(file_name = "GoogleNews-vectors-negative300.bin", search_word = terms[i], num = 5)
-#  dist_terms
-```
-
-```{r, include=FALSE}
-#copia_dist_terms <- dist_terms
-```
-
-Para sustituir las palabras en el texto, se ha uso de la función `gsub(pattern, replacement, x, ignore.case = FALSE, perl = FALSE, fixed = FALSE, useBytes = FALSE)`. 
-
-```{r, include=FALSE}
-#library(stringr)
-
-# lo pasamos a matriz
-#dist_terms <- as.matrix(dist_terms)
-#dist_terms[2] <- as.vector(dist_terms[2])
-# str_to_lower(dist_terms[[2]][3])
-
-# terms = c("pain", "taking", "drug", "also")
-# dist_terms[1] <- as.vector(dist_terms[1])
-# dist_terms[1]
-# dist_terms[2] <- as.vector(dist_terms[2])
-# dist_terms[2]
-# dist_terms[3] <- as.vector(dist_terms[3])
-# dist_terms[3]
-# dist_terms[4] <- as.vector(dist_terms[4])
-# dist_terms[4]
-
-#benefits_corpus
-
-# for (i in 1:4)
-#   for (j in 1:5)
-#     dist_terms[i] <- as.vector(dist_terms[i])
-#     # Convertimos las palabras en minúsculas con "str_to_lower"
-#     dist_terms_to_lower <- str_to_lower(dist_terms[[i]][j], locale = "en")
-#     benefits_corpus <- gsub(dist_terms_to_lower, terms[i], benefits_corpus)
-
-# Sale de distinta manera
-#benefits_corpus
-
-#benefits_corpus[4]$content
-
-```
-
 
 
 <!-------------------------------------------------------------------------------------------->
@@ -718,21 +537,21 @@ El siguiente paso consiste en reducir el número de palabras totales con las que
 Sin embargo, realizar el análisis de nuestros datos con ambas palabras no tiene gran relevancia, ya que una no aporta nada respecto a la otra. Este es un ejemplo del tipo de casos que se nos dan en nuestro dataset. Igual ocurre con "reduce" y "reduced", por ejemplo. Este tipo de situaciones son las que intentamos corregir con este paso. Vamos a ver un ejemplo de este suceso, que se da por ejemplo en los siguientes valores del corpus (y en muchos más). 
 
 ```{r}
-inspect(benefits_corpus[183])
-inspect(benefits_corpus[213])
+inspect(benefits_corpus_new[183])
+inspect(benefits_corpus_new[213])
 ```
 
 A continuación, aplicamos el proceso de stemming mediante la siguiente orden:
 
 ```{r, warning=FALSE}
-benefits_corpus <- tm_map(benefits_corpus, stemDocument)
+benefits_corpus_new <- tm_map(benefits_corpus_new, stemDocument)
 ```
 
 Si ahora volvemos a mostrar el contenido de dichas opiniones, podemos ver que el stemming se ha hecho efectivo: donde ponía \textit{benefits}, ahora pone \textit{benefit}, como se puede comprobar si volvemos a mostrar dichos elementos del corpus. De hecho, si nos fijamos, no solo esta palabra ha resultado modificada, sino que se han resumido muchas más palabras en comparación a como teníamos los documentos en el momento previo a la aplicación del método \textit{Stem}. Desde este momento, ya tenemos nuestro conjunto reducido a nivel de concepto.
 
 ```{r}
-inspect(benefits_corpus[183])
-inspect(benefits_corpus[213])
+inspect(benefits_corpus_new[183])
+inspect(benefits_corpus_new[213])
 ```
 
 <!-------------------------------------------------------------------------------------------->
@@ -742,51 +561,47 @@ inspect(benefits_corpus[213])
 Hasta el momento hemos hecho distintos cambios en el texto de nuestro dataset. No solo hemos modificado algunas palabras, sino que también hemos borrado otras muchas. Por ello, es adecuado asegurarnos que no hay más espacios en blanco que los que separan las palabras del texto. Para asegurarnos de ello, podemos ejecutar la siguiente orden, que se encarga de suprimir los espacios en blanco sobrantes.
 
 ```{r, warning=FALSE}
-benefits_corpus <- tm_map(benefits_corpus, stripWhitespace) 
+benefits_corpus_new <- tm_map(benefits_corpus_new, stripWhitespace) 
 ```
 
 
+### 2.2.10. Term Document Matrix
 
-
-
-
-
-
-
-
-# Term Document Matrix
 Ahora vamos a mapear nuestro corpus creando una matriz de términos, donde las filas corresponden a los documentos y las columnas a los términos. Para ello usaremos la función TermDocumentMatrix:
+
 ```{r}
-matrix_corpus <- TermDocumentMatrix(benefits_corpus)
+matrix_corpus <- TermDocumentMatrix(benefits_corpus_new)
 ```
-Podemos observar que tenemos 5838 términos, esto quiere decir que tenemos 5838 palabras diferentes en nuestro Corpus,
-## Frecuencia de palabras
+
+Podemos observar que tenemos 5838 términos, esto quiere decir que tenemos 5838 palabras diferentes en nuestro Corpus. Obtengamos la *frecuencia de las palabras*:
+
 ```{r}
 class(matrix_corpus)
 ```
+
 Como podemos ver, actualmente aún no tenemos nuestros datos en la matriz que buscamos, sino en un vector, por tanto:
+
 ```{r}
 matrix_corpus <- as.matrix(matrix_corpus)
 class(matrix_corpus)
 dim(matrix_corpus) 
 ```
-Con este método, hemos obtenido la ocurrencia de las palabras que tenemos en nuestro dataset para cada uno de los documentos/comentarios. Esta matriz tiene 5838 columnas, que representa la totalidad de palabras diferentes que hay en los comentarios de la columna \textit{benefitsReview}, y 3107 filas, donde cada una representa un comentario. 
-Por tanto, en la fila iésima la matriz, tendremos la ocurrencia de las palabras en \textit{benefitsReview} que existen en el comentario \textit{i}.
+
+Con este método, hemos obtenido la ocurrencia de las palabras que tenemos en nuestro dataset para cada uno de los documentos/comentarios. Esta matriz tiene 5838 columnas, que representa la totalidad de palabras diferentes que hay en los comentarios de la columna \textit{benefitsReview}, y 3107 filas, donde cada una representa un comentario. Por tanto, en la fila iésima la matriz, tendremos la ocurrencia de las palabras en \textit{benefitsReview} que existen en el comentario \textit{i}.
 
 ```{r}
-# suma las filas
+# Sumamos las filas
 suma_matrix_corpus <- rowSums(matrix_corpus)
 head(suma_matrix_corpus,5)
 
-# los ordena de mayor a menor y muestra los 10 primeros
+# Ordenanamos de mayor a menor y muestra los 10 primeros
 ordena_mayor_matrix_corpus <- sort(suma_matrix_corpus, decreasing = TRUE)
 head(ordena_mayor_matrix_corpus,10)
 copia_ordena_mayor = ordena_mayor_matrix_corpus # Para graficos (evitando data.frame)
 
-# los ordena de menor a mayor y muestra los 10 primeros
+# Ordenanamos de menor a mayor y muestra los 10 primeros
 ordena_menor_matrix_corpus <- sort(suma_matrix_corpus, decreasing = FALSE)
 head(ordena_menor_matrix_corpus,10)
-
 ```
 
 
@@ -795,7 +610,8 @@ head(ordena_menor_matrix_corpus,10)
 ordena_mayor_matrix_corpus <- data.frame(palabra = names(ordena_mayor_matrix_corpus), frec = ordena_mayor_matrix_corpus)
 ```
 
-Creamos nube de palabras:
+Creamos la nube de palabras:
+
 ```{r}
 # instalar paquete worldcloud
 
@@ -809,18 +625,19 @@ Creamos nube de palabras:
 ```
 
 Mostramos las más frecuentes:
+
 ```{r}
 ordena_mayor_matrix_corpus[1:20,]
 ```
 
-### Gráficas
+Y obtenemos la *gráfica*:
 
 ```{r}
 copia_ordena_mayor <- as.matrix(copia_ordena_mayor)
 barplot(copia_ordena_mayor[1:10,],  xlab="Palabras", ylab="Número de frecuencia",
         col = c("lightblue", "mistyrose", "lightcyan",
                 "lavender", "cornsilk"))
-title(main = list("Las diez palabras más frecuentes", font = 4))
+title(main = list("Las diez palabras más frecuentes después del preprocesamiento", font = 4))
 ```
 
 

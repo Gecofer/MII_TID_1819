@@ -46,7 +46,7 @@ print(document_ngramas)
 ```
 
 A continuación, vamos a intentar aplicarle la técnica de n-gramas. Lo primero es instalar y cargar todas las librerías necesarias. 
-```{r}
+```{r, warning=FALSE}
 library(dplyr)
 library(tidytext)
 ```
@@ -55,17 +55,69 @@ library(tidytext)
 tidy_document <- data_frame(line = 1:3107, text = datos_train$benefitsReview)
 
 document_bigrama <- tidy_document %>%
-  unnest_tokens(bigram, text, token = "ngrams", n = 2) 
+  unnest_tokens(word, text, token = "ngrams", n = 1) 
 
 head(document_bigrama)
-
-
 ```
 
 Pasos siguientes:
 
 1. Quitar los stops words, que no lo consigo.
 2. Sacar un recuento.
+
+```{r}
+# Cogemos los stopwords que ya quitamos (hacer el corpus)
+library("tm")
+
+benefits_review_data = as.vector(datos_train$benefitsReview)
+benefits_corpus = (VectorSource(benefits_review_data))
+benefits_corpus <- Corpus(benefits_corpus)
+
+benefits_corpus <- tm_map(benefits_corpus, content_transformer(removeWords), stopwords("english"))
+
+# -----------
+
+tidy_dat <- tidyr::gather(dat, key, word) %>% select(word)
+
+tokens <- tidy_dat %>% 
+  unnest_tokens(word, word) %>% 
+  dplyr::count(word, sort = TRUE) %>% 
+  ungroup()
+
+
+data(stop_words) # stop_words de la librería de tidytext
+
+# We can remove stop words (kept in the tidytext dataset stop_words) with an anti_join().
+document_bigrama_stopwords <- document_bigrama %>% anti_join(stop_words)
+document_bigrama_stopwords
+
+# Para solucionar el error de los stopowords: 
+# https://github.com/duttashi/text-analysis/issues/4
+# https://github.com/r-spatial/sf/issues/412
+# Both tidy_document and stop_words have a list of words listed under a column named word; however, the columns are inverted: in stop_words, it's the first column, while in your dataset it's the second column. That's why the command is unable to "match" the two columns and compare the words. Try this:
+
+# Para que funcione tienen que ser anagramas, y no bigramas.
+```
+
+```{r}
+document_bigrama_stopwords %>%
+  count(word, sort = TRUE) 
+```
+
+
+
+```{r}
+document_bigrama %>%
+  # anti_join(stop_words)
+  count(word, sort = TRUE) %>%
+  filter(n > 600) %>%
+  mutate(word = reorder(word, n)) %>%
+  ggplot(aes(word, n)) +
+  geom_col() +
+  xlab(NULL) +
+  coord_flip()
+```
+
 
 Estoy utilizando los enlaces:
 https://www.tidytextmining.com/tidytext.html#word-frequencies

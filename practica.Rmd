@@ -462,6 +462,386 @@ effects_train_corpus[[7]]$content
 ```
 
 
+
+<!-------------------------------------------------------------------------------------------->
+
+### Correlación
+
+
+```{r}
+library(gridExtra)
+library(scales)
+
+# Se aplica la función de limpieza y tokenización a cada tweet
+tidy_document1 <- data_frame(line1 = 1:3107, text = datos_train$benefitsReview)
+document_bigrama1 <- tidy_document1 %>%
+  unnest_tokens(benefits, text, token = "ngrams", n = 1) 
+tidy_document2 <- data_frame(line2 = 1:3107, text = datos_train$sideEffectsReview)
+document_bigrama2 <- tidy_document2 %>%
+  unnest_tokens(effects, text, token = "ngrams", n = 1) 
+
+
+r <- merge(document_bigrama1, document_bigrama2)
+
+tweets_spread <- tidy_document2 %>% group_by(line, benefits) %>% count(benefits) %>%
+                 spread(key = line, value = n, fill = NA, drop = TRUE)
+
+cor.test(~ document_bigrama1 + document_bigrama1, method = "pearson", data = tweets_spread)
+
+cbindPad <- function(...){
+args <- list(...)
+n <- sapply(args,nrow)
+mx <- max(n)
+pad <- function(x, mx){
+    if (nrow(x) < mx){
+        nms <- colnames(x)
+        padTemp <- matrix(NA, mx - nrow(x), ncol(x))
+        colnames(padTemp) <- nms
+        if (ncol(x)==0) {
+          return(padTemp)
+        } else {
+        return(rbind(x,padTemp))
+          }
+    }
+    else{
+        return(x)
+    }
+}
+rs <- lapply(args,pad,mx)
+return(do.call(cbind,rs))
+}
+
+res <- cbindPad(document_bigrama1,document_bigrama2)
+
+while (res){
+  if (res$line1 != res$line2)
+    
+}
+
+
+dim(document_bigrama1)
+
+# de cada variable en una columna. 
+tweets_spread <- tidy_document2 %>% group_by(line, effects) %>% count(effects) %>%
+                 spread(key = line, value = n, fill = NA, drop = TRUE)
+
+
+res <- cbind(document_bigrama1,document_bigrama2)
+
+
+tweets %>% select(texto_tokenizado) %>% head()
+tweets %>% slice(1) %>% select(texto_tokenizado) %>% pull()
+tweets_tidy <- tweets %>% select(-texto) %>% unnest()
+tweets_tidy <- tweets_tidy %>% rename(token = texto_tokenizado)
+tweets_spread <- tweets_tidy %>% group_by(word, token) %>% count(token) %>%
+                 spread(key = autor, value = n, fill = NA, drop = TRUE)
+
+cor.test(~ mayoredlee + elonmusk, method = "pearson", data = tweets_spread)
+```
+
+
+```{r}
+panel.cor <- function(x, y, digits=2, prefix="", cex.cor) { 
+  usr <- par("usr"); on.exit(par(usr))
+  par(usr = c(0, 1, 0, 1))
+  r <- abs(cor(x, y))
+  txt <- format(c(r, 0.123456789), digits=digits)[1] 
+  txt <- paste(prefix, txt, sep="") 
+  if(missing(cex.cor)) cex <- 0.8/strwidth(txt) 
+  text(0.5, 0.5, txt, cex = cex * r)
+}
+pairs(cbind(datos_train$sideEffectsNumber, datos_train$effectivenessNumber), lower.panel=panel.smooth,upper.panel=panel.cor)
+```
+
+
+```{r}
+res <- cor.test(datos_train$sideEffectsNumber, datos_train$effectivenessNumber, 
+                    method = "pearson")
+res
+```
+
+
+
+```{r}
+set.seed(1234)
+X <- rep(c("A","B"),20)
+Y <- sample(c("C","D"),40,replace=T)
+
+table(X,Y)
+chisq.test(table(X,Y),correct=F)
+# I don't use Yates continuity correction
+
+#Let's make a matrix with tons of columns
+Data <- as.data.frame(
+          matrix(
+            sample(letters[1:3],2000,replace=T),
+            ncol=25
+          )
+        )
+
+# You want to select which columns to use
+columns <- c(3,7,11,24)
+vars <- names(Data)[columns]
+
+# say you need to know which ones are associated with each other.
+out <-  apply( combn(columns,2),2,function(x){
+          chisq.test(table(Data[,x[1]],Data[,x[2]]),correct=F)$p.value
+        })
+
+out <- cbind(as.data.frame(t(combn(vars,2))),out)
+
+```
+
+
+
+```{r}
+library(corrplot)
+corrplot(cbind(datos_train$sideEffectsNumber, datos_train$effectivenessNumber), type = "upper", order = "hclust", 
+         tl.col = "black", tl.srt = 45)
+```
+
+
+```{r}
+cor(datos_train)
+
+tweets_spread <- tweets_tidy %>% group_by(autor, token) %>% count(token) %>%
+                 spread(key = autor, value = n, fill = NA, drop = TRUE)
+
+cor.test(~ datos_train$benefitsReview + datos_train$benefitsReview, method = "pearson", data = datos_train)
+```
+
+
+
+```{r}
+install.packages("corrplot")
+library(corrplot)
+corrplot(datos_train, type = "benefitsReview", order = "sideEffectsReview", 
+         tl.col = "black", tl.srt = 45)
+```
+
+
+```{r}
+corpus <- process_texts(datos_train$benefitsReview, stem= TRUE)
+dtm <- DocumentTermMatrix(corpus) 
+findAssocs (dtm, "benefit", corlimit = 0.3)
+```
+
+```{r}
+library(gridExtra)
+library(scales)
+
+tokens <- tidy_dat %>% 
+  unnest_tokens(word, word) %>% 
+  dplyr::count(word, sort = TRUE) %>% 
+  ungroup()
+
+tidy_dat <- tidyr::gather(dat, key, word) %>% select(word)
+
+
+
+
+document_bigrama <- tidy_document %>%
+  unnest_tokens(word, text, token = "ngrams", n = 1) 
+
+tweets_spread <- tweets_tidy %>% group_by(autor, token) %>% count(token) %>%
+                 spread(key = autor, value = n, fill = NA, drop = TRUE)
+
+cor.test(~ mayoredlee, method = "pearson", data = tweets_spread)
+```
+```{r}
+library("ggpubr")
+gscatter(datos_train, x = "benefitsReview", y = "sideEffectsReview", 
+          add = "reg.line", conf.int = TRUE, 
+          cor.coef = TRUE, cor.method = "pearson",
+          xlab = "Miles/(US) gallon", ylab = "Weight (1000 lbs)")
+
+ggqqplot(datos_train$benefitsReview, ylab = "benefitsReview")
+res <- cor.test(as.vector(datos_train$benefitsReview),as.vector(datos_train$sideEffectsReview), 
+                    method = "pearson")
+```
+```{r}
+library(gridExtra)
+library(scales)
+
+tweets_tidy <- tweets %>% select(-texto) %>% unnest()
+
+tweets_spread <- tweets_tidy %>% group_by(word, token) %>% count(token) %>%
+                 spread(key = word, value = n, fill = NA, drop = TRUE)
+
+cor.test(~ mayoredlee + elonmusk, method = "pearson", data = tweets_spread)
+```
+
+```{r}
+library('dplyr')
+library('purrr')
+
+# Se unen todos los tweets en un único dataframe
+try_filter <- function(df) {
+  tryCatch(
+    df %>%
+      filter(Sepal.Length == 4.6),
+    error = function(e) data.frame())
+}
+
+map_df(list(datos_train$benefitsReview, NA, datos_train$sideEffectsReview), try_filter)
+
+
+tweets <- bind_rows(datos_train$benefitsReview, datos_train$sideEffectsReview)
+
+tweets_tidy <- tweets %>% select(-texto) %>% unnest()
+
+tweets_spread <- tweets_tidy %>% group_by(autor, token) %>% count(token) %>%
+                 spread(key = autor, value = n, fill = NA, drop = TRUE)
+```
+```{r}
+# Juntamos las columnas datos_train$benefitsReview y datos_train$sideEffectsReview
+```
+
+<!-------------------------------------------------------------------------------------------->
+
+### Representación gráfica de las frecuencias
+
+Frecuencias para benefits
+
+
+```{r}
+tidy_document <- data_frame(line = 1:3107, text = datos_train$benefitsReview)
+
+document_bigrama <- tidy_document %>%
+  unnest_tokens(word, text, token = "ngrams", n = 1) 
+
+dim(document_bigrama)
+head(document_bigrama)
+
+data(stop_words) # stop_words de la librería de tidytext
+
+# We can remove stop words (kept in the tidytext dataset stop_words) with an anti_join().
+document_bigrama_stopwords <- document_bigrama %>% anti_join(stop_words)
+dim(document_bigrama_stopwords)
+
+document_bigrama_stopwords %>%
+  count(word, sort = TRUE) 
+
+head(document_bigrama_stopwords)
+
+class(document_bigrama)
+class(document_bigrama_stopwords)
+
+document_bigrama %>%
+  #anti_join(stop_words)
+  count(word, sort = TRUE) %>%
+  filter(n > 600) %>%
+  mutate(word = reorder(word, n)) %>%
+  ggplot(aes(word, n)) +
+  geom_col() +
+  xlab(NULL) +
+  coord_flip()
+```
+
+
+
+```{r}
+# https://rstudio-pubs-static.s3.amazonaws.com/40817_63c8586e26ea49d0a06bcba4e794e43d.html
+
+dtm <- DocumentTermMatrix(benefits_corpus)
+dtm
+# Frequency
+freq <- sort(colSums(as.matrix(dtm)), decreasing=TRUE)
+wf <- data.frame(word=names(freq), freq=freq)
+# Plot Histogram
+subset(wf, freq>250)    %>%
+        ggplot(aes(word, freq)) +
+        geom_bar(stat="identity", fill="darkred", colour="darkgreen") +
+        theme(axis.text.x=element_text(angle=45, hjust=1))
+```
+
+```{r}
+# https://rstudio-pubs-static.s3.amazonaws.com/40817_63c8586e26ea49d0a06bcba4e794e43d.html
+
+# Nos quedamos con la única columna del dataset que nos interesa. 
+# Necesitamos obtenerla en forma de vector, y no como un dataframe de una columna, 
+# por lo que usamos as.vector para hacer la conversión
+benefits_train_review_data = as.vector(datos_train$benefitsReview)
+
+# Lo convertimos en la estructura de documento, y lo guardamos ya en el corpus 
+# que lo vamos a utilizar
+benefits_train_corpus = (VectorSource(benefits_train_review_data))
+
+# Creamos el propio corpus
+benefits_train_corpus <- Corpus(benefits_train_corpus)
+
+benefits_train_corpus <- tm_map(benefits_train_corpus, stripWhitespace) 
+
+BigramTokenizer <- function(x) NGramTokenizer(x, 
+                                              Weka_control(min = 2, max = 2))
+dtm <- DocumentTermMatrix(benefits_train_corpus, control = list(tokenize = BigramTokenizer))
+freq <- sort(colSums(as.matrix(dtm)), decreasing=TRUE)
+wof <- data.frame(word=names(freq), freq=freq)
+
+pl <- ggplot(subset(wof, freq>350) ,aes(word, freq))
+pl <- pl + geom_bar(stat="identity", fill="darkgreen", colour="blue")
+pl + theme(axis.text.x=element_text(angle=45, hjust=1)) + ggtitle("Bi-Gram Frequency") 
+```
+
+
+
+
+
+
+### PCA
+
+```{r}
+library(FactoMineR)
+
+pca2.nci <- PCA(X = datos_train, scale.unit = TRUE, ncp = 64, graph = FALSE)
+```
+
+
+
+
+
+
+```{r}
+# https://www.tidytextmining.com/tidytext.html#word-frequencies
+
+library(stringr)
+
+bronte <- data_frame(line = 1:3107, text = datos_train$benefitsReview)
+
+tidy_bronte <- bronte %>%
+  unnest_tokens(word, text, token = "ngrams", n = 1) %>%
+  anti_join(stop_words)
+
+tidy_bronte %>%
+  count(word, sort = TRUE)
+
+library(tidyr)
+
+frequency <- bind_rows(mutate(tidy_bronte, author  = "Brontë Sisters")) %>% 
+  mutate(word = str_extract(word, "[a-z']+")) %>%
+  count(word) %>%
+  group_by(word) %>%
+  mutate(proportion = n / sum(n)) %>% 
+  select(-n) %>% 
+  spread(word, proportion) %>% 
+  gather(word, proportion)
+
+library(scales)
+
+# expect a warning about rows with missing values being removed
+ggplot(frequency, aes(x = proportion)) +
+  geom_abline(color = "gray40", lty = 2) +
+  geom_jitter(alpha = 0.1, size = 2.5, width = 0.3, height = 0.3) +
+  geom_text(aes(label = word), check_overlap = TRUE, vjust = 1.5) +
+  scale_x_log10(labels = percent_format()) +
+  scale_y_log10(labels = percent_format()) +
+  scale_color_gradient(limits = c(0, 0.001), low = "darkslategray4", high = "gray75") +
+  facet_wrap(~word, ncol = 2) +
+  theme(legend.position="none") +
+  labs(y = "Jane Austen", x = NULL)
+```
+
+
 <!-------------------------------------------------------------------------------------------->
 
 ### 2.2.4. Eliminar signos de puntuación
@@ -571,6 +951,103 @@ effects_test_corpus <- tm_map(effects_test_corpus, content_transformer(removeWor
 Ahora ya hemos eliminado las stopwords de forma correcta.
 
 <!-------------------------------------------------------------------------------------------->
+
+### TFID
+
+```{r}
+library(quanteda) 
+
+dataframe<-data.frame(text=unlist(sapply(benefits_train_corpus, `[`)), stringsAsFactors=F)
+dataframe[[1]][1:23]
+
+vector <- c()
+for (i in 1:5){ # calculamos la distancia de la palabra a sus sinónimos
+  vector[i] <- dataframe[[1]][i]
+}
+
+dataframe[[1]][3]
+class(vector)
+vector[1:5]
+
+#doc <- c( "The sky is blue.", "The sun is bright today.",
+   #       "The sun in the sky is bright.", "We can see the shining sun, the bright sun." )
+
+doc_corpus <-Corpus( VectorSource(vector) )
+
+#doc_corpus <- benefits_train_corpus
+
+#doc_corpus
+
+
+#control_list <- list(removePunctuation = TRUE, stopwords = TRUE, tolower = TRUE)
+
+tdm <- TermDocumentMatrix(doc_corpus)
+
+( tf <- as.matrix(tdm) )
+
+
+
+################
+
+terms <- ( idf <- log( ncol(tf) / ( 1 + rowSums(tf != 0) ) ) )
+
+( idf <- diag(idf) )
+
+tf_idf <- crossprod(tf, idf)
+colnames(tf_idf) <- rownames(tf)
+tf_idf
+
+
+t <- tf_idf / sqrt( rowSums( tf_idf^2 ) )
+t
+
+v <- c()
+for (i in 1:30){
+  v[i] <- sum(t[,i])
+}
+
+
+# Convertimos a matriz "terms_frecuency_benefits_corpus_100"
+terms1 <- as.matrix(terms)
+terms1
+# Me quedo solo con los términos
+terms1 <- rownames(terms1)
+
+terms1_5 <- terms1[1:30]
+v
+
+x <- cbind(terms1_5,v)
+x
+x1 <- as.data.frame(x)
+x1
+
+
+z <- x1[order(v, decreasing = TRUE),]
+
+z
+
+
+```
+
+
+```{r}
+ggplot() + 
+ geom_bar(data=z,aes(x=z$terms1_5, y=z$v), stat='identity', position='dodge') 
+```
+
+
+
+
+<!-------------------------------------------------------------------------------------------->
+
+
+
+
+
+
+
+
+
 
 ### 2.2.7. Agrupación de sinónimos:
 
@@ -782,4 +1259,37 @@ barplot(copia_ordena_mayor[1:10,],  xlab="Palabras", ylab="Número de frecuencia
                 "lavender", "cornsilk"))
 title(main = list("Las diez palabras más frecuentes después del preprocesamiento", font = 4))
 ```
+
+<!-------------------------------------------------------------------------------------------->
+
+### Valores perdidos
+
+Tras el proceso de limpieza anterior en un volumen tan grande de datos cabe esperar que algún documento (tuit) estuviera formado por tan solo palabras vacías, enlaces o combinaciones de estos, es por ello, que por medio de filtrado básico de R se obtienen aquellos que no contienen ninguna palabra y se elimina del conjunto del dataset para evitar problemas en los procesos posteriores.
+
+```{r}
+# https://github.com/joseangeldiazg/twitter-text-mining/blob/master/ner.R
+# Localizamos posibles valores perdidos que se hayan generado tras el proceso de limpieza
+which(benefits_train_corpus$content=="")
+which(benefits_train_corpus$content==" ")
+which(benefits_train_corpus$content=="  ")
+which(benefits_train_corpus$content=="   ")
+
+# Vemos que no hay muchos vacios 
+benefits_train_corpus<-benefits_train_corpus[which(benefits_train_corpus$content!="")]
+benefits_train_corpus<-benefits_train_corpus[which(benefits_train_corpus$content!=" ")]
+benefits_train_corpus<-benefits_train_corpus[which(benefits_train_corpus$content!="  ")]
+benefits_train_corpus<-benefits_train_corpus[which(benefits_train_corpus$content!="   ")]
+```
+
+
+
+
+
+
+
+
+
+
+
+
 

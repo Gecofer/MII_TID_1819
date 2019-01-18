@@ -95,10 +95,33 @@ inspect(head(rulesConsiderablyEffective,100))
 inspect(head(rulesModeratelyEffective,100))
 inspect(head(rulesMarginallyEffective,100))
 
-png("Mi gráfico.png",width=2400,height=1720,units="px",
-    pointsize=12,bg="white",res=300)
+png("Innefective.png",width=1800,height=1700,units="px",
+    pointsize=10,bg="white",res=300)
 plot(rulesInnefective, method="graph")
 dev.off()
+
+png("HighlyEffective.png",width=1800,height=1700,units="px",
+    pointsize=10,bg="white",res=300)
+plot(rulesHiglyEffective, method="graph")
+dev.off()
+
+png("ConsiderablyEffective.png",width=1800,height=1700,units="px",
+    pointsize=10,bg="white",res=300)
+plot(rulesConsiderablyEffective, method="graph")
+dev.off()
+
+png("ModeratelyEffective.png",width=1800,height=1700,units="px",
+    pointsize=10,bg="white",res=300)
+plot(rulesModeratelyEffective, method="graph")
+dev.off()
+
+
+png("MarginallyEffective.png",width=1800,height=1700,units="px",
+    pointsize=10,bg="white",res=300)
+plot(rulesMarginallyEffective, method="graph")
+dev.off()
+
+
 
 # Cuando tenemos una regla con una única palabra en el antecedente y en el consecuente deben de ir unidas en el texto
 

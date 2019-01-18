@@ -308,8 +308,18 @@ datos_train = datos_train[-8] # Eliminar columna para el commentsReview en el tr
 datos_test = datos_test[-8] # Eliminar columna para el commentsReview en el test
 ```
 
+### 2.2.1. Eliminar filas
 
-### 2.2.2. Categorización de variables
+La fila 387 se debe de ir, porque tiene como comentarios en benefitsReviews ""
+La fila 928 se debe de ir porque tiene en condition "ra, sj�gren syndrome"
+La fila 3105 se debe de ir porque tienen en benefitsReview "---"
+
+```{r}
+datos_train = datos_train[-c(387,928, 3105),] # Eliminar filas 
+
+```
+
+### 2.2.2. Cuantificación de variables
 
 Para poder analizar y trabajar más fácilmente con la información de *sideEffects* y  *effectiveness*, se va a realizar una conversión de dichas columnas a forma cuantitativa, es decir, vamos asignar una etiqueta numérica a cada valor pertinente, tanto para para _train_ como _test_. 
 
@@ -373,7 +383,83 @@ Comprobamos que se ha creado la nueva columna *effectivenessNumber*, y que se ha
 head(datos_train$effectivenessNumber, 10) 
 ```
 
-Por tanto, una vez eliminadas las columnas anteriores y modificadas las necesarias, ya podemos continuar con el procesamiento de los datos. Para ello, lo primero tenemos que hacer es cargar la librería que procesa los datos de tipo texto en R, para la construcción y manipulación del corpus. La librería más conocida se llama \textbf{tm}, aunque también haremos uso del paquete \textbf{SnowballC} para realizar el _Stemming_. Si no tenemos instaladas las librerías:
+<!-------------------------------------------------------------------------------------------->
+
+### 2.2.3. Análisis exploratorio
+
+Antes de comenzar con el análisis exploratorio, vamos realizar distintas gráfica de barras con el fin de comprender mejor los datos, antes del procesamiento. Primero realizaremos un gráfico de barras de las clasificaciones del medicamente por parte del paciente.
+
+```{r}
+# Librerías necesarias para las graficas siguientes
+library(magrittr)
+library(plyr)
+library(RColorBrewer)
+```
+
+```{r, include=FALSE, eval=FALSE}
+datos_train %>% 
+  count(rating) %>%
+    ggplot(aes(x = factor(rating), y = n, fill = factor(rating))) +
+        geom_col(color = "black") +
+        geom_text(aes(label = n), position = position_stack(vjust = 0.5)) +
+        scale_fill_brewer(palette="Paired") +
+        labs(x = "Puntuación del medicamento", y = "Número de medicamentos") +
+        ggtitle("Clasificación del medicamento por parte del paciente") +
+        theme(legend.position = "none", plot.title = element_text(hjust = 0.5, face = "bold"))
+```
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.85\textwidth]{imagenes/grafica_rating.png}
+    \caption{Clasificación del medicamento por parte del paciente}
+    \label{grafica_rating}
+\end{figure}
+
+4. **sideEffects** (categorical): clasificación de los efectos secundarios del medicamento según el paciente (5 posibles valores)
+En donde el 1 significa que el medicamento tiene pocos efectos secundarios y el 5 que tiene muchos efectos secundarios.
+
+```{r, include=FALSE, eval=FALSE}
+datos_train %>% 
+  count(sideEffectsNumber) %>%
+    ggplot(aes(x = factor(sideEffectsNumber), y = n, fill = factor(sideEffectsNumber))) +
+        geom_col(color = "black") +
+        geom_text(aes(label = n), position = position_stack(vjust = 0.5)) +
+        scale_fill_brewer(palette="Paired") +
+        labs(x = "Puntuación del medicamento", y = "Número de medicamentos") +
+        ggtitle("Clasificación de los efectos secundarios del medicamento según el paciente") +
+        theme(legend.position = "none", plot.title = element_text(hjust = 0.5, face = "bold"))
+```
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.85\textwidth]{imagenes/grafica_sideEffectsNumber.png}
+    \caption{Clasificación de los efectos secundarios del medicamento según el paciente}
+    \label{grafica_sideEffectsNumber}
+\end{figure}
+
+3. **effectiveness** (categorical): clasificación de la efectividad del medicamento según el paciente (5 posibles valores)
+En donde el 1 significa que el medicamento tiene poca efectividad y el 5 que tiene mucha efectividad.
+
+```{r, include=FALSE, eval=FALSE}
+datos_train %>% 
+  count(effectivenessNumber) %>%
+    ggplot(aes(x = factor(effectivenessNumber), y = n, fill = factor(effectivenessNumber))) +
+        geom_col(color = "black") +
+        geom_text(aes(label = n), position = position_stack(vjust = 0.5)) +
+        scale_fill_brewer(palette="Paired") +
+        labs(x = "Puntuación del medicamento", y = "Número de medicamentos") +
+        ggtitle("Clasificación de la efectividad del medicamento según el paciente") +
+        theme(legend.position = "none", plot.title = element_text(hjust = 0.5, face = "bold")) 
+```
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.85\textwidth]{imagenes/grafica_effectivenessNumber.png}
+    \caption{Clasificación de la efectividad del medicamento según el paciente}
+    \label{grafica_sideEffectsNumber}
+\end{figure}
+
+Por tanto, una vez comprendidos los datos y eliminadas las columnas anteriores y modificadas las necesarias, ya podemos continuar con el procesamiento de los datos. Para ello, lo primero tenemos que hacer es cargar la librería que procesa los datos de tipo texto en R, para la construcción y manipulación del corpus. La librería más conocida se llama \textbf{tm}, aunque también haremos uso del paquete \textbf{SnowballC} para realizar el _Stemming_. Si no tenemos instaladas las librerías:
 
 ```{r, warning=FALSE}
 # Paquete para minería de datos, permite procesar datos de tipo texto
@@ -387,7 +473,7 @@ library("SnowballC")
 
 <!-------------------------------------------------------------------------------------------->
 
-### 2.2.3. Creación del corpus
+### 2.2.4. Creación del corpus
 
 Para poder obtener la estructura con la que vamos a procesar nuestra información, debemos obtener un vector con documentos. En nuestro caso, cada uno de los documentos se corresponde con una opinión sobre un fármaco (*benefitsReview*) y los efectos que tiene (*sideEffectsReview*). Para ello, primero debemos de construir un vector con todas los opiniones del _dataframe_ y convertir cada elemento del vector al formato de documento. Podemos usar la función _VectorSource_ para hacer esta conversión. Se deberán realizar todas las modificaciones tanto para el conjunto train como test. 
 
@@ -461,241 +547,26 @@ inspect(effects_train_corpus[7])
 effects_train_corpus[[7]]$content
 ```
 
-
-
 <!-------------------------------------------------------------------------------------------->
 
-### Correlación
+### 2.2.5. Correlación
 
-
-```{r}
-library(gridExtra)
-library(scales)
-
-# Se aplica la función de limpieza y tokenización a cada tweet
-tidy_document1 <- data_frame(line1 = 1:3107, text = datos_train$benefitsReview)
-document_bigrama1 <- tidy_document1 %>%
-  unnest_tokens(benefits, text, token = "ngrams", n = 1) 
-tidy_document2 <- data_frame(line2 = 1:3107, text = datos_train$sideEffectsReview)
-document_bigrama2 <- tidy_document2 %>%
-  unnest_tokens(effects, text, token = "ngrams", n = 1) 
-
-
-r <- merge(document_bigrama1, document_bigrama2)
-
-tweets_spread <- tidy_document2 %>% group_by(line, benefits) %>% count(benefits) %>%
-                 spread(key = line, value = n, fill = NA, drop = TRUE)
-
-cor.test(~ document_bigrama1 + document_bigrama1, method = "pearson", data = tweets_spread)
-
-cbindPad <- function(...){
-args <- list(...)
-n <- sapply(args,nrow)
-mx <- max(n)
-pad <- function(x, mx){
-    if (nrow(x) < mx){
-        nms <- colnames(x)
-        padTemp <- matrix(NA, mx - nrow(x), ncol(x))
-        colnames(padTemp) <- nms
-        if (ncol(x)==0) {
-          return(padTemp)
-        } else {
-        return(rbind(x,padTemp))
-          }
-    }
-    else{
-        return(x)
-    }
-}
-rs <- lapply(args,pad,mx)
-return(do.call(cbind,rs))
-}
-
-res <- cbindPad(document_bigrama1,document_bigrama2)
-
-while (res){
-  if (res$line1 != res$line2)
-    
-}
-
-
-dim(document_bigrama1)
-
-# de cada variable en una columna. 
-tweets_spread <- tidy_document2 %>% group_by(line, effects) %>% count(effects) %>%
-                 spread(key = line, value = n, fill = NA, drop = TRUE)
-
-
-res <- cbind(document_bigrama1,document_bigrama2)
-
-
-tweets %>% select(texto_tokenizado) %>% head()
-tweets %>% slice(1) %>% select(texto_tokenizado) %>% pull()
-tweets_tidy <- tweets %>% select(-texto) %>% unnest()
-tweets_tidy <- tweets_tidy %>% rename(token = texto_tokenizado)
-tweets_spread <- tweets_tidy %>% group_by(word, token) %>% count(token) %>%
-                 spread(key = autor, value = n, fill = NA, drop = TRUE)
-
-cor.test(~ mayoredlee + elonmusk, method = "pearson", data = tweets_spread)
-```
-
-
-```{r}
-panel.cor <- function(x, y, digits=2, prefix="", cex.cor) { 
-  usr <- par("usr"); on.exit(par(usr))
-  par(usr = c(0, 1, 0, 1))
-  r <- abs(cor(x, y))
-  txt <- format(c(r, 0.123456789), digits=digits)[1] 
-  txt <- paste(prefix, txt, sep="") 
-  if(missing(cex.cor)) cex <- 0.8/strwidth(txt) 
-  text(0.5, 0.5, txt, cex = cex * r)
-}
-pairs(cbind(datos_train$sideEffectsNumber, datos_train$effectivenessNumber), lower.panel=panel.smooth,upper.panel=panel.cor)
-```
-
-
-```{r}
-res <- cor.test(datos_train$sideEffectsNumber, datos_train$effectivenessNumber, 
-                    method = "pearson")
-res
-```
-
-
-
-```{r}
-set.seed(1234)
-X <- rep(c("A","B"),20)
-Y <- sample(c("C","D"),40,replace=T)
-
-table(X,Y)
-chisq.test(table(X,Y),correct=F)
-# I don't use Yates continuity correction
-
-#Let's make a matrix with tons of columns
-Data <- as.data.frame(
-          matrix(
-            sample(letters[1:3],2000,replace=T),
-            ncol=25
-          )
-        )
-
-# You want to select which columns to use
-columns <- c(3,7,11,24)
-vars <- names(Data)[columns]
-
-# say you need to know which ones are associated with each other.
-out <-  apply( combn(columns,2),2,function(x){
-          chisq.test(table(Data[,x[1]],Data[,x[2]]),correct=F)$p.value
-        })
-
-out <- cbind(as.data.frame(t(combn(vars,2))),out)
-
-```
-
-
-
-```{r}
-library(corrplot)
-corrplot(cbind(datos_train$sideEffectsNumber, datos_train$effectivenessNumber), type = "upper", order = "hclust", 
-         tl.col = "black", tl.srt = 45)
-```
-
-
-```{r}
-cor(datos_train)
-
-tweets_spread <- tweets_tidy %>% group_by(autor, token) %>% count(token) %>%
-                 spread(key = autor, value = n, fill = NA, drop = TRUE)
-
-cor.test(~ datos_train$benefitsReview + datos_train$benefitsReview, method = "pearson", data = datos_train)
-```
-
-
-
-```{r}
-install.packages("corrplot")
-library(corrplot)
-corrplot(datos_train, type = "benefitsReview", order = "sideEffectsReview", 
-         tl.col = "black", tl.srt = 45)
-```
-
-
-```{r}
-corpus <- process_texts(datos_train$benefitsReview, stem= TRUE)
-dtm <- DocumentTermMatrix(corpus) 
-findAssocs (dtm, "benefit", corlimit = 0.3)
-```
-
-```{r}
-library(gridExtra)
-library(scales)
-
-tokens <- tidy_dat %>% 
-  unnest_tokens(word, word) %>% 
-  dplyr::count(word, sort = TRUE) %>% 
-  ungroup()
-
-tidy_dat <- tidyr::gather(dat, key, word) %>% select(word)
+Una forma de medir la distancia es calcular la correlación entre un término y todos los demás de la matriz. Como en este caso, estamos usando variables textuales, no se recomienda hacer la correlación. Ya que está pensada para variables cuantitativas, y nosotgros disponemos de variables categoricas. Por otro lado, la correlación está relacionada con el análisis de componentes principales (PCA), por tanto, tampoco sería posible la realización de dicha técnica. 
 
 
 
 
-document_bigrama <- tidy_document %>%
-  unnest_tokens(word, text, token = "ngrams", n = 1) 
-
-tweets_spread <- tweets_tidy %>% group_by(autor, token) %>% count(token) %>%
-                 spread(key = autor, value = n, fill = NA, drop = TRUE)
-
-cor.test(~ mayoredlee, method = "pearson", data = tweets_spread)
-```
-```{r}
-library("ggpubr")
-gscatter(datos_train, x = "benefitsReview", y = "sideEffectsReview", 
-          add = "reg.line", conf.int = TRUE, 
-          cor.coef = TRUE, cor.method = "pearson",
-          xlab = "Miles/(US) gallon", ylab = "Weight (1000 lbs)")
-
-ggqqplot(datos_train$benefitsReview, ylab = "benefitsReview")
-res <- cor.test(as.vector(datos_train$benefitsReview),as.vector(datos_train$sideEffectsReview), 
-                    method = "pearson")
-```
-```{r}
-library(gridExtra)
-library(scales)
-
-tweets_tidy <- tweets %>% select(-texto) %>% unnest()
-
-tweets_spread <- tweets_tidy %>% group_by(word, token) %>% count(token) %>%
-                 spread(key = word, value = n, fill = NA, drop = TRUE)
-
-cor.test(~ mayoredlee + elonmusk, method = "pearson", data = tweets_spread)
-```
-
-```{r}
-library('dplyr')
-library('purrr')
-
-# Se unen todos los tweets en un único dataframe
-try_filter <- function(df) {
-  tryCatch(
-    df %>%
-      filter(Sepal.Length == 4.6),
-    error = function(e) data.frame())
-}
-
-map_df(list(datos_train$benefitsReview, NA, datos_train$sideEffectsReview), try_filter)
 
 
-tweets <- bind_rows(datos_train$benefitsReview, datos_train$sideEffectsReview)
 
-tweets_tidy <- tweets %>% select(-texto) %>% unnest()
 
-tweets_spread <- tweets_tidy %>% group_by(autor, token) %>% count(token) %>%
-                 spread(key = autor, value = n, fill = NA, drop = TRUE)
-```
-```{r}
-# Juntamos las columnas datos_train$benefitsReview y datos_train$sideEffectsReview
-```
+
+
+
+
+
+
+
 
 <!-------------------------------------------------------------------------------------------->
 
@@ -705,37 +576,37 @@ Frecuencias para benefits
 
 
 ```{r}
-tidy_document <- data_frame(line = 1:3107, text = datos_train$benefitsReview)
+# tidy_document <- data_frame(line = 1:3107, text = datos_train$benefitsReview)
 
-document_bigrama <- tidy_document %>%
-  unnest_tokens(word, text, token = "ngrams", n = 1) 
-
-dim(document_bigrama)
-head(document_bigrama)
-
-data(stop_words) # stop_words de la librería de tidytext
-
-# We can remove stop words (kept in the tidytext dataset stop_words) with an anti_join().
-document_bigrama_stopwords <- document_bigrama %>% anti_join(stop_words)
-dim(document_bigrama_stopwords)
-
-document_bigrama_stopwords %>%
-  count(word, sort = TRUE) 
-
-head(document_bigrama_stopwords)
-
-class(document_bigrama)
-class(document_bigrama_stopwords)
-
-document_bigrama %>%
-  #anti_join(stop_words)
-  count(word, sort = TRUE) %>%
-  filter(n > 600) %>%
-  mutate(word = reorder(word, n)) %>%
-  ggplot(aes(word, n)) +
-  geom_col() +
-  xlab(NULL) +
-  coord_flip()
+# #document_bigrama <- tidy_document %>%
+#   unnest_tokens(word, text, token = "ngrams", n = 1) 
+# 
+# dim(document_bigrama)
+# head(document_bigrama)
+# 
+# data(stop_words) # stop_words de la librería de tidytext
+# 
+# # We can remove stop words (kept in the tidytext dataset stop_words) with an anti_join().
+# document_bigrama_stopwords <- document_bigrama %>% anti_join(stop_words)
+# dim(document_bigrama_stopwords)
+# 
+# document_bigrama_stopwords %>%
+#   count(word, sort = TRUE) 
+# 
+# head(document_bigrama_stopwords)
+# 
+# class(document_bigrama)
+# class(document_bigrama_stopwords)
+# 
+# document_bigrama %>%
+#   #anti_join(stop_words)
+#   count(word, sort = TRUE) %>%
+#   filter(n > 600) %>%
+#   mutate(word = reorder(word, n)) %>%
+#   ggplot(aes(word, n)) +
+#   geom_col() +
+#   xlab(NULL) +
+#   coord_flip()
 ```
 
 
@@ -743,44 +614,44 @@ document_bigrama %>%
 ```{r}
 # https://rstudio-pubs-static.s3.amazonaws.com/40817_63c8586e26ea49d0a06bcba4e794e43d.html
 
-dtm <- DocumentTermMatrix(benefits_corpus)
-dtm
-# Frequency
-freq <- sort(colSums(as.matrix(dtm)), decreasing=TRUE)
-wf <- data.frame(word=names(freq), freq=freq)
-# Plot Histogram
-subset(wf, freq>250)    %>%
-        ggplot(aes(word, freq)) +
-        geom_bar(stat="identity", fill="darkred", colour="darkgreen") +
-        theme(axis.text.x=element_text(angle=45, hjust=1))
+# dtm <- DocumentTermMatrix(benefits_corpus)
+# dtm
+# # Frequency
+# freq <- sort(colSums(as.matrix(dtm)), decreasing=TRUE)
+# wf <- data.frame(word=names(freq), freq=freq)
+# # Plot Histogram
+# subset(wf, freq>250)    %>%
+#         ggplot(aes(word, freq)) +
+#         geom_bar(stat="identity", fill="darkred", colour="darkgreen") +
+#         theme(axis.text.x=element_text(angle=45, hjust=1))
 ```
 
 ```{r}
-# https://rstudio-pubs-static.s3.amazonaws.com/40817_63c8586e26ea49d0a06bcba4e794e43d.html
-
-# Nos quedamos con la única columna del dataset que nos interesa. 
-# Necesitamos obtenerla en forma de vector, y no como un dataframe de una columna, 
-# por lo que usamos as.vector para hacer la conversión
-benefits_train_review_data = as.vector(datos_train$benefitsReview)
-
-# Lo convertimos en la estructura de documento, y lo guardamos ya en el corpus 
-# que lo vamos a utilizar
-benefits_train_corpus = (VectorSource(benefits_train_review_data))
-
-# Creamos el propio corpus
-benefits_train_corpus <- Corpus(benefits_train_corpus)
-
-benefits_train_corpus <- tm_map(benefits_train_corpus, stripWhitespace) 
-
-BigramTokenizer <- function(x) NGramTokenizer(x, 
-                                              Weka_control(min = 2, max = 2))
-dtm <- DocumentTermMatrix(benefits_train_corpus, control = list(tokenize = BigramTokenizer))
-freq <- sort(colSums(as.matrix(dtm)), decreasing=TRUE)
-wof <- data.frame(word=names(freq), freq=freq)
-
-pl <- ggplot(subset(wof, freq>350) ,aes(word, freq))
-pl <- pl + geom_bar(stat="identity", fill="darkgreen", colour="blue")
-pl + theme(axis.text.x=element_text(angle=45, hjust=1)) + ggtitle("Bi-Gram Frequency") 
+# # https://rstudio-pubs-static.s3.amazonaws.com/40817_63c8586e26ea49d0a06bcba4e794e43d.html
+# 
+# # Nos quedamos con la única columna del dataset que nos interesa. 
+# # Necesitamos obtenerla en forma de vector, y no como un dataframe de una columna, 
+# # por lo que usamos as.vector para hacer la conversión
+# benefits_train_review_data = as.vector(datos_train$benefitsReview)
+# 
+# # Lo convertimos en la estructura de documento, y lo guardamos ya en el corpus 
+# # que lo vamos a utilizar
+# benefits_train_corpus = (VectorSource(benefits_train_review_data))
+# 
+# # Creamos el propio corpus
+# benefits_train_corpus <- Corpus(benefits_train_corpus)
+# 
+# benefits_train_corpus <- tm_map(benefits_train_corpus, stripWhitespace) 
+# 
+# BigramTokenizer <- function(x) NGramTokenizer(x, 
+#                                               Weka_control(min = 2, max = 2))
+# dtm <- DocumentTermMatrix(benefits_train_corpus, control = list(tokenize = BigramTokenizer))
+# freq <- sort(colSums(as.matrix(dtm)), decreasing=TRUE)
+# wof <- data.frame(word=names(freq), freq=freq)
+# 
+# pl <- ggplot(subset(wof, freq>350) ,aes(word, freq))
+# pl <- pl + geom_bar(stat="identity", fill="darkgreen", colour="blue")
+# pl + theme(axis.text.x=element_text(angle=45, hjust=1)) + ggtitle("Bi-Gram Frequency") 
 ```
 
 
@@ -791,9 +662,9 @@ pl + theme(axis.text.x=element_text(angle=45, hjust=1)) + ggtitle("Bi-Gram Frequ
 ### PCA
 
 ```{r}
-library(FactoMineR)
-
-pca2.nci <- PCA(X = datos_train, scale.unit = TRUE, ncp = 64, graph = FALSE)
+# library(FactoMineR)
+# 
+# pca2.nci <- PCA(X = datos_train, scale.unit = TRUE, ncp = 64, graph = FALSE)
 ```
 
 
@@ -802,43 +673,43 @@ pca2.nci <- PCA(X = datos_train, scale.unit = TRUE, ncp = 64, graph = FALSE)
 
 
 ```{r}
-# https://www.tidytextmining.com/tidytext.html#word-frequencies
-
-library(stringr)
-
-bronte <- data_frame(line = 1:3107, text = datos_train$benefitsReview)
-
-tidy_bronte <- bronte %>%
-  unnest_tokens(word, text, token = "ngrams", n = 1) %>%
-  anti_join(stop_words)
-
-tidy_bronte %>%
-  count(word, sort = TRUE)
-
-library(tidyr)
-
-frequency <- bind_rows(mutate(tidy_bronte, author  = "Brontë Sisters")) %>% 
-  mutate(word = str_extract(word, "[a-z']+")) %>%
-  count(word) %>%
-  group_by(word) %>%
-  mutate(proportion = n / sum(n)) %>% 
-  select(-n) %>% 
-  spread(word, proportion) %>% 
-  gather(word, proportion)
-
-library(scales)
-
-# expect a warning about rows with missing values being removed
-ggplot(frequency, aes(x = proportion)) +
-  geom_abline(color = "gray40", lty = 2) +
-  geom_jitter(alpha = 0.1, size = 2.5, width = 0.3, height = 0.3) +
-  geom_text(aes(label = word), check_overlap = TRUE, vjust = 1.5) +
-  scale_x_log10(labels = percent_format()) +
-  scale_y_log10(labels = percent_format()) +
-  scale_color_gradient(limits = c(0, 0.001), low = "darkslategray4", high = "gray75") +
-  facet_wrap(~word, ncol = 2) +
-  theme(legend.position="none") +
-  labs(y = "Jane Austen", x = NULL)
+# # https://www.tidytextmining.com/tidytext.html#word-frequencies
+# 
+# library(stringr)
+# 
+# bronte <- data_frame(line = 1:3107, text = datos_train$benefitsReview)
+# 
+# tidy_bronte <- bronte %>%
+#   unnest_tokens(word, text, token = "ngrams", n = 1) %>%
+#   anti_join(stop_words)
+# 
+# tidy_bronte %>%
+#   count(word, sort = TRUE)
+# 
+# library(tidyr)
+# 
+# frequency <- bind_rows(mutate(tidy_bronte, author  = "Brontë Sisters")) %>% 
+#   mutate(word = str_extract(word, "[a-z']+")) %>%
+#   count(word) %>%
+#   group_by(word) %>%
+#   mutate(proportion = n / sum(n)) %>% 
+#   select(-n) %>% 
+#   spread(word, proportion) %>% 
+#   gather(word, proportion)
+# 
+# library(scales)
+# 
+# # expect a warning about rows with missing values being removed
+# ggplot(frequency, aes(x = proportion)) +
+#   geom_abline(color = "gray40", lty = 2) +
+#   geom_jitter(alpha = 0.1, size = 2.5, width = 0.3, height = 0.3) +
+#   geom_text(aes(label = word), check_overlap = TRUE, vjust = 1.5) +
+#   scale_x_log10(labels = percent_format()) +
+#   scale_y_log10(labels = percent_format()) +
+#   scale_color_gradient(limits = c(0, 0.001), low = "darkslategray4", high = "gray75") +
+#   facet_wrap(~word, ncol = 2) +
+#   theme(legend.position="none") +
+#   labs(y = "Jane Austen", x = NULL)
 ```
 
 
@@ -957,11 +828,14 @@ Ahora ya hemos eliminado las stopwords de forma correcta.
 ```{r}
 library(quanteda) 
 
+
+
 dataframe<-data.frame(text=unlist(sapply(benefits_train_corpus, `[`)), stringsAsFactors=F)
 dataframe[[1]][1:23]
 
+
 vector <- c()
-for (i in 1:5){ # calculamos la distancia de la palabra a sus sinónimos
+for (i in 1:length(dataframe[[1]])){ # calculamos la distancia de la palabra a sus sinónimos
   vector[i] <- dataframe[[1]][i]
 }
 
@@ -999,12 +873,19 @@ tf_idf
 
 
 t <- tf_idf / sqrt( rowSums( tf_idf^2 ) )
-t
+#t
+#t
+copia_t <- t
+#View(t)
+
+#-----
+
 
 v <- c()
-for (i in 1:30){
+for (i in 1:length(vector)){
   v[i] <- sum(t[,i])
 }
+head(v,10)
 
 
 # Convertimos a matriz "terms_frecuency_benefits_corpus_100"
@@ -1013,26 +894,31 @@ terms1
 # Me quedo solo con los términos
 terms1 <- rownames(terms1)
 
-terms1_5 <- terms1[1:30]
-v
+terms1_5 <- terms1[1:length(vector)]
+#v
 
 x <- cbind(terms1_5,v)
-x
+#x
 x1 <- as.data.frame(x)
-x1
-
+#x1
 
 z <- x1[order(v, decreasing = TRUE),]
-
-z
-
+#z
+View(z)
 
 ```
 
 
 ```{r}
+library(ggplot2)
+
+z$terms1_5_new <- factor(z$terms1_5, levels = (z$terms1_5[order(z$v, decreasing = TRUE)]))
+z$terms1_5_new[1:20]
+  # notice the changed order of factor levels
+
 ggplot() + 
- geom_bar(data=z,aes(x=z$terms1_5, y=z$v), stat='identity', position='dodge') 
+ geom_bar(data=z[1:20,],aes(x=z$terms1_5_new[1:20], y=z$v[1:20]), stat='identity', position='dodge')
+
 ```
 
 

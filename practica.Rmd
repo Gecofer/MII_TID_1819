@@ -316,7 +316,6 @@ La fila 3105 se debe de ir porque tienen en benefitsReview "---"
 
 ```{r}
 datos_train = datos_train[-c(387,928, 3105),] # Eliminar filas 
-
 ```
 
 ### 2.2.2. Cuantificación de variables
@@ -823,106 +822,144 @@ Ahora ya hemos eliminado las stopwords de forma correcta.
 
 <!-------------------------------------------------------------------------------------------->
 
-### TFID
+### 2.2.7. TF-IDF:
+
+Para estudiar la importancia de los términos de un documento en particular, en lugar de utilizar
+la frecuencia de cada uno de los términos directamente, se pueden utilizar diferentes ponderaciones
+denominadas TF-IDF (Term Frequency-Inverse Document Frecuency).
+
+Estas ponderaciones se calculan como el producto de dos medidas, la frecuencia de aparición del
+término (tf) y la frecuencia inversa del documento (idf).
+La fórmula matemática para esta métrica es la siguiente:
+
+    tfidf(t, d, D) = tf(t, d) × idf(t, D)
+    
+donde t es el término, d denota cada documento, D el espacio total de documentos y tfidf es el
+peso asignado a ese término en el documento correspondiente.
+
+La combinación de los valores de tf e idf da una métrica que permite saber cómo de únicas son
+las palabras de un documento. La ponderación asigna un alto peso a un término si se produce con
+frecuencia en ese documento, pero rara vez en la colección completa. Sin embargo, si el término ocurre
+pocas veces en el documento, o aparece prácticamente en todos ellos, disminuye el peso asignado por
+la ponderación tfidf.
+
+El peso aumenta proporcionalmente al número de veces que una palabra aparece en el documento,
+pero es compensada por la frecuencia de la palabra en la colección de documentos, lo que permite
+filtrar las palabras más comunes.
 
 ```{r}
+
 library(quanteda) 
 
-
-
+# Convertimos el campo benefits review a una tabla en el cada columna será una palabra del comentario y cada fila pertenece a un comentario
 dataframe<-data.frame(text=unlist(sapply(benefits_train_corpus, `[`)), stringsAsFactors=F)
-dataframe[[1]][1:23]
 
-
+# Crea un vector vacío
 vector <- c()
-for (i in 1:length(dataframe[[1]])){ # calculamos la distancia de la palabra a sus sinónimos
+
+# Convertimos el dataframe a vector
+for (i in 1:length(dataframe[[1]])){ 
   vector[i] <- dataframe[[1]][i]
 }
 
-dataframe[[1]][3]
-class(vector)
-vector[1:5]
+```
 
-#doc <- c( "The sky is blue.", "The sun is bright today.",
-   #       "The sun in the sky is bright.", "We can see the shining sun, the bright sun." )
+**Frecuencia del término**
 
+La primera parte de la fórmula tf (t, d) es simplemente calcular el número de veces que aparece cada palabra en cada documento. 
+
+```{r}
+
+# Creamos el corpus utilizando el vector de string que hemos creado previamente
 doc_corpus <-Corpus( VectorSource(vector) )
 
-#doc_corpus <- benefits_train_corpus
-
-#doc_corpus
-
-
-#control_list <- list(removePunctuation = TRUE, stopwords = TRUE, tolower = TRUE)
-
+# Generamos la matriz de términos
 tdm <- TermDocumentMatrix(doc_corpus)
 
 ( tf <- as.matrix(tdm) )
 
+```
 
+**Frecuencia inversa del documento**
 
-################
+Durante el cálculo de la frecuencia del término se considera que todos los términos tienen igual
+importancia, no obstante, se conocen casos en los que ciertos términos pueden aparecer muchas veces
+pero tienen poca importancia. Esta segunda parte de la fórmula completa el análisis de evaluación de los términos y actúa como corrector de tf.
 
+Usando la matriz de frecuencia de términos, el peso idf se puede calcular de la siguiente forma:
+
+```{r}
+
+# Calculamos los pesos asociados a cada término
 terms <- ( idf <- log( ncol(tf) / ( 1 + rowSums(tf != 0) ) ) )
 
-( idf <- diag(idf) )
-
-tf_idf <- crossprod(tf, idf)
-colnames(tf_idf) <- rownames(tf)
-tf_idf
-
-
-t <- tf_idf / sqrt( rowSums( tf_idf^2 ) )
-#t
-#t
-copia_t <- t
-#View(t)
-
-#-----
-
-
-v <- c()
-for (i in 1:length(vector)){
-  v[i] <- sum(t[,i])
-}
-head(v,10)
-
-
-# Convertimos a matriz "terms_frecuency_benefits_corpus_100"
-terms1 <- as.matrix(terms)
-terms1
-# Me quedo solo con los términos
-terms1 <- rownames(terms1)
-
-terms1_5 <- terms1[1:length(vector)]
-#v
-
-x <- cbind(terms1_5,v)
-#x
-x1 <- as.data.frame(x)
-#x1
-
-z <- x1[order(v, decreasing = TRUE),]
-#z
-View(z)
+terms[1:5] # Muestra los pesos asociados a cada término
 
 ```
 
+Ahora que tenemos nuestra matriz con el término frecuencia y el peso idf, estamos listos para calcular el peso total de tf-idf. Para hacer esta multiplicación de matrices, también tendremos que transformar el vector idf en una matriz diagonal. Ambos cálculos se muestran a continuación.
 
 ```{r}
+
+# Creamos la matriz diagonal
+( idf <- diag(idf) )
+
+# Hacemos la operación para calcular tf_idf como el producto de td * idf
+tf_idf <- crossprod(tf, idf)
+
+# Sustituye referencias por términos (columnas de tf_idf son igual a las filas de tf)
+colnames(tf_idf) <- rownames(tf)
+
+```
+
+Hay que recordar que en la sección tf (frecuencia del término), estamos representando cada término como el número de veces que aparecieron en el documento.El principal problema para esta representación es que creará un sesgo hacia documentos largos, ya que un término dado tiene más posibilidades de aparecer en documentos más largos, lo que los hace parecer más importantes de lo que realmente son.
+
+Por lo tanto, el enfoque para resolver este problema es la buena normalización:
+
+```{r}
+
+# Normalización
+t <- tf_idf / sqrt( rowSums( tf_idf^2 ) )
+
+# Creamos un vector vacío
+v <- c()
+
+# Realiza la suma de todos los pesos de los términos y los almacena en un vector
+for (i in 1:length(dataframe[[1]])){
+  v[i] <- sum(t[,i])
+}
+
+# Convertimos a matriz
+terms1 <- as.matrix(terms)
+
+# Me quedo solo con los términos
+terms1 <- rownames(terms1)
+
+# Me quedo solo con los términos
+terms1_5 <- terms1[1:length(dataframe[[1]])]
+
+# Unimos la tabla de términos y valores en x
+x <- cbind(terms1_5,v)
+
+# Convertimos dicha tabla a dataframe
+x1 <- as.data.frame(x)
+
+# Guardamos en z los valores de x1 ordenados
+z <- x1[order(v, decreasing = TRUE),]
+
 library(ggplot2)
 
+# Ordenamos los datos, respetando el orden de los niveles de los factores. Referencia :https://rstudio-pubs-static.s3.amazonaws.com/7433_4537ea5073dc4162950abb715f513469.html
 z$terms1_5_new <- factor(z$terms1_5, levels = (z$terms1_5[order(z$v, decreasing = TRUE)]))
-z$terms1_5_new[1:20]
-  # notice the changed order of factor levels
 
+# Nos quedamos con los primeros 20 valores
+z$terms1_5_new[1:20]
+
+# Graficamos los resultados
 ggplot() + 
  geom_bar(data=z[1:20,],aes(x=z$terms1_5_new[1:20], y=z$v[1:20]), stat='identity', position='dodge')
 
 ```
-
-
-
 
 <!-------------------------------------------------------------------------------------------->
 

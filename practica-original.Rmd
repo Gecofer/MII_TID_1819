@@ -1344,7 +1344,99 @@ Se observa como de x términos pasamos a x términos, ni un 5% del total, por ta
 
 
 
+# Arboles de decision y clasificacion
+
+Utilizar la curva ROC
+
+## Arboles de decision
+
+```{r}
+# Enlaces interesantes
+
+# http://apuntes-r.blogspot.com/2014/09/predecir-perdida-de-clientes-con-arbol.html
+# https://www.datanalytics.com/libro_r/arboles-de-decision.html
+```
+
+## Clasificación Bayesiona: algoritmo clasico
+
+## Clasificación Bayesiona: clasificador Naive Bayes                
+
+```{r}
+# https://rpubs.com/jboscomendoza/naive_nayes_con_r_clasificacion_texto
+
+library(tidyverse)
+library(tidytext)
+library(naivebayes)
+library(tm)
+library(caret)
+```
+
+## Random Forest
+
+```{r}
+# Proyecto_1475.pdf (esto es un ejemplo, adaptarko al nuestro)
+
+# Establecemos una semilla por defecto
+set.seed(127)
+
+train <- datos_train
+test <- datos_test
+
+# Obtenemos el modelo
+library(randomForest)
+modelo_rf <- randomForest(rating  ~ effectivenessNumber, data = train)
+modelo_rf
+
+# Comprobación del modelo con los datos del test:
+pred <- predict(modelo_rf, newdata = test)
+
+# Matriz de confusión:
+tabla <- table(pred, datos_test$rating); 
+tabla
+
+# Dice la precisión
+sum(diag(tabla)) / nrow(test)
+```
 
 
+```{r}
+# usar la curva ROC
+library("ROCR")
 
+# Función que dibuja uan curva ROC
+plotROC <- function(modelo, etiq_real, adicionar=FALSE,color="red") { 
+  pred <- prediction(modelo, etiq_real)
+  perf <- performance(pred,"tpr","fpr")
+  plot(perf, col=color, add=adicionar, main="Curva ROC", lwd = 2) 
+  segments(0, 0, 1, 1, col='black')
+  grid() 
+}
+
+# Para hacer la curva ROC dben etar en probabildiad entre 0 y 1
+```
+
+
+## Clasificacores basados en RRNN
+
+## Suuport Vector Machine SVM
+
+```{r}
+# Proyecto_1475.pdf
+
+library("kernlab")
+
+# Se aplica el SVM a los datos de entrenamiento:
+ksvmTrain <- ksvm (rating  ~ effectivenessNumber, data = train)
+
+# Se clasifica el conjunto de datos de prueba a partir del SVM entrenado, # para ello, se elimina la columna donde está la clasificación original: 
+svmClass <- predict (ksvmTrain, datos_test$rating)
+
+# Matriz de confusión:
+svmTabla <- table(SVM = svmClass, Reuters = trueClass); 
+svmTabla
+
+# La precisión de este método es aproximadamente de
+sum(diag(svmTabla))/nrow(test)
+
+```
 

@@ -1336,7 +1336,7 @@ siendo df la frecuencia de documentos del término t y N el número de vectores.
 ```{r}
 dtm <- DocumentTermMatrix(benefits_train_corpus)
 inspect(dtm)
-dtm <- removeSparseTerms(dtm, sparse= 0.97)
+dtm <- removeSparseTerms(dtm, sparse=0.999)
 inspect(dtm)
 ```
 

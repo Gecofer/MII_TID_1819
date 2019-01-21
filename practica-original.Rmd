@@ -193,6 +193,12 @@ En este apartado, pondremos los datos a punto para la aplicación de diversas t�
 10. Conversión de las mayúsculas en minúsculas
 11. Eliminación de Stopwords
 12. Agrupación de sinónimos
+13. TF-IDF
+14. Stemming
+15. Borrar espacios en blanco innecesarios
+16. Valores perdidos
+17. Term Document Matrix
+18. Sparsity
 
 <!-------------------------------------------------------------------------------------------->
 
@@ -1316,10 +1322,25 @@ barplot(copia_ordena_mayor[1:10,],  xlab="Palabras", ylab="Número de frecuencia
 title(main = list("Las diez palabras más frecuentes después del preprocesamiento", font = 4))
 ```
 
+<!-------------------------------------------------------------------------------------------->
 
+### 2.2.17. Sparsity
 
+También puede resultar muy útil eliminar los términos que aparecen en muy pocos documentos antes de proceder a la clasificación. El motivo principal es la factibilidad computacional, ya que este proceso reduce drásticamente el tamaño de la matriz sin perder información significativa. Además puede eliminar errores en los datos, como podrían ser palabras mal escritas. En el caso del clasificador la escasez es del 100 %, como se puede ver en la salida anterior de R.
 
+Para suprimir estos términos, denominados escasos, se utiliza el comando removeSparseTerms(). Éste conserva todos los términos que cumplen
+$$ df(t) > N · (1 ≠ sparse)$$
 
+siendo df la frecuencia de documentos del término t y N el número de vectores. El parámetro sparse toma valores entre 0 y 1. En este caso, el umbral de escasez es 0,97, se toman los términos que aparecen en más del 3 % de documentos.
+
+```{r}
+dtm <- DocumentTermMatrix(benefits_train_corpus)
+inspect(dtm)
+dtm <- removeSparseTerms(dtm, sparse= 0.97)
+inspect(dtm)
+```
+
+Se observa como de x términos pasamos a x términos, ni un 5% del total, por tanto se ha considerado despreciar aplicar esta técnica.  Por tanto, ya tenemos nuestros datos listos.
 
 
 

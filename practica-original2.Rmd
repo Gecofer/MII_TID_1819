@@ -418,6 +418,71 @@ head(datos_train$effectivenessNumber, 10)
 
 <!-------------------------------------------------------------------------------------------->
 
+### 2.2.4. Cálculo de rating ponderado
+
+En esta sección se va a realizar una valoración general de la medicina, teniendo en cuenta los efectos secundarios y efectividad de ésta. Para ello, se va a realizar una ponderación entre estos dos valores, considerando en este caso una ponderación del 70% para los efectos secundarios y un 30% para la efectividad de la medicina.
+
+El motivo de esta ponderación es que se considera que es peor tener efectos secundarios severos en una medicina, a que sea más efectiva o no.
+
+Tras haber cuantificado las variables que miden la efectividad y efectos secundarios de una medicina, se ha añadido una nueva columna llamada "weightedRating", cuyo resultado se podrá utilizar como valoración general de la medicina, e incluso poder compararlo con las propias valoraciones de los usuarios.
+
+```{r}
+
+# Ponderaciones
+sideEffectstWeight <- 0.7
+effectivenessWeight <- 0.3
+
+# Recorremos el dataframe
+for (i in 1:length(datos_train[[1]])){
+  
+  # Obtenemos el valor de sideEffect
+  sideEffectNumber <- datos_train$sideEffectsNumber[i]
+  
+  # Obtenemos el valor de efectiveness
+  effectivenessRating <- datos_train$effectivenessNumber[i]
+  
+  # Inicializamos la variable
+  sideEffectRating <- 0
+
+  # Convertimos el valor de sideEffect a la misma escala que efectiveness, ya que sideEffect == 1 significa que no tiene efectos secundarios (lo cual es bueno), y efecctiveness == 1 significa que no es efectivo (lo cual no es bueno). Para ello realizamos la siguiente conversión:
+  if(sideEffectNumber == 1)
+     sideEffectRating <- 5
+  else if(sideEffectNumber == 2)
+    sideEffectRating <- 4
+  else if(sideEffectNumber == 3)
+    sideEffectRating <- 3
+  else if(sideEffectNumber == 4)
+    sideEffectRating <- 2
+  else if(sideEffectNumber == 5)
+    sideEffectRating <- 1
+
+  # Obtenemos el resultado ponderado en tipo float
+  floatResult <- effectivenessRating * effectivenessWeight + sideEffectRating * sideEffectstWeight
+  
+  # Convertimos el resultado a valor entero.
+  integerResult <- as.integer(floatResult)
+  
+  # Calculamos la parte decimal y redondeamos
+  if(floatResult - integerResult < 0.5)
+    result <- integerResult
+  else
+    result <- integerResult+1
+  
+  # Añadimos el resultado obtenido y lo multiplicamos por dos para pasarlo a escala (1-10)
+  datos_train$weightedRating[i] <- result * 2
+ 
+}
+```
+
+
+Comprobamos que se ha creado la nueva columna *weightedRating*, y que se han añadido los nuevos cambios.
+
+```{r}
+head(datos_train$weightedRating, 10) 
+```
+
+<!-------------------------------------------------------------------------------------------->
+
 ### 2.2.4. Representación gráfica de los datos
 
 Antes de comenzar con el análisis exploratorio, vamos realizar distintas gráfica de barras con el fin de comprender mejor los datos, antes del procesamiento. Primero realizaremos un gráfico de barras de las clasificaciones del medicamente por parte del paciente.

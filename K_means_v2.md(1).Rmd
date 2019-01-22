@@ -1,0 +1,79 @@
+---
+title: "K_means_v2"
+output: html_document
+---
+
+```{r}
+library(tm)
+library(factoextra)
+library(proxy)
+library(ggpubr)
+
+# Cargamos los tados
+datos_train <- read.table("datos_train_preprocesado.csv", sep=",", comment.char="",quote = "\"", header=TRUE)
+# Establecemos la semilla
+set.seed(3)
+
+# Nos quedamos con las columnas que nos interesan 
+datos_train2 = datos_train[c(2,8,9)]
+head(datos_train2)
+```
+
+Los resultados que se obtienen son muy impredecibles. Vamos a obtener los fármacos representados por una única vez. 
+```{r}
+km.res <- kmeans(datos_train2, 4)
+
+
+
+fviz_cluster(object = km.res, data = datos_train2, show.clust.cent = TRUE,
+             ellipse.type = "euclid", star.plot = TRUE, repel = TRUE) +
+  labs(title = "Resultados clustering K-means") +
+  theme_bw() +
+  theme(legend.position = "none")
+
+
+
+```
+
+
+```{r}
+
+# https://stackoverflow.com/questions/40003028/extracting-unique-values-from-data-frame-using-r
+nombres_farmacos <- unique(datos_train[,1])
+
+print(nombres_farmacos[1:10])
+
+# Creamos una matriz con tantas filas como fármacos, y columnas como datos queramos utilizar. En este caso son 3 columnas porque necesitamos guardar la info de "rating", "sideEffectNumber" y "effectivenessNumber".
+datos_procesados <- matrix(ncol=3, nrow=length(nombres_farmacos))
+
+for(i in 0:length(nombres_farmacos)){
+  #https://stackoverflow.com/questions/24831580/return-row-of-data-frame-based-on-value-in-a-column-r
+  filas_farmaco <- datos_train2[which(datos_train$urlDrugName == nombres_farmacos[i]),]
+  
+  mean_rating <- mean(filas_farmaco$rating)
+  mean_side_effect <- mean(filas_farmaco$sideEffectsNumber)
+  mean_effectiveness <- mean(filas_farmaco$effectivenessNumber)
+
+  #print(mean_rating)
+  datos_procesados[i,] <- c(mean_rating, round(mean_side_effect), round(mean_effectiveness))
+  
+}
+
+
+data_train_procesado <- data.frame(datos_procesados)
+rownames(data_train_procesado) <- nombres_farmacos
+colnames(data_train_procesado) <- c("rating", "sideEffectNumber", "effectivenessNumber")
+```
+
+```{r}
+res_clustering <- kmeans(data_train_procesado, 5)
+
+
+
+fviz_cluster(object = res_clustering, data = data_train_procesado, show.clust.cent = TRUE,
+             ellipse.type = "euclid", star.plot = TRUE, repel = TRUE) +
+  labs(title = "Resultados clustering K-means") +
+  theme_bw() +
+  theme(legend.position = "none")
+```
+

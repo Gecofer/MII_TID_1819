@@ -418,7 +418,72 @@ head(datos_train$effectivenessNumber, 10)
 
 <!-------------------------------------------------------------------------------------------->
 
-### 2.2.4. Representación gráfica de los datos
+### 2.2.4. Cálculo de rating ponderado
+
+En esta sección se va a realizar una valoración general de la medicina, teniendo en cuenta los efectos secundarios y efectividad de ésta. Para ello, se va a realizar una ponderación entre estos dos valores, considerando en este caso una ponderación del 70% para los efectos secundarios y un 30% para la efectividad de la medicina.
+
+El motivo de esta ponderación es que se considera que es peor tener efectos secundarios severos en una medicina, a que sea más efectiva o no.
+
+Tras haber cuantificado las variables que miden la efectividad y efectos secundarios de una medicina, se ha añadido una nueva columna llamada "weightedRating", cuyo resultado se podrá utilizar como valoración general de la medicina, e incluso poder compararlo con las propias valoraciones de los usuarios.
+
+```{r}
+
+# Ponderaciones
+sideEffectstWeight <- 0.7
+effectivenessWeight <- 0.3
+
+# Recorremos el dataframe
+for (i in 1:length(datos_train[[1]])){
+  
+  # Obtenemos el valor de sideEffect
+  sideEffectNumber <- datos_train$sideEffectsNumber[i]
+  
+  # Obtenemos el valor de efectiveness
+  effectivenessRating <- datos_train$effectivenessNumber[i]
+  
+  # Inicializamos la variable
+  sideEffectRating <- 0
+
+  # Convertimos el valor de sideEffect a la misma escala que efectiveness, ya que sideEffect == 1 significa que no tiene efectos secundarios (lo cual es bueno), y efecctiveness == 1 significa que no es efectivo (lo cual no es bueno). Para ello realizamos la siguiente conversión:
+  if(sideEffectNumber == 1)
+     sideEffectRating <- 5
+  else if(sideEffectNumber == 2)
+    sideEffectRating <- 4
+  else if(sideEffectNumber == 3)
+    sideEffectRating <- 3
+  else if(sideEffectNumber == 4)
+    sideEffectRating <- 2
+  else if(sideEffectNumber == 5)
+    sideEffectRating <- 1
+
+  # Obtenemos el resultado ponderado en tipo float
+  floatResult <- effectivenessRating * effectivenessWeight + sideEffectRating * sideEffectstWeight
+  
+  # Convertimos el resultado a valor entero.
+  integerResult <- as.integer(floatResult)
+  
+  # Calculamos la parte decimal y redondeamos
+  if(floatResult - integerResult < 0.5)
+    result <- integerResult
+  else
+    result <- integerResult+1
+  
+  # Añadimos el resultado obtenido y lo multiplicamos por dos para pasarlo a escala (1-10)
+  datos_train$weightedRating[i] <- result * 2
+ 
+}
+```
+
+
+Comprobamos que se ha creado la nueva columna *weightedRating*, y que se han añadido los nuevos cambios.
+
+```{r}
+head(datos_train$weightedRating, 10) 
+```
+
+<!-------------------------------------------------------------------------------------------->
+
+### 2.2.5. Representación gráfica de los datos
 
 Antes de comenzar con el análisis exploratorio, vamos realizar distintas gráfica de barras con el fin de comprender mejor los datos, antes del procesamiento. Primero realizaremos un gráfico de barras de las clasificaciones del medicamente por parte del paciente.
 
@@ -508,7 +573,7 @@ library("SnowballC")
 
 <!-------------------------------------------------------------------------------------------->
 
-### 2.2.5. Creación del corpus
+### 2.2.6. Creación del corpus
 
 Para poder obtener la estructura con la que vamos a procesar nuestra información, debemos obtener un vector con documentos. En nuestro caso, cada uno de los documentos se corresponde con una opinión sobre un fármaco (*benefitsReview*) y los efectos que tiene (*sideEffectsReview*). Para ello, primero debemos de construir un vector con todas los opiniones del _dataframe_ y convertir cada elemento del vector al formato de documento. Podemos usar la función _VectorSource_ para hacer esta conversión. Se deberán realizar todas las modificaciones tanto para el conjunto train como test. 
 
@@ -584,7 +649,7 @@ effects_train_corpus[[7]]$content
 
 <!-------------------------------------------------------------------------------------------->
 
-### 2.2.6. Representación gráfica de las frecuencias
+### 2.2.7. Representación gráfica de las frecuencias
 
 Una vez creado el corpus y antes de aplicar las técnicas, vamos a visualizar las frecuencias, para las dos columnas (*benefitsReview* y *sideEffectsReview*) de textos a las que vamos aplicar el preprocesamiento. Para ello, debemos calcular la matriz de términos y obtener los términos con mayor frecuencia.
 
@@ -635,13 +700,13 @@ subset(wf, freq>350)    %>%
 
 <!-------------------------------------------------------------------------------------------->
 
-### 2.2.7. Correlación
+### 2.2.8. Correlación
 
 Una forma de medir la distancia es calcular la correlación entre un término y todos los demás de la matriz. Como en este caso, estamos usando variables textuales, no se recomienda hacer la correlación. Ya que está pensada para variables cuantitativas, y nosotgros disponemos de variables categóricas. Por otro lado, la correlación está relacionada con el análisis de componentes principales (PCA), por tanto, tampoco sería posible la realización de dicha técnica. 
 
 <!-------------------------------------------------------------------------------------------->
 
-### 2.2.8. Eliminar signos de puntuación
+### 2.2.9. Eliminar signos de puntuación
 
 Como hemos podido ver en el documento que se ha mostrado por pantalla, en él se aprecia el uso de signos de puntuación y exclamación. En un principio, no tiene sentido en \textit{Data Mining} contemplar los signos de puntuación, ya que no nos van a aportar información. Por ello, los quitamos, como se puede ver a continuación. Con `tm_map(corpus, removePunctuation)`, se eliminan los símbolos: ! " $ % & ' () * + , - . / : ; < = > ? @ [ \ ] ^ _ ' { | } ~ 
 
@@ -687,7 +752,7 @@ inspect(effects_train_corpus[7])
 
 <!-------------------------------------------------------------------------------------------->
 
-### 2.2.9. Conversión de las mayúsculas en minúsculas
+### 2.2.10. Conversión de las mayúsculas en minúsculas
 
 Para poder hacer uso de los términos por igual, debemos convertir las mayúsculas en minúsculas. Ya que normalmente se convierte en minúsculas todas las letras para que los comienzos de oración no sean tratados de manera diferente por los algoritmos.
 
@@ -717,7 +782,7 @@ effects_test_corpus <- tm_map(effects_test_corpus, content_transformer(tolower))
 
 <!-------------------------------------------------------------------------------------------->
 
-### 2.2.10. Eliminación de Stopwords
+### 2.2.11. Eliminación de Stopwords
 
 En cualquier idioma, hay palabras que son tan comunes o muy utilizadas que no aportan información relevante, a dichas palabras se las conoce como _stopwords_ o palabras _stop_. Por ejemplo, en español, las palabras "la", "a", "en", "de" son ejemplos de _stopwords_. Este tipo de palabras debemos de suprimirlas de nuestro corpus. Como, en nuestro caso, el contenido del corpus está en inglés, debemos especificar el idioma correcto para que nos elimine del corpus las palabras adecuadas en dicho idioma.
 
@@ -753,7 +818,7 @@ Ahora ya hemos eliminado las stopwords de forma correcta.
 
 <!-------------------------------------------------------------------------------------------->
 
-### 2.2.11. Agrupación de sinónimos
+### 2.2.12. Agrupación de sinónimos
 
 Con el fin de disminuir la dimensión del espacio a trabajar, se pueden identificar palabras distintas con el mismo significado y reemplazarlas por una sola palabra. Para ello se toman los sinónimos de dicha palabra. Dentro de las librerías que podemos usar para agrupar sinónimos, destacamos dos: `wordnet` y `rword2vec`. Sin embargo, por su sencillez se va hacer uso de `rword2vec`. Previamente, se obtendrán que palabras son las que mayor frecuencia presentan en nuestro texto, para ello nos quedamos con las 100 más representativas tanto para *benefitsReview* como *sideEffectsReview* del conjunto train y test:
 
@@ -1072,7 +1137,7 @@ write.table(effects_test_corpus$content, "effectsTestSinSinonimos.txt")
 write.table(effects_test_corpus_new$content, "effectsTestConSinonimos.txt")
 ```
 
-### 2.2.12. TF-IDF
+### 2.2.13. TF-IDF
 
 Para estudiar la importancia de los términos de un documento en particular, en lugar de utilizar la frecuencia de cada uno de los términos directamente, se pueden utilizar diferentes ponderaciones denominadas TF-IDF (Term Frequency-Inverse Document Frecuency).
 
@@ -1182,7 +1247,7 @@ ggplot() +
 
 <!-------------------------------------------------------------------------------------------->
 
-### 2.2.13. Stemming
+### 2.2.14. Stemming
 
 El siguiente paso consiste en reducir el número de palabras totales con las que estamos trabajando. En este caso, se trata de reducir aquellas que no nos aportan nada relevante a lo que ya tenemos. En la columna con la que estamos trabajando en este dataframe, se repite una gran cantidad de veces la palabra "benefit", al igual que "benefits". 
 
@@ -1212,7 +1277,7 @@ inspect(benefits_train_corpus_new[213])
 
 <!-------------------------------------------------------------------------------------------->
 
-### 2.2.14. Borrar espacios en blanco innecesarios
+### 2.2.15. Borrar espacios en blanco innecesarios
 
 Hasta el momento hemos hecho distintos cambios en el texto de nuestro dataset. No solo hemos modificado algunas palabras, sino que también hemos borrado otras muchas. Por ello, es adecuado asegurarnos que no hay más espacios en blanco que los que separan las palabras del texto. Para asegurarnos de ello, podemos ejecutar la siguiente orden, que se encarga de suprimir los espacios en blanco sobrantes.
 
@@ -1226,7 +1291,7 @@ benefits_train_corpus_new <- tm_map(benefits_train_corpus_new, stripWhitespace)
 
 <!-------------------------------------------------------------------------------------------->
 
-### 2.2.15. Valores perdidos
+### 2.2.16. Valores perdidos
 
 Tras el proceso de limpieza anterior en un volumen tan grande de datos cabe esperar que algún documento (tuit) estuviera formado por tan solo palabras vacías, enlaces o combinaciones de estos, es por ello, que por medio de filtrado básico de R se obtienen aquellos que no contienen ninguna palabra y se elimina del conjunto del dataset para evitar problemas en los procesos posteriores.
 
@@ -1247,7 +1312,7 @@ benefits_train_corpus<-benefits_train_corpus[which(benefits_train_corpus$content
 
 <!-------------------------------------------------------------------------------------------->
 
-### 2.2.16. Term Document Matrix
+### 2.2.17. Term Document Matrix
 
 Ahora vamos a mapear nuestro corpus creando una matriz de términos, donde las filas corresponden a los documentos y las columnas a los términos. Para ello usaremos la función TermDocumentMatrix:
 
@@ -1324,7 +1389,7 @@ title(main = list("Las diez palabras más frecuentes después del preprocesamien
 
 <!-------------------------------------------------------------------------------------------->
 
-### 2.2.17. Sparsity
+### 2.2.18. Sparsity
 
 También puede resultar muy útil eliminar los términos que aparecen en muy pocos documentos antes de proceder a la clasificación. El motivo principal es la factibilidad computacional, ya que este proceso reduce drásticamente el tamaño de la matriz sin perder información significativa. Además puede eliminar errores en los datos, como podrían ser palabras mal escritas. En el caso del clasificador la escasez es del 100 %, como se puede ver en la salida anterior de R.
 

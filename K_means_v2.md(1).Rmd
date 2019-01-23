@@ -10,7 +10,7 @@ library(proxy)
 library(ggpubr)
 
 # Cargamos los tados
-datos_train <- read.table("datos_train_preprocesado.csv", sep=",", comment.char="",quote = "\"", header=TRUE)
+datos_train <- read.table("datos/datos_train_preprocesado.csv", sep=",", comment.char="",quote = "\"", header=TRUE)
 # Establecemos la semilla
 set.seed(3)
 
@@ -122,5 +122,24 @@ fviz_cluster(object = res_clustering, data = data_train_procesado, show.clust.ce
   theme(legend.position = "none")
 
 ```
+
+
+INTENTO FUZZY CLUSTERING
+```{r}
+#install.packages("ppclust")
+library(ppclust)
+library(cluster)
+library(fclust)
+
+ head(data_train_procesado)
+datos <- scale(data_train_procesado)
+ fuzzy_cluster <- fanny(x = datos, k = 3, metric = "euclidean", stand = FALSE)
+head(fuzzy_cluster$membership)
+# fuzzy_cluster$coeff
+# head(fuzzy_cluster$clustering)
+fviz_cluster(object = fuzzy_cluster, repel = TRUE, ellipse.type = "norm", pallete = "jco") + theme_bw() + labs(title = "Fuzzy Cluster plot")
+
+```
+
 
 

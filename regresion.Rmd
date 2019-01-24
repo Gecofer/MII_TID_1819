@@ -1,0 +1,258 @@
+---
+title: "regresion"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Lectura de datos
+
+```{r}
+datos_train <- read.csv(file="datos/datos_train_preprocesado.csv")
+View(datos_train)
+
+datos_test <- read.csv(file="datos/datos_test_preprocesado.csv")
+View(datos_test)
+```
+
+
+Contamos las veces que aparecen los medicamentos
+
+```{r}
+#http://nubededatos.blogspot.com/2015/10/vectores-en-r-elementos-comunes-y-unicos.html
+
+duplicated(datos_test$urlDrugName)
+
+df <- data.frame(datos_test$urlDrugName)
+new_df <- aggregate(datos_test$urlDrugName, df, length)
+colnames(new_df)[2]<-"Repeticiones"
+new <- new_df[order(new_df$Repeticiones, decreasing = TRUE),]
+new
+View(new)
+
+
+df %>%                       #Primero llamo a los datos. Uso el símbolo %>% para conectar las operaciones. 
+  group_by(datos_test$urlDrugName) %>%       #Luego indico que quiero un grupo por cada valor único en Estados, podría agupar por más variables si las tuviera/quisiera.
+  tally()  
+```
+
+```{r}
+new[1,]
+```
+
+
+
+```{r}
+datos_test[datos_test$urlDrugName == "paxil",]
+
+```
+
+
+
+# Regresión Multiclase
+
+## Regresión Lineal
+
+https://rpubs.com/Joaquin_AR/254575
+
+```{r}
+# Función que calcula los errores y E_test para regresión logística
+errorres_regresion_lineal <- function(m){ 
+  probTr = predict(m, type="response")
+  probTst = predict(m, data.frame(datos_test), type="response") 
+  
+  predTst = rep(0, length(probTst)) # predicciones por defecto 0
+  predTst[probTst >= 0.5] = 1 # >= 0.5 clase 1
+
+  predTr = rep(0, length(probTr)) # predicciones por defecto 0
+  predTr[probTr >= 0.5] = 1 # >= 0.5 clase 1 # Para el calculo del Etest
+  
+  print(table(pred=predTst, real=datos_test$ratingLabel)) # Calculamos Etest
+  
+  Etest = mean(predTst != datos_test$ratingLabel) 
+  
+  list(Etest=Etest)
+}
+
+# Creamos el modelo
+# la etiqueta tiene que estar entre 0 y 1
+lm_effects = lm(data = datos_train, formula = ratingLabel ~ sideEffectsInverse)
+summary(lm_effects)
+errorres_regresion_lineal(lm_effects)
+
+lm_effectiveness = lm(data = datos_train, formula = ratingLabel ~ effectivenessNumber)
+errorres_regresion_lineal(lm_effectiveness)
+```
+
+```{r}
+# para effects
+
+# Obtenemos las probabilidades
+prob_LM_effects = predict(lm_effects, data.frame(datos_test), type=c("response"))
+
+# Función que dibuja uan curva ROC
+plotROC <- function(modelo, etiq_real, adicionar=FALSE,color="red") { 
+  pred <- prediction(modelo, etiq_real)
+  perf <- performance(pred,"tpr","fpr")
+  plot(perf, col=color, add=adicionar, main="Curva ROC - Regresión Lineal - Efectos secundarios", lwd = 2) 
+  segments(0, 0, 1, 1, col='black')
+  grid() 
+}
+
+# Cruva ROC para el modelo lineal
+plotROC(prob_LM_effects, datos_test$ratingLabel)
+
+```
+
+```{r}
+# para effects
+
+# Obtenemos las probabilidades
+prob_LM_effectiveness = predict(lm_effectiveness, data.frame(datos_test), type=c("response"))
+
+# Función que dibuja uan curva ROC
+plotROC <- function(modelo, etiq_real, adicionar=FALSE,color="red") { 
+  pred <- prediction(modelo, etiq_real)
+  perf <- performance(pred,"tpr","fpr")
+  plot(perf, col=color, add=adicionar, main="Curva ROC - Regresión Lineal - Efectividad", lwd = 2) 
+  segments(0, 0, 1, 1, col='black')
+  grid() 
+}
+
+# Cruva ROC para el modelo lineal
+plotROC(prob_LM_effectiveness, datos_test$ratingLabel)
+
+```
+
+
+
+## Regresión Multivariante
+
+
+## Regresión Logística 
+
+https://stackoverrun.com/es/q/3252973
+
+```{r}
+
+# cuantos medicamentos dicen que son efectivos pero no lo son
+
+# Función que calcula los errores y E_test para regresión logística
+errorres_regresion_logistica <- function(m){ 
+  probTr = predict(m, type="response")
+  probTst = predict(m, data.frame(datos_test), type="response") 
+  
+  predTst = rep(0, length(probTst)) # predicciones por defecto 0
+  predTst[probTst >= 0.5] = 1 # >= 0.5 clase 1
+
+  predTr = rep(0, length(probTr)) # predicciones por defecto 0
+  predTr[probTr >= 0.5] = 1 # >= 0.5 clase 1 # Para el calculo del Etest
+  
+  print(table(pred=predTst, real=datos_test$ratingLabel)) # Calculamos Etest
+  
+  Etest = mean(predTst != datos_test$ratingLabel) 
+  
+  list(Etest=Etest)
+}
+
+# Creamos el modelo
+# la etiqueta tiene que estar entre 0 y 1
+gml_effects = glm(ratingLabel ~ sideEffectsNumber, family = binomial(logit), data = datos_train)
+errorres_regresion_logistica(gml_effects)
+
+gml_effectiveness = glm(ratingLabel ~ effectivenessNumber, family = binomial(logit), data = datos_train)
+errorres_regresion_logistica(gml_effectiveness)
+
+## guardar en una variable 
+
+```
+
+```{r}
+# para effects
+
+# Ponderaciones
+
+
+
+# Obtenemos las probabilidades
+prob_GLM_effects = predict(gml_effects, data.frame(datos_test), type=c("response"))
+
+# Función que dibuja uan curva ROC
+plotROC <- function(modelo, etiq_real, adicionar=FALSE,color="red") { 
+  pred <- prediction(modelo, etiq_real)
+  perf <- performance(pred,"tpr","fpr")
+  plot(perf, col=color, add=adicionar, main="Curva ROC - Regresión Logística - Efectos secundarios", lwd = 2) 
+  segments(0, 0, 1, 1, col='black')
+  grid() 
+}
+
+# Cruva ROC para el modelo lineal
+plotROC(prob_GLM_effects, datos_test$ratingLabel)
+
+```
+
+```{r}
+# para effects
+
+# Obtenemos las probabilidades
+prob_GLM_effectiveness = predict(gml_effectiveness, data.frame(datos_test), type=c("response"))
+
+# Función que dibuja uan curva ROC
+plotROC <- function(modelo, etiq_real, adicionar=FALSE,color="red") { 
+  pred <- prediction(modelo, etiq_real)
+  perf <- performance(pred,"tpr","fpr")
+  plot(perf, col=color, add=adicionar, main="Curva ROC - Regresión Logística - Efectividad", lwd = 2) 
+  segments(0, 0, 1, 1, col='black')
+  grid() 
+}
+
+# Cruva ROC para el modelo lineal
+plotROC(prob_GLM_effectiveness, datos_test$ratingLabel)
+
+```
+
+
+
+
+## Regresión Polinomial - Simple
+
+https://rpubs.com/Joaquin_AR/250069
+
+```{r}
+# CÁLCULO DEL MODELO POLINÓMICO DE GRADO 4
+# ----------------------------------------
+modelo_poli4 <- lm(ratingLabel ~ poly(sideEffectsInverse, 4), data = datos_train)
+summary(modelo_poli4)
+
+# INTERPOLACIÓN DE PUNTOS DENTRO DEL RANGO DEL PREDICTOR
+# -----------------------------------------------------------------------------
+limites <- range(datos_train$sideEffectsInverse)
+nuevos_puntos <- seq(from = limites[1], to = limites[2], by = 1)
+nuevos_puntos <- data.frame(sideEffectsInverse = nuevos_puntos)
+
+# PREDICCIÓN DE LA VARIABLE RESPUESTA Y DEL ERROR ESTÁNDAR
+# -----------------------------------------------------------------------------
+predicciones <- predict(modelo_poli4, newdata = nuevos_puntos, se.fit = TRUE,
+                        level = 0.95)
+
+# CÁLCULO DEL INTERVALO DE CONFIANZA SUPERIOR E INFERIOR 95%
+# -----------------------------------------------------------------------------
+intervalo_conf <- data.frame(inferior = predicciones$fit -
+                                        1.96*predicciones$se.fit,
+                             superior = predicciones$fit +
+                                        1.96*predicciones$se.fit)
+
+attach(datos_train)
+plot(x = sideEffectsInverse, y = ratingLabel, pch = 20, col = "darkgrey")
+title("Polinomio de grado 4: ratingLabel ~ sideEffectsInverse")
+lines(x = nuevos_puntos$sideEffectsInverse, predicciones$fit, col = "red", pch = 20)
+lines(x = nuevos_puntos$sideEffectsInverse, intervalo_conf$inferior, col = "blue", pch = 4)
+lines(x = nuevos_puntos$sideEffectsInverse, intervalo_conf$superior, col = "blue", pch = 4)
+```
+
+
+
+
+# Conclusiones

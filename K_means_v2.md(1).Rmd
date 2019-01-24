@@ -10,7 +10,7 @@ library(proxy)
 library(ggpubr)
 
 # Cargamos los tados
-datos_train <- read.table("datos_train_preprocesado.csv", sep=",", comment.char="",quote = "\"", header=TRUE)
+datos_train <- read.table("datos/datos_train_preprocesado.csv", sep=",", comment.char="",quote = "\"", header=TRUE)
 # Establecemos la semilla
 set.seed(3)
 
@@ -76,4 +76,70 @@ fviz_cluster(object = res_clustering, data = data_train_procesado, show.clust.ce
   theme_bw() +
   theme(legend.position = "none")
 ```
+Voy a repetir el mismo cálculo, pero en este caso solamente mostrando fármacos "famosos" o significativos, ya que salen muchos fármacos y no se entiende nada, y de esta forma quizá conseguimos quedarnos con los más importantes y entender algo del gráfico resultante.
+
+
+
+```{r}
+
+
+# https://stackoverflow.com/questions/40003028/extracting-unique-values-from-data-frame-using-r
+nombres_farmacos <- unique(datos_train[,1])
+
+print(nombres_farmacos[1:10])
+
+# Creamos una matriz con tantas filas como fármacos, y columnas como datos queramos utilizar. En este caso son 3 columnas porque necesitamos guardar la info de "rating", "sideEffectNumber" y "effectivenessNumber".
+datos_procesados <- matrix(ncol=3, nrow=length(nombres_farmacos))
+
+for(i in 0:length(nombres_farmacos)){
+  #https://stackoverflow.com/questions/24831580/return-row-of-data-frame-based-on-value-in-a-column-r
+  filas_farmaco <- datos_train2[which(datos_train$urlDrugName == nombres_farmacos[i]),]
+  if (nrow(filas_farmaco) > 1 )
+  mean_rating <- mean(filas_farmaco$rating)
+  mean_side_effect <- mean(filas_farmaco$sideEffectsNumber)
+  mean_effectiveness <- mean(filas_farmaco$effectivenessNumber)
+
+  #print(mean_rating)
+  datos_procesados[i,] <- c(mean_rating, round(mean_side_effect), round(mean_effectiveness))
+  
+}
+
+
+data_train_procesado <- data.frame(datos_procesados)
+rownames(data_train_procesado) <- nombres_farmacos
+colnames(data_train_procesado) <- c("rating", "sideEffectNumber", "effectivenessNumber")
+
+
+
+res_clustering <- kmeans(data_train_procesado, 5)
+
+
+
+fviz_cluster(object = res_clustering, data = data_train_procesado, show.clust.cent = TRUE,
+             ellipse.type = "euclid", star.plot = TRUE, repel = TRUE) +
+  labs(title = "Resultados clustering K-means") +
+  theme_bw() +
+  theme(legend.position = "none")
+
+```
+
+
+INTENTO FUZZY CLUSTERING
+```{r}
+#install.packages("ppclust")
+library(ppclust)
+library(cluster)
+library(fclust)
+
+ head(data_train_procesado)
+datos <- scale(data_train_procesado)
+ fuzzy_cluster <- fanny(x = datos, k = 3, metric = "euclidean", stand = FALSE)
+head(fuzzy_cluster$membership)
+# fuzzy_cluster$coeff
+# head(fuzzy_cluster$clustering)
+fviz_cluster(object = fuzzy_cluster, repel = TRUE, ellipse.type = "norm", pallete = "jco") + theme_bw() + labs(title = "Fuzzy Cluster plot")
+
+```
+
+
 

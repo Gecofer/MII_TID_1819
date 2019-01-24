@@ -346,7 +346,7 @@ datos_test = datos_test[-8] # Eliminar columna para el commentsReview en el test
 Además de eliminar las columnas innecesarias, se han localizado tres filas que aportan información irrelevante a nuestro análisis, las cuales estaban perjudicando la realización del preprocesamiento.
 
 - Se elimina la fila 387, porque no dispone de información alguna ni en _benefitsReview_ y _sideEffectsReview_. 
-- Se elimina la fila 928, porque en la columna _condition_ dispone de un carácter raro. <!--("ra, sj\�gren syndrome") --->
+- Se elimina la fila 928, porque en la columna _condition_ dispone de un carácter raro. 
 - Se elimina la fila 3105, porque no tienen información en _benefitsReview_ ("---").
 
 ```{r}
@@ -473,7 +473,6 @@ for (i in 1:length(datos_train[[1]])){
  
 }
 
-View(datos_train)
 ```
 
 
@@ -528,7 +527,6 @@ for (i in 1:length(datos_test[[1]])){
  
 }
 
-View(datos_test)
 ```
 
 Comprobamos que se ha creado la nueva columna *weightedRating*, y que se han añadido los nuevos cambios.
@@ -562,7 +560,6 @@ for (i in 1:length(datos_train[[1]])){
   
 }
 
-View(datos_train)
 ```
 
 Ahora en test
@@ -585,7 +582,7 @@ for (i in 1:length(datos_test[[1]])){
   
 }
 
-View(datos_test)
+
 ```
 
 
@@ -622,7 +619,6 @@ for (i in 1:length(datos_train[[1]])){
  
 }
 
-View(datos_train)
 ```
 
 Para test
@@ -654,7 +650,6 @@ for (i in 1:length(datos_test[[1]])){
  
 }
 
-View(datos_test)
 ```
 
 <!-------------------------------------------------------------------------------------------->
@@ -838,6 +833,36 @@ freq <- sort(colSums(as.matrix(dtm)), decreasing=FALSE)
 wf <- data.frame(word=names(freq), freq=freq)
 
 library(NLP)
+library(magrittr)
+library(plyr)
+library(RColorBrewer)
+library(ggplot2) 
+
+
+# Paquete para minería de datos, permite procesar datos de tipo texto
+# El paquete tm, necesita el paquete NLP
+library(NLP)
+library(tm)
+
+# Paquete para minería de datos, agrupa aquellos términos que contienen la misma raíz
+library(SnowballC)
+
+library(wesanderson)
+
+library(devtools)                   # hace falta esta librería para que funcione
+# install_github("mukul13/rword2vec") # nos instalamos la libreria desde Github
+library(rword2vec)
+
+library(rlist)
+
+library(quanteda) 
+
+library(tseries)
+library(wordcloud)
+
+library(dplyr)
+
+library(ROCR)
 
 # Dibujamos el histograma
 subset(wf, freq>350)    %>%
@@ -1329,8 +1354,11 @@ Para estudiar la importancia de los términos de un documento en particular, en 
 
 Estas ponderaciones se calculan como el producto de dos medidas, la frecuencia de aparición del término (tf) y la frecuencia inversa del documento (idf). La fórmula matemática para esta métrica es la siguiente:
 
-$$ tfidf(t, d, D) = tf(t, d) × idf(t, D)$$
-    
+```{r}
+#$$ tfidf(t, d, D) = tf(t, d) × idf(t, D)$$
+```
+
+
 donde t es el término, d denota cada documento, D el espacio total de documentos y tfidf es el peso asignado a ese término en el documento correspondiente.
 
 La combinación de los valores de tf e idf da una métrica que permite saber cómo de únicas son las palabras de un documento. La ponderación asigna un alto peso a un término si se produce con frecuencia en ese documento, pero rara vez en la colección completa. Sin embargo, si el término ocurre pocas veces en el documento, o aparece prácticamente en todos ellos, disminuye el peso asignado por la ponderación tfidf.
@@ -1570,8 +1598,8 @@ wordcloud(
  )
 ```
 
-
 <!-------------------------------------------------------------------------------------------->
+
 
 ### 2.2.16. Stemming
 
@@ -1636,26 +1664,27 @@ effects_train_corpus_new_load <- tm_map(effects_train_corpus_new_load, stripWhit
 benefits_test_corpus_new_load <- tm_map(benefits_test_corpus_new_load, stripWhitespace) 
 effects_test_corpus_new_load <- tm_map(effects_test_corpus_new_load, stripWhitespace) 
 ```
-
 <!-------------------------------------------------------------------------------------------->
 
 ### 2.2.19. Sparsity
 
-También puede resultar muy útil eliminar los términos que aparecen en muy pocos documentos antes de proceder a la clasificación. El motivo principal es la factibilidad computacional, ya que este proceso reduce drásticamente el tamaño de la matriz sin perder información significativa. Además puede eliminar errores en los datos, como podrían ser palabras mal escritas. En el caso del clasificador la escasez es del 100 %, como se puede ver en la salida anterior de R.
+También puede resultar muy útil eliminar los términos que aparecen en muy pocos documentos antes de proceder a la clasificación. El motivo principal es la factibilidad computacional, ya que este proceso reduce drásticamente el tamaño de la matriz sin perder información significativa. Además puede eliminar errores en los datos, como podrían ser palabras mal escritas. En el caso del clasificador la escasez es del 100 \%, como se puede ver en la salida anterior de R.
 
 Para suprimir estos términos, denominados escasos, se utiliza el comando removeSparseTerms(). Éste conserva todos los términos que cumplen
-$$ df(t) > N · (1 ≠ sparse)$$
 
-siendo df la frecuencia de documentos del término t y N el número de vectores. El parámetro sparse toma valores entre 0 y 1. En este caso, el umbral de escasez es 0,97, se toman los términos que aparecen en más del 3 % de documentos.
+
+siendo df la frecuencia de documentos del término t y N el número de vectores. El parámetro sparse toma valores entre 0 y 1. En este caso, el umbral de escasez es 0,97, se toman los términos que aparecen en más del 3 \% de documentos.
 
 ```{r}
+# $$ df(t) > N · (1 != sparse)$$
+
 dtm <- DocumentTermMatrix(benefits_train_corpus_new_load)
 inspect(dtm)
 dtm <- removeSparseTerms(dtm, sparse=0.999)
 inspect(dtm)
 ```
 
-Se observa como de x términos pasamos a x términos, ni un 5% del total, por tanto se ha considerado despreciar aplicar esta técnica.  Por tanto, ya tenemos nuestros datos listos.
+Se observa como de x términos pasamos a x términos, ni un 5\% del total, por tanto se ha considerado despreciar aplicar esta técnica.  Por tanto, ya tenemos nuestros datos listos.
 
 <!-------------------------------------------------------------------------------------------->
 
@@ -1734,7 +1763,6 @@ ordena_menor_matrix_corpus <- sort(suma_matrix_corpus, decreasing = FALSE)
 head(ordena_menor_matrix_corpus,10)
 ```
 
-
 ```{r}
 # Transformamos a objeto data.frame, con dos columnas (palabra, frec), para posteriormente graficarlo.
 ordena_mayor_matrix_corpus <- data.frame(palabra = names(ordena_mayor_matrix_corpus), frec = ordena_mayor_matrix_corpus)
@@ -1756,7 +1784,6 @@ barplot(copia_ordena_mayor[1:10,],  xlab="Palabras", ylab="Número de frecuencia
 title(main = list("Las diez palabras más frecuentes después del preprocesamiento", font = 4))
 ```
 
-
 ### 2.2.22. Nube de palabras
 
 ```{r}
@@ -1774,9 +1801,8 @@ title(main = list("Las diez palabras más frecuentes después del preprocesamien
 # cogemos el fichero ya preprprocesado 
 
 d1 <- read.csv(file="datos/datos_train_preprocesado.csv")
-d1$benefits_preprocesado
 
-d1$items <- as.character(d1$benefits_preprocesad) # ordena_mayor_matrix_corpus
+d1$items <- as.character(d1$benefits_preprocesado) # ordena_mayor_matrix_corpus
 
 library(tidytext)
 library(wordcloud)

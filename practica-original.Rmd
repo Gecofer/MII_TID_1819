@@ -313,6 +313,10 @@ Dado que la representación total del documento puede tener una alta dimensión,
 
 <!-------------------------------------------------------------------------------------------->
 
+
+No se contabiliza elimar meicamnetos repetidocs, debido a que hacen faltan las opiniones
+
+
 ### 2.2.1. Eliminar columnas
 
 El primer paso que vamos a realizar es la **eliminación de columnas**, las cuales contienen información irrelevante para nuestro análisis.

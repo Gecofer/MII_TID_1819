@@ -1,0 +1,251 @@
+---
+title: "K_means_v2"
+output: html_document
+---
+
+```{r}
+library(tm)
+library(factoextra)
+library(proxy)
+library(ggpubr)
+
+# Cargamos los tados
+datos_train <- read.table("datos_train_preprocesado.csv", sep=",", comment.char="",quote = "\"", header=TRUE)
+
+datos_test <- read.table("datos_test_preprocesado.csv", sep=",", comment.char="",quote = "\"", header=TRUE)
+# Establecemos la semilla
+set.seed(3)
+
+# Nos quedamos con las columnas que nos interesan 
+datos_train2 = datos_train[c(2,8,9)]
+datos_test2 = datos_test[c(2,8,9)]
+head(datos_train2)
+```
+
+Los resultados que se obtienen son muy impredecibles. Vamos a obtener los fármacos representados por una única vez. 
+```{r}
+km.res <- kmeans(datos_train2, 4)
+
+
+
+fviz_cluster(object = km.res, data = datos_train2, show.clust.cent = TRUE,
+             ellipse.type = "euclid", star.plot = TRUE, repel = TRUE) +
+  labs(title = "Resultados clustering K-means") +
+  theme_bw() +
+  theme(legend.position = "none")
+
+
+
+```
+
+
+```{r}
+
+# https://stackoverflow.com/questions/40003028/extracting-unique-values-from-data-frame-using-r
+nombres_farmacos <- unique(datos_train[,1])
+
+print(nombres_farmacos[1:10])
+
+# Creamos una matriz con tantas filas como fármacos, y columnas como datos queramos utilizar. En este caso son 3 columnas porque necesitamos guardar la info de "rating", "sideEffectNumber" y "effectivenessNumber".
+datos_procesados <- matrix(ncol=3, nrow=length(nombres_farmacos))
+
+for(i in 0:length(nombres_farmacos)){
+  #https://stackoverflow.com/questions/24831580/return-row-of-data-frame-based-on-value-in-a-column-r
+  filas_farmaco <- datos_train2[which(datos_train$urlDrugName == nombres_farmacos[i]),]
+
+  mean_rating <- mean(filas_farmaco$rating)
+  mean_side_effect <- mean(filas_farmaco$sideEffectsNumber)
+  mean_effectiveness <- mean(filas_farmaco$effectivenessNumber)
+
+  #print(mean_rating)
+  datos_procesados[i,] <- c(mean_rating, round(mean_side_effect)*(-1), round(mean_effectiveness))
+  
+}
+
+
+data_train_procesado <- data.frame(datos_procesados)
+rownames(data_train_procesado) <- nombres_farmacos
+colnames(data_train_procesado) <- c("rating", "sideEffectNumber", "effectivenessNumber")
+```
+
+```{r}
+res_clustering <- kmeans(data_train_procesado, 5)
+
+# https://rpubs.com/Joaquin_AR/310338 PASOS SEGUIDOS  
+
+fviz_cluster(object = res_clustering, data = data_train_procesado, show.clust.cent = TRUE,
+             ellipse.type = "euclid", star.plot = TRUE, repel = TRUE) +
+  labs(title = "Resultados clustering K-means") +
+  theme_bw() +
+  theme(legend.position = "none")
+```
+Voy a repetir el mismo cálculo, pero en este caso solamente mostrando fármacos "famosos" o significativos, ya que salen muchos fármacos y no se entiende nada, y de esta forma quizá conseguimos quedarnos con los más importantes y entender algo del gráfico resultante.
+
+Así que he copiado la misma función de arriba, pero le he añadido un nuevo parámetro a la función, que representa a partir de cuántas repeticiones de un fármaco consideramos que este es relevante para ponerlo en el clustering. 
+```{r}
+
+
+# https://stackoverflow.com/questions/40003028/extracting-unique-values-from-data-frame-using-r
+nombres_farmacos <- unique(datos_train[,1])
+
+print(nombres_farmacos[1:10])
+
+# Creamos una matriz con tantas filas como fármacos, y columnas como datos queramos utilizar. En este caso son 3 columnas porque necesitamos guardar la info de "rating", "sideEffectNumber" y "effectivenessNumber".
+datos_procesados <- matrix(ncol=3, nrow=length(nombres_farmacos))
+
+for(i in 0:length(nombres_farmacos)){
+  #https://stackoverflow.com/questions/24831580/return-row-of-data-frame-based-on-value-in-a-column-r
+  filas_farmaco <- datos_train2[which(datos_train$urlDrugName == nombres_farmacos[i]),]
+  if (nrow(filas_farmaco)>20 ){
+  mean_rating <- mean(filas_farmaco$rating)
+  mean_side_effect <- mean(filas_farmaco$sideEffectsNumber)
+  mean_effectiveness <- mean(filas_farmaco$effectivenessNumber)}
+
+  #print(mean_rating)
+  datos_procesados[i,] <- c(mean_rating, round(mean_side_effect)*(-1), round(mean_effectiveness))
+  
+}
+
+
+data_train_procesado <- data.frame(datos_procesados)
+rownames(data_train_procesado) <- nombres_farmacos
+colnames(data_train_procesado) <- c("rating", "sideEffectNumber", "effectivenessNumber")
+
+
+
+res_clustering <- kmeans(data_train_procesado, 5)
+
+
+
+
+
+```
+
+```{r}
+fviz_cluster(object = res_clustering, data = data_train_procesado, show.clust.cent = TRUE,
+             ellipse.type = "euclid", star.plot = TRUE, repel = TRUE) +
+  labs(title = "Resultados clustering K-means") +
+  theme_bw() +
+  theme(legend.position = "none")
+```
+
+
+Vamos a intentar hacer predict...... lloran2
+```{r}
+
+nombres_farmacos <- unique(datos_test[,1])
+
+print(nombres_farmacos[1:10])
+
+# Creamos una matriz con tantas filas como fármacos, y columnas como datos queramos utilizar. En este caso son 3 columnas porque necesitamos guardar la info de "rating", "sideEffectNumber" y "effectivenessNumber".
+datos_procesados <- matrix(ncol=3, nrow=length(nombres_farmacos))
+
+for(i in 0:length(nombres_farmacos)){
+  #https://stackoverflow.com/questions/24831580/return-row-of-data-frame-based-on-value-in-a-column-r
+  filas_farmaco <- datos_test2[which(datos_test$urlDrugName == nombres_farmacos[i]),]
+  
+  mean_rating <- mean(filas_farmaco$rating)
+  mean_side_effect <- mean(filas_farmaco$sideEffectsNumber)
+  mean_effectiveness <- mean(filas_farmaco$effectivenessNumber)
+
+  #print(mean_rating)
+  datos_procesados[i,] <- c(mean_rating, round(mean_side_effect)*(-1), round(mean_effectiveness))
+  
+}
+
+
+data_test_procesado <- data.frame(datos_procesados)
+rownames(data_test_procesado) <- nombres_farmacos
+colnames(data_test_procesado) <- c("rating", "sideEffectNumber", "effectivenessNumber")
+
+
+test_clustering = kmeans(data_test_procesado,centers=res_clustering$centers)
+fviz_cluster(object = test_clustering, data = data_test_procesado, show.clust.cent = TRUE,
+             ellipse.type = "euclid", star.plot = TRUE, repel = TRUE) +
+  labs(title = "Resultados clustering K-means") +
+  theme_bw() +
+  theme(legend.position = "none")
+
+
+
+```
+
+```{r}
+
+
+predict.kmeans <- function(object, newdata){
+    centers <- object$centers
+    n_centers <- nrow(centers)
+    dist_mat <- as.matrix(dist(rbind(centers, newdata)))
+    dist_mat <- dist_mat[-seq(n_centers), seq(n_centers)]
+    max.col(-dist_mat)
+}
+
+set.seed(47)
+
+
+
+library('clue')
+mod_kmeans <-  kmeans(data_train_procesado, 5)
+test_preds <- cl_predict(mod_kmeans, data_test_procesado)
+
+
+table(test_preds)
+
+head(test_preds)
+
+```
+
+
+
+
+https://stats.stackexchange.com/questions/144616/comparing-k-means-results-to-original-data-how-to-interpret-the-resulting-plots quiza sirve para pintar graficos de estos de cajas chulis
+
+
+```{r}
+
+```
+
+ahora voy a buscar un farmaco que exista en los dos conjuntos
+
+```{r}
+# Primero buscamos los fármacos que estén en tanto en train como en test, pq son con los que podemos ver si funciona o no el clustering. Vamos a ver si coinciden. 
+x = intersect(datos_test$urlDrugName, datos_train$urlDrugName)
+head(x)
+
+# df[match(item,df$cname),]
+indice_train = match('sarafem',datos_train$urlDrugName)
+indice_test = match('sarafem',datos_test$urlDrugName)
+
+# imprimimos cluster que tiene en train 
+res_clustering$cluster[indice_train]
+
+# imprimimos cluster que tiene en test
+test_clustering$cluster[indice_test]
+
+count = 0
+count_na = 0
+for(farmaco in x){
+  indice_train = match(farmaco,datos_train$urlDrugName)
+  indice_test = match(farmaco,datos_test$urlDrugName)
+  
+  # imprimimos cluster que tiene en train 
+  c_train = res_clustering$cluster[indice_train]
+
+  # imprimimos cluster que tiene en test
+  c_test = test_clustering$cluster[indice_test]
+  
+  if ( !is.na(c_train) && !is.na(c_test) && c_train == c_test){
+    count = count +1
+  }
+  
+  if (is.na(c_train) || is.na(c_test))
+    count_na = count_na +1
+}
+
+print(count)
+
+```
+
+
+## Clustering Difuso

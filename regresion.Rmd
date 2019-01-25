@@ -17,43 +17,34 @@ datos_test <- read.csv(file="datos/datos_test_preprocesado.csv")
 View(datos_test)
 ```
 
-
-Contamos las veces que aparecen los medicamentos
-
-```{r}
-#http://nubededatos.blogspot.com/2015/10/vectores-en-r-elementos-comunes-y-unicos.html
-
-duplicated(datos_test$urlDrugName)
-
-df <- data.frame(datos_test$urlDrugName)
-new_df <- aggregate(datos_test$urlDrugName, df, length)
-colnames(new_df)[2]<-"Repeticiones"
-new <- new_df[order(new_df$Repeticiones, decreasing = TRUE),]
-new
-View(new)
-
-
-df %>%                       #Primero llamo a los datos. Uso el símbolo %>% para conectar las operaciones. 
-  group_by(datos_test$urlDrugName) %>%       #Luego indico que quiero un grupo por cada valor único en Estados, podría agupar por más variables si las tuviera/quisiera.
-  tally()  
-```
-
-```{r}
-new[1,]
-```
-
-
-
-```{r}
-datos_test[datos_test$urlDrugName == "paxil",]
-
-```
-
+Nuestro modelo de regresión, solo tiene variables discretass, por lo que sería de clasificación, ver eso en el tema 5.
 
 
 # Regresión Multiclase
 
+Hay que tener cuidado con la regresión, porque esta, muy relacionada con la correlación, debemos tener claro que lo nuestro son variables categoricas.
+
+
+
 ## Regresión Lineal
+
+Regresión lineal con variables categóricas
+
+https://rpubs.com/Diego_Koz/326716
+
+Regresión lineal
+con el comando lm() podemos ajustar el modelo. Algunos parametros importantes de esta función son:
+
+formula: definimos el modelo como _ Y ~ X _.
+regresion multiple: y ~ X1+X2+...Xn.
+regresión polinómica: y ~ poly(x = X, degree = k)
+interacción de variables: y ~ X1∗X2. Si sólo queremos el término de interacción: X1:X2
+data : especificamos el dataset a utilizar
+subset : si dividimos la muestra en training y testing, podemos indicar el subconjunto de entrenamiento con un vector que indique sus números de fila
+
+
+
+Calcular el coeficiente de correlacióon simple usado para medir la relación lineal entre dos variables (ver lo del coeficiente de correlacion lineal, calcular la R al cuadradro)
 
 https://rpubs.com/Joaquin_AR/254575
 
@@ -84,6 +75,10 @@ errorres_regresion_lineal(lm_effects)
 
 lm_effectiveness = lm(data = datos_train, formula = ratingLabel ~ effectivenessNumber)
 errorres_regresion_lineal(lm_effectiveness)
+
+# # Detección y visualización de observaciones influyentes
+require(car)
+influencePlot(lm_effectiveness)
 ```
 
 ```{r}
@@ -127,11 +122,41 @@ plotROC(prob_LM_effectiveness, datos_test$ratingLabel)
 ```
 
 
+## Regresión Lineal Múltiple
 
-## Regresión Multivariante
+https://rpubs.com/Joaquin_AR/226291
+
+No porque no se puede hacer correlación
+
+Pero no sé de que serviría juntar estas.
+
+```{r}
+modelo <- lm(ratingLabel ~ poly(sideEffectsInverse,3) + effectivenessNumber, data = datos_train)
+summary(modelo)
+
+# https://rpubs.com/Cristina_Gil/Regresion_Lineal_Multiple
+step(modelo, direction = "both", trace = 1)
+
+errorres_regresion_lineal(modelo)
+# no se ha sido excluido en el proceso de selección a ninguna variable.
+```
+
+```{r}
+# Matriz de correlación entre predictores.
+library(corrplot)
+corrplot(cor(dplyr::select(datos_train, ratingLabel, sideEffectsInverse,effectivenessNumber)),
+         method = "number", tl.col = "black")
+```
+
+
+## Regresión Multivariante 
+
+Creo que esta regresión es la regresión lineal Múltiple
 
 
 ## Regresión Logística 
+
+La regresión logística se usa para predecir la probabilidad de ocurrencia de una variable binaria. Es decir para predecir la probabilidad de pertenencia o no a una determinada clase (fallo no-fallo, pago impago etc.) es muy usada en control de calidad y en análisis de riesgo.
 
 https://stackoverrun.com/es/q/3252973
 
@@ -160,6 +185,7 @@ errorres_regresion_logistica <- function(m){
 # Creamos el modelo
 # la etiqueta tiene que estar entre 0 y 1
 gml_effects = glm(ratingLabel ~ sideEffectsNumber, family = binomial(logit), data = datos_train)
+
 errorres_regresion_logistica(gml_effects)
 
 gml_effectiveness = glm(ratingLabel ~ effectivenessNumber, family = binomial(logit), data = datos_train)
@@ -213,10 +239,18 @@ plotROC(prob_GLM_effectiveness, datos_test$ratingLabel)
 
 ```
 
+```{r}
+
+```
 
 
 
 ## Regresión Polinomial - Simple
+
+ En algunos casos, la verdadera relación entre la variable respuesta y los predictores puede no ser lineal, por lo que podemos aplicar por ejemplo una regresión polinomial (existen métodos más complejos). Una forma simple de incorporar asociaciones no lineales en un modelo lineal es incluir versiones transformadas de los predictores, elevándolos a distintas potencias, evitando un exceso de grados para evitar el sobreajuste o overfitting.
+
+https://rpubs.com/Cristina_Gil/Regresion_Lineal_Multiple
+
 
 https://rpubs.com/Joaquin_AR/250069
 
@@ -254,5 +288,24 @@ lines(x = nuevos_puntos$sideEffectsInverse, intervalo_conf$superior, col = "blue
 
 
 
+
+## Regularicion
+
+Rigde regression
+Lasso regresion
+
+https://www.r-bloggers.com/ridge-regression-and-the-lasso/
+
+```{r}
+install.packages("glmnet")
+library(glmnet)
+
+swisslm <- lm(ratingLabel ~ sideEffectsInverse+effectivenessNumber, data = datos_train)
+coef(swisslm)
+
+ridge.mod <- glmnet(x, y, alpha = 0, lambda = lambda)
+predict(ridge.mod, s = 0, exact = T, type = 'coefficients')[1:6,]
+
+```
 
 # Conclusiones

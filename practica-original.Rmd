@@ -97,6 +97,25 @@ set.seed(3) # semilla para obtención de los mismos resultados
 getwd()     # para saber el directorio de trabajo
 ```
 
+```{r}
+library(magrittr)
+library(plyr)
+library(RColorBrewer)
+library(ggplot2) 
+library(NLP) # Paquete para minería de datos, permite procesar datos de tipo texto
+library(tm)
+library(SnowballC) # Paquete para minería de datos, agrupa aquellos términos que contienen la misma raíz
+library(wesanderson)
+library(devtools)               
+library(rword2vec) # install_github("mukul13/rword2vec")
+library(rlist)
+library(quanteda) 
+library(tseries)
+library(wordcloud)
+library(dplyr)
+library(ROCR)
+```
+
 <!-----------------------------------------0. Paquetes necesarios ------------------------------------------------------>
 
 # Descripción de los paquetes necesarios
@@ -106,8 +125,6 @@ A continuación, se describen los paquetes necesarios para el desarollo del proy
 - [`tm`](https://cran.r-project.org/web/packages/tm/tm.pdf) : Paquete específico para minería de datos, permite procesar datos de tipo texto. Se puede instalar usando : _install.packages("tm")_.
 
 - [`SnowballC`](https://cran.r-project.org/web/packages/SnowballC/SnowballC.pdf) : Paquete adicional para minería de datos, implementa un algoritmo que permite reducir el número de términos con lo que trabajar, es decir, agrupa aquellos términos que contienen la misma raíz. El paquete soporta los siguientes idiomas: alemán, danés, español, finlandés, francés, húngaro, inglés, italiano, noruego, portugués, rumano, ruso, sueco y turco. Se puede instalar usando : _install.packages("SnowballC")_.
-
-- NLP
 
 - [`wordcloud`](https://cran.r-project.org/web/packages/wordcloud/wordcloud.pdf) : Paquete para crear gráficas de nubes de palabras, permitiendo visualizar las diferencias y similitudes entre documentos. Se puede instalar usando : _install.packages("wordcloud")_.
 
@@ -119,13 +136,32 @@ A continuación, se describen los paquetes necesarios para el desarollo del proy
 
 - [`rword2vec`](https://github.com/mukul13/rword2vec) : Paquete que toma un corpus de texto como entrada y produce los vectores de palabra como salida, usado especialmente para obtener las distancias que existen entre un término y los términos semejantes en el texto de formación (aprende la representación vectorial de las palabras). Se puede instalar usando : _install\_github("mukul13/rword2vec")_. 
 
-- magrittr
+- [`magrittr`](https://cran.r-project.org/web/packages/magrittr/magrittr.pdf) : Paquete ...
 
-- plyr
+- [`plyr`](https://cran.r-project.org/web/packages/plyr/plyr.pdf) : Paquete ... 
 
-- RColorBrewer
+- [`ggplot2`](https://cran.r-project.org/web/packages/ggplot2/ggplot2.pdf) : Paquete ...
 
-- ggplot2
+- [`ROCR`](https://cran.r-project.org/web/packages/ROCR/ROCR.pdf) : Paquete ...
+
+- [`RColorBrewer`](https://cran.r-project.org/web/packages/RColorBrewer/RColorBrewer.pdf) : Paquete ...
+
+- [`NLP`](https://cran.r-project.org/web/packages/NLP/NLP.pdf) : Paquete ...
+
+- [`wesanderson`](https://cran.r-project.org/web/packages/wesanderson/wesanderson.pdf) : Paquete ...
+
+- [`devtools`](https://cran.r-project.org/web/packages/devtools/devtools.pdf) : Paquete ...  
+
+- [`rlist`](https://cran.r-project.org/web/packages/rlist/rlist.pdf) : Paquete ...  
+
+- [`quanteda`](https://cran.r-project.org/web/packages/quanteda/quanteda.pdf) : Paquete ...  
+
+- [`tseries`](https://cran.r-project.org/web/packages/tseries/tseries.pdf) : Paquete ...  
+
+- [`wordcloud`](https://cran.r-project.org/web/packages/wordcloud/wordcloud.pdf) : Paquete ...  
+
+- [`dplyr`](https://cran.r-project.org/web/packages/dplyr/dplyr.pdf) : Paquete ...
+
 
 \newpage
 
@@ -199,6 +235,11 @@ En este apartado, pondremos los datos a punto para la aplicación de diversas t�
 16. Valores perdidos
 17. Term Document Matrix
 18. Sparsity
+19.
+20.
+21.
+22.
+23.
 
 <!-------------------------------------------------------------------------------------------->
 
@@ -313,10 +354,6 @@ Dado que la representación total del documento puede tener una alta dimensión,
 
 <!-------------------------------------------------------------------------------------------->
 
-
-No se contabiliza elimar meicamnetos repetidocs, debido a que hacen faltan las opiniones
-
-
 ### 2.2.1. Eliminar columnas
 
 El primer paso que vamos a realizar es la **eliminación de columnas**, las cuales contienen información irrelevante para nuestro análisis.
@@ -356,7 +393,37 @@ datos_test = datos_test[-c(387,928, 3105),] # Eliminar filas en el test
 
 <!-------------------------------------------------------------------------------------------->
 
-### 2.2.3. Cuantificación de variables
+### 2.2.3. Eliminar elementos repetidos
+
+<!---------HAY UN ERROR DE CODIFICACION EN ESTE APARTADO QUE NO VEMOS--------->
+
+No se contabiliza elimar medicamentos repetidos, debido a que hacen faltan las opiniones. Por ejemplo vamos a extraer el medicamentos que más veces se repite en el conjunto test.
+
+```{r}
+# duplicated(datos_test$urlDrugName)
+
+#df <- data.frame(datos_test$urlDrugName)
+#new_df <- aggregate(datos_test$urlDrugName, df, length)
+#colnames(new_df)[2]<-"Repeticiones"
+#new <- new_df[order(new_df$Repeticiones, decreasing = TRUE),]
+
+#df %>%                       
+#  group_by(datos_test$urlDrugName) %>%       #Luego indico que quiero un grupo por cada valor unico en Estados, podria agupar por mas variables si las tuviera/quisiera.
+#  tally()  
+```
+
+```{r}
+#new[1,]
+```
+
+
+```{r}
+#datos_test[datos_test$urlDrugName == "paxil",]
+```
+
+<!-------------------------------------------------------------------------------------------->
+
+### 2.2.4. Cuantificación de variables
 
 Para poder analizar y trabajar más fácilmente con la información de *sideEffects* y  *effectiveness*, se va a realizar una conversión de dichas columnas a forma cuantitativa, es decir, vamos asignar una etiqueta numérica a cada valor pertinente, tanto para para _train_ como _test_. 
 
@@ -422,9 +489,9 @@ head(datos_train$effectivenessNumber, 10)
 
 <!-------------------------------------------------------------------------------------------->
 
-### 2.2.4. Cálculo de rating ponderado
+### 2.2.5. Cálculo de rating ponderado
 
-En esta sección se va a realizar una valoración general de la medicina, teniendo en cuenta los efectos secundarios y efectividad de ésta. Para ello, se va a realizar una ponderación entre estos dos valores, considerando en este caso una ponderación del 70% para los efectos secundarios y un 30% para la efectividad de la medicina.
+En esta sección se va a realizar una valoración general de la medicina, teniendo en cuenta los efectos secundarios y efectividad de ésta. Para ello, se va a realizar una ponderación entre estos dos valores, considerando en este caso una ponderación del 70\% para los efectos secundarios y un 30\% para la efectividad de la medicina.
 
 El motivo de esta ponderación es que se considera que es peor tener efectos secundarios severos en una medicina, a que sea más efectiva o no.
 
@@ -434,6 +501,7 @@ Tras haber cuantificado las variables que miden la efectividad y efectos secunda
 # Ponderaciones
 sideEffectstWeight <- 0.7
 effectivenessWeight <- 0.3
+
 # Recorremos el dataframe
 for (i in 1:length(datos_train[[1]])){
   
@@ -445,7 +513,10 @@ for (i in 1:length(datos_train[[1]])){
   
   # Inicializamos la variable
   sideEffectRating <- 0
-  # Convertimos el valor de sideEffect a la misma escala que efectiveness, ya que sideEffect == 1 significa que no tiene efectos secundarios (lo cual es bueno), y efecctiveness == 1 significa que no es efectivo (lo cual no es bueno). Para ello realizamos la siguiente conversión:
+  # Convertimos el valor de sideEffect a la misma escala que efectiveness, ya que 
+  # sideEffect == 1 significa que no tiene efectos secundarios (lo cual es bueno), 
+  # y efecctiveness == 1 significa que no es efectivo (lo cual no es bueno). Para 
+  # ello realizamos la siguiente conversión:
   if(sideEffectNumber == 1)
      sideEffectRating <- 5
   else if(sideEffectNumber == 2)
@@ -470,11 +541,8 @@ for (i in 1:length(datos_train[[1]])){
   
   # Añadimos el resultado obtenido y lo multiplicamos por dos para pasarlo a escala (1-10)
   datos_train$weightedRating[i] <- result * 2
- 
 }
-
 ```
-
 
 Comprobamos que se ha creado la nueva columna *weightedRating*, y que se han añadido los nuevos cambios.
 
@@ -488,6 +556,7 @@ Ahora hacemos lo mismo en test:
 # Ponderaciones
 sideEffectstWeight <- 0.7
 effectivenessWeight <- 0.3
+
 # Recorremos el dataframe
 for (i in 1:length(datos_test[[1]])){
   
@@ -499,7 +568,10 @@ for (i in 1:length(datos_test[[1]])){
   
   # Inicializamos la variable
   sideEffectRating <- 0
-  # Convertimos el valor de sideEffect a la misma escala que efectiveness, ya que sideEffect == 1 significa que no tiene efectos secundarios (lo cual es bueno), y efecctiveness == 1 significa que no es efectivo (lo cual no es bueno). Para ello realizamos la siguiente conversión:
+  # Convertimos el valor de sideEffect a la misma escala que efectiveness, 
+  # ya que sideEffect == 1 significa que no tiene efectos secundarios (lo cual es bueno), 
+  # y efecctiveness == 1 significa que no es efectivo (lo cual no es bueno). Para ello 
+  # realizamos la siguiente conversión:
   if(sideEffectNumber == 1)
      sideEffectRating <- 5
   else if(sideEffectNumber == 2)
@@ -524,9 +596,7 @@ for (i in 1:length(datos_test[[1]])){
   
   # Añadimos el resultado obtenido y lo multiplicamos por dos para pasarlo a escala (1-10)
   datos_test$weightedRating[i] <- result * 2
- 
 }
-
 ```
 
 Comprobamos que se ha creado la nueva columna *weightedRating*, y que se han añadido los nuevos cambios.
@@ -540,11 +610,11 @@ head(datos_train$weightedRating, 10)
 
 ### 2.2.5. Convertir a etiquetas 0 y 1 la columna rating
 
+La columna rating, está entre 0 y 10, pero en algunos casos, cuando queramos aplicar técnicas, deberemos tener una variable binaria, por eso, los numeros que están entre 1 a 4 son 0 y los que estan entre 5 y 10 son 1.
+
 Lo hacemos en train
 
 ```{r}
-# Ponderaciones
-
 # Recorremos el dataframe
 for (i in 1:length(datos_train[[1]])){
   
@@ -557,16 +627,12 @@ for (i in 1:length(datos_train[[1]])){
     result <- 1
   
   datos_train$ratingLabel[i]  <- result
-  
 }
-
 ```
 
 Ahora en test
 
 ```{r}
-# Ponderaciones
-
 # Recorremos el dataframe
 for (i in 1:length(datos_test[[1]])){
   
@@ -579,21 +645,20 @@ for (i in 1:length(datos_test[[1]])){
     result <- 1
   
   datos_test$ratingLabel[i]  <- result
-  
 }
-
-
 ```
-
 
 <!-------------------------------------------------------------------------------------------->
 
 ### 2.2.6. Cambiar el orden de la columna sideEffectsNumber
 
+Cuando queremos comparar la columna sideEffectsNumber con effectivenesNumber, ambas siguen distinto orden:
+
+Ya que el 5 en sideEffectsNumber es efectos secundarios extremadamente graves y el 5 en effectivenesNumber es altamente efectivo, es por eso que se ha decidido cambiar el orden de sideEffectsNumber.
+
 Para train
 
 ```{r}
-
 # Recorremos el dataframe
 for (i in 1:length(datos_train[[1]])){
   
@@ -602,7 +667,10 @@ for (i in 1:length(datos_train[[1]])){
   
   # Inicializamos la variable
   sideEffectRating <- 0
-  # Convertimos el valor de sideEffect a la misma escala que efectiveness, ya que sideEffect == 1 significa que no tiene efectos secundarios (lo cual es bueno), y efecctiveness == 1 significa que no es efectivo (lo cual no es bueno). Para ello realizamos la siguiente conversión:
+  # Convertimos el valor de sideEffect a la misma escala que efectiveness, ya que 
+  # sideEffect == 1 significa que no tiene efectos secundarios (lo cual es bueno), 
+  # y efecctiveness == 1 significa que no es efectivo (lo cual no es bueno). Para ello 
+  # realizamos la siguiente conversión:
   if(sideEffectNumber == 1)
      sideEffectRating <- 5
   else if(sideEffectNumber == 2)
@@ -616,15 +684,12 @@ for (i in 1:length(datos_train[[1]])){
  
   # Añadimos el resultado obtenido y lo multiplicamos por dos para pasarlo a escala (1-10)
   datos_train$sideEffectsInverse[i] <- sideEffectRating
- 
 }
-
 ```
 
 Para test
 
 ```{r}
-
 # Recorremos el dataframe
 for (i in 1:length(datos_test[[1]])){
   
@@ -633,7 +698,10 @@ for (i in 1:length(datos_test[[1]])){
   
   # Inicializamos la variable
   sideEffectRating <- 0
-  # Convertimos el valor de sideEffect a la misma escala que efectiveness, ya que sideEffect == 1 significa que no tiene efectos secundarios (lo cual es bueno), y efecctiveness == 1 significa que no es efectivo (lo cual no es bueno). Para ello realizamos la siguiente conversión:
+  # Convertimos el valor de sideEffect a la misma escala que efectiveness, ya que 
+  # sideEffect == 1 significa que no tiene efectos secundarios (lo cual es bueno), 
+  # y efecctiveness == 1 significa que no es efectivo (lo cual no es bueno). Para 
+  # ello realizamos la siguiente conversión:
   if(sideEffectNumber == 1)
      sideEffectRating <- 5
   else if(sideEffectNumber == 2)
@@ -647,9 +715,7 @@ for (i in 1:length(datos_test[[1]])){
  
   # Añadimos el resultado obtenido y lo multiplicamos por dos para pasarlo a escala (1-10)
   datos_test$sideEffectsInverse[i] <- sideEffectRating
- 
 }
-
 ```
 
 <!-------------------------------------------------------------------------------------------->
@@ -730,17 +796,6 @@ Por tanto, una vez comprendidos los datos y eliminadas las columnas anteriores y
 ### 2.2.8. Creación del corpus
 
 Para poder obtener la estructura con la que vamos a procesar nuestra información, debemos obtener un vector con documentos. En nuestro caso, cada uno de los documentos se corresponde con una opinión sobre un fármaco (*benefitsReview*) y los efectos que tiene (*sideEffectsReview*). Para ello, primero debemos de construir un vector con todas los opiniones del _dataframe_ y convertir cada elemento del vector al formato de documento. Podemos usar la función _VectorSource_ para hacer esta conversión. Se deberán realizar todas las modificaciones tanto para el conjunto train como test. 
-
-```{r}
-# Paquete para minería de datos, permite procesar datos de tipo texto
-# El paquete tm, necesita el paquete NLP
-library(NLP)
-library(tm)
-
-# Paquete para minería de datos, agrupa aquellos términos que contienen la misma raíz
-library(SnowballC)
-```
-
 
 ```{r}
 # Datos train
@@ -832,38 +887,6 @@ dtm <- DocumentTermMatrix(benefits_train_corpus)
 freq <- sort(colSums(as.matrix(dtm)), decreasing=FALSE)
 wf <- data.frame(word=names(freq), freq=freq)
 
-library(NLP)
-library(magrittr)
-library(plyr)
-library(RColorBrewer)
-library(ggplot2) 
-
-
-# Paquete para minería de datos, permite procesar datos de tipo texto
-# El paquete tm, necesita el paquete NLP
-library(NLP)
-library(tm)
-
-# Paquete para minería de datos, agrupa aquellos términos que contienen la misma raíz
-library(SnowballC)
-
-library(wesanderson)
-
-library(devtools)                   # hace falta esta librería para que funcione
-# install_github("mukul13/rword2vec") # nos instalamos la libreria desde Github
-library(rword2vec)
-
-library(rlist)
-
-library(quanteda) 
-
-library(tseries)
-library(wordcloud)
-
-library(dplyr)
-
-library(ROCR)
-
 # Dibujamos el histograma
 subset(wf, freq>350)    %>%
   ggplot(aes(word, freq)) +
@@ -907,13 +930,13 @@ Una forma de medir la distancia es calcular la correlación entre un término y 
 Como hemos podido ver en el documento que se ha mostrado por pantalla, en él se aprecia el uso de signos de puntuación y exclamación. En un principio, no tiene sentido en \textit{Data Mining} contemplar los signos de puntuación, ya que no nos van a aportar información. Por ello, los quitamos, como se puede ver a continuación. Con `tm_map(corpus, removePunctuation)`, se eliminan los símbolos: ! " $ % & ' () * + , - . / : ; < = > ? @ [ \ ] ^ _ ' { | } ~ 
 
 ```{r, warning=FALSE}
-# Una vez que tenemos el corpus creado, continuamos con el procesamiento para los datos train
+# Una vez que tenemos el corpus creado, continuamos con el procesamiento para datos train
 benefits_train_corpus <- tm_map(benefits_train_corpus,
                                 content_transformer(removePunctuation))
 effects_train_corpus <- tm_map(effects_train_corpus, 
                                content_transformer(removePunctuation))
 
-# Una vez que tenemos el corpus creado, continuamos con el procesamiento para los datos test
+# Una vez que tenemos el corpus creado, continuamos con el procesamiento para datos test
 benefits_test_corpus <- tm_map(benefits_test_corpus, 
                                content_transformer(removePunctuation))
 effects_test_corpus <- tm_map(effects_test_corpus, 
@@ -1083,8 +1106,6 @@ terms_frecuency_effects_test_corpus <- terms_frecuency_effects_test_corpus[1:len
 ```
 
 Y visualizamos dichos términos gráficamente:
-
-
 
 ```{r}
 par(mfrow=c(2,2))
@@ -1355,9 +1376,9 @@ Para estudiar la importancia de los términos de un documento en particular, en 
 Estas ponderaciones se calculan como el producto de dos medidas, la frecuencia de aparición del término (tf) y la frecuencia inversa del documento (idf). La fórmula matemática para esta métrica es la siguiente:
 
 ```{r}
-#$$ tfidf(t, d, D) = tf(t, d) × idf(t, D)$$
+# ARREGLAR FORMULA DA ERROR
+# $$ tfidf(t, d, D) = tf(t, d) × idf(t, D)$$
 ```
-
 
 donde t es el término, d denota cada documento, D el espacio total de documentos y tfidf es el peso asignado a ese término en el documento correspondiente.
 
@@ -1380,7 +1401,6 @@ vector_effects_train <- c()
 
 vector_benefits_test<- c()
 vector_effects_test <- c()
-
 
 # Convertimos el dataframe a vector en train
 for (i in 1:length(dataframe_benefits_train[[1]])){ 
@@ -1582,9 +1602,8 @@ ggplot() +
 
 
 ```{r, warning=FALSE}
-
+# INTENTAR ARREGLAR
 # wordlcoud ver como arreglar
-
 # SIGUE SIN SALIR
 
 z_benefits_train$v2 <- as.numeric(z_benefits_train$v_benefits_train)
@@ -1670,14 +1689,16 @@ effects_test_corpus_new_load <- tm_map(effects_test_corpus_new_load, stripWhites
 
 También puede resultar muy útil eliminar los términos que aparecen en muy pocos documentos antes de proceder a la clasificación. El motivo principal es la factibilidad computacional, ya que este proceso reduce drásticamente el tamaño de la matriz sin perder información significativa. Además puede eliminar errores en los datos, como podrían ser palabras mal escritas. En el caso del clasificador la escasez es del 100 \%, como se puede ver en la salida anterior de R.
 
-Para suprimir estos términos, denominados escasos, se utiliza el comando removeSparseTerms(). Éste conserva todos los términos que cumplen
+```{r}
+## ARREGLAR FORMULA DA ERROR
+# $$ df(t) > N · (1 != sparse)$$
+```
 
+Para suprimir estos términos, denominados escasos, se utiliza el comando removeSparseTerms(). Éste conserva todos los términos que cumplen
 
 siendo df la frecuencia de documentos del término t y N el número de vectores. El parámetro sparse toma valores entre 0 y 1. En este caso, el umbral de escasez es 0,97, se toman los términos que aparecen en más del 3 \% de documentos.
 
 ```{r}
-# $$ df(t) > N · (1 != sparse)$$
-
 dtm <- DocumentTermMatrix(benefits_train_corpus_new_load)
 inspect(dtm)
 dtm <- removeSparseTerms(dtm, sparse=0.999)
@@ -1714,10 +1735,10 @@ setnames(datos_test_preprocesado, "text", "effects_preprocesado")
 # Guardamos en ficheros
 library(data.table)
 write.csv(datos_train_preprocesado, file = "datos/datos_train_preprocesado.csv", row.names = FALSE) # guarda un archivo csv
-View(datos_train_preprocesado)
+#View(datos_train_preprocesado)
 
 write.csv(datos_test_preprocesado, file = "datos/datos_test_preprocesado.csv", row.names = FALSE) # guarda un archivo csv
-View(datos_test_preprocesado)
+#View(datos_test_preprocesado)
 
 d1 <- read.csv(file="datos/datos_train_preprocesado.csv")
 ```

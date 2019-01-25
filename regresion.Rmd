@@ -294,6 +294,7 @@ lines(x = nuevos_puntos$sideEffectsInverse, intervalo_conf$superior, col = "blue
 Rigde regression
 Lasso regresion
 
+https://felipegonzalez.github.io/aprendizaje-maquina-2017/regularizacion.html
 https://www.r-bloggers.com/ridge-regression-and-the-lasso/
 
 ```{r}

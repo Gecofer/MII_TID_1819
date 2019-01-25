@@ -74,7 +74,7 @@ res_clustering <- kmeans(data_train_procesado, 5)
 # https://rpubs.com/Joaquin_AR/310338 PASOS SEGUIDOS  
 
 fviz_cluster(object = res_clustering, data = data_train_procesado, show.clust.cent = TRUE,
-             ellipse.type = "euclid", star.plot = TRUE, repel = TRUE) +
+             ellipse.type = "euclid", star.plot = TRUE, repel = TRUE, labelsize = 0) +
   labs(title = "Resultados clustering K-means") +
   theme_bw() +
   theme(legend.position = "none")
@@ -107,13 +107,11 @@ for(i in 0:length(nombres_farmacos)){
 }
 
 
-
-
 data_train_procesado <- data.frame(datos_procesados)
 rownames(data_train_procesado) <- nombres_farmacos
 colnames(data_train_procesado) <- c("rating", "sideEffectNumber", "effectivenessNumber")
 
-datos_luis = data_train_procesado
+
 
 res_clustering <- kmeans(data_train_procesado, 5)
 
@@ -175,26 +173,35 @@ fviz_cluster(object = test_clustering, data = data_test_procesado, show.clust.ce
 ```{r}
 
 
-predict.kmeans <- function(object, newdata){
-    centers <- object$centers
-    n_centers <- nrow(centers)
-    dist_mat <- as.matrix(dist(rbind(centers, newdata)))
-    dist_mat <- dist_mat[-seq(n_centers), seq(n_centers)]
-    max.col(-dist_mat)
-}
-
-set.seed(47)
+# predict.kmeans <- function(object, newdata){
+#     centers <- object$centers
+#     n_centers <- nrow(centers)
+#     dist_mat <- as.matrix(dist(rbind(centers, newdata)))
+#     dist_mat <- dist_mat[-seq(n_centers), seq(n_centers)]
+#     max.col(-dist_mat)
+# }
 
 
 
-library('clue')
-mod_kmeans <-  kmeans(data_train_procesado, 5)
-test_preds <- cl_predict(mod_kmeans, data_test_procesado)
+test_preds <- predict(res_clustering, data_test_procesado)
 
 
 table(test_preds)
 
-head(test_preds)
+datos_test_carlos = cbind(test_preds)
+
+rownames(datos_test_carlos) = rownames(data_test_procesado)
+
+test_carlos = res_clustering
+test_carlos$cluster = datos_test_carlos
+
+fviz_cluster(object = test_carlos, data = data_test_procesado, show.clust.cent = TRUE,
+             ellipse.type = "euclid", star.plot = TRUE, repel = TRUE, labelsize = 0) +
+  labs(title = "Resultados clustering K-means") +
+  theme_bw() +
+  theme(legend.position = "none")
+
+
 
 ```
 
@@ -246,205 +253,90 @@ for(farmaco in x){
 }
 
 print(count)
-
 ```
 
-
-## Clustering Difuso
-
-INTENTO FUZZY CLUSTERING
+A ver, aquí hay que repasar un poquito esto, porque, con el modelo de RandomForest sale que el errorn
 ```{r}
-#install.packages("ppclust")
-library(ppclust)
-library(cluster)
-library(fclust)
+library("randomForest")
 
- head(data_train_procesado)
-datos <- scale(data_train_procesado)
- fuzzy_cluster <- fanny(x = datos, k = 3, metric = "euclidean", stand = FALSE)
-head(fuzzy_cluster$membership)
-# fuzzy_cluster$coeff
-# head(fuzzy_cluster$clustering)
-fviz_cluster(object = fuzzy_cluster, repel = TRUE, ellipse.type = "norm", pallete = "jco") + theme_bw() + labs(title = "Fuzzy Cluster plot")
+
+output.forest <- randomForest(as.factor(effectivenessNumber) ~ . , data = data_train_procesado, replace = T,ntree=400)
+
+output.forest
+
+plot(output.forest)
+
+# Predicciones
+mod_rf = predict(output.forest, newdata = data_test_procesado[-3], type="response")
+
+# Fallo
+y.falladas = sum(mod_rf!=data_test_procesado$effectivenessNumber)/length(data_test_procesado$effectivenessNumber)
+
+print("Error en test:")
+print(y.falladas)
 
 ```
-
-## K - MEDIOIDES CLUSTERING
-
-Nuevo método en el que agrupamos las observaciones en K clusters, siendo este valor K preestablecido. En este caso, cada cluster está representado por una observación presente en el cluster. Mediante este método hacemos uso de medoids, consiguiendo que sea menos afectado por ruido.
-
-Para su resolución usaremos el alogitmo PAM (Partitioning Around Medoids). Este minimiza la suma de las diferencias de cada observación respecto a su medoid.
-
+Segun esto, nos podemos hcer una funcion que te diga en qué rango encontramos el mejor resultado, y con 150 árboles tenemos más que suficiente para alcanzar un 35% de error. Este error en nuestro caso es muy bueno porque tenemos muchisima subjetividad. Para unas personas, poca efectividad tendrá asociado rating 1 y para otras puede ser rating 3. Esto nos afecta mucho los resultados, y por tanto, aumenta el error. 
 ```{r}
 
-# Escalamos antes de aplicar el clustering
-datos <- scale(datos_luis)
+valores_arboles_150 = seq(from=1, to=150, by=1)
+valores_arboles_35 = seq(from=1, to=35, by=1)
+valores_arboles_15 = seq(from=1, to=15, by=1)
+valores_arboles_20 = seq(from=1, to=20, by=1)
+valores_arboles_400 = seq(from=1, to=400, by=1)
+valores_arboles_500 = seq(from=1, to=500, by=1)
 
-# Identificamos el número optimo de clusters
-fviz_nbclust(x = datos, FUNcluster = pam, method = "wss", k.max = 15, diss = dist(datos, method = "manhattan"))
+obtener_arboles_optimo = function(x){
+  #error_min = 100.0
+  arboles_optimo = 1;
+  
+  for(i in x){
+    error_min = 100.0
+    set.seed(3)
+    
+    output.forest <- randomForest(as.factor(effectivenessNumber) ~ . , data = data_train_procesado, replace = T,ntree=i)
 
-# Vemos que a partir de 6 clusters parece estabilizarse, por tanto, k=6
-set.seed(123)
-pam_clusters <- pam(x = datos, k = 6, metric = "manhattan")
-#pam_clusters
-# Observaciones que finalmente se han seleccionado
-#pam_clusters$medoids
-# Cluster al que se ha asignado cada observación
-#pam_clusters$clustering
+    
+    # Predicciones
+    mod_rf = predict(output.forest, newdata = data_test_procesado[-3], type="response")
+    
+    # Fallo
+    y.falladas = sum(mod_rf!=data_test_procesado$effectivenessNumber)/length(data_test_procesado$effectivenessNumber)
+    
+    
+    if(y.falladas < error_min){
+      error_min = y.falladas
+      arboles_optimo = i
+    }
+  }
+  
+  cat("Numero de árboles óptimo",arboles_optimo, "\n")
+  
+  cat("Error minimo conseguido",error_min, "\n")
+  
+}
 
-fviz_cluster(object = pam_clusters, data = datos, ellipse.type = "t", repel = TRUE) +
-  theme_bw() +
-  labs(title = "Resultados clustering PAM") +
-  theme(legend.position = "none")
 
+cat("El error minimo con 150 árboles:\n")
+## El error minimo con 150 árboles:
+obtener_arboles_optimo(x = valores_arboles_150)
+
+
+cat("El error minimo con 20 árboles:\n")
+## El error minimo con 20 árboles:
+obtener_arboles_optimo(x = valores_arboles_20)
+
+cat("El error minimo con 15 árboles:\n")
+## El error minimo con 15 árboles:
+obtener_arboles_optimo(x = valores_arboles_15)
+
+cat("El error minimo con 400 árboles:\n")
+## El error minimo con 400 árboles:
+obtener_arboles_optimo(x = valores_arboles_400)
+
+
+cat("El error minimo con 500 árboles:\n")
+## El error minimo con 500 árboles:
+obtener_arboles_optimo(x = valores_arboles_500)
 ```
-
-Como podemos observar, no hay centroides. Ahora vamos a resaltar las observaciones que actúan como medoids.
-
-```{r}
-
-# Calculamos el PCA y extraemos las proyecciones almacenadas en el elemento x.
-medoids <- prcomp(datos)$x
-
-# Se seleccionan únicamente las proyecciones de las observaciones que son medoids
-medoids <- medoids[rownames(pam_clusters$medoids), c("PC1", "PC2")]
-medoids <- as.data.frame(medoids)
-
-# Se emplean los mismos nombres que en el objeto ggplot
-colnames(medoids) <- c("x", "y")
-
-# Creación del gráfico
-fviz_cluster(object = pam_clusters, data = datos, ellipse.type = "t",
-             repel = TRUE) +
-  theme_bw() +
-  # Se resaltan las observaciones que actúan como medoids
-  geom_point(data = medoids, color = "firebrick", size = 2) +
-  labs(title = "Resultados clustering PAM") +
-  theme(legend.position = "none")
-```
-
-## Hierarchical clustering
-
-Hierarchical clustering es una alternativa a los métodos de partitioning clustering que no requiere que se pre-especifique el número de clusters. Se pueden seguir dos estrategias, aglomerativa o divisiva, en este caso vamos a usar la primera.
-
-En el método aglomerativo el agrupamiento se inicia en el base del árbol, siendo cada observación un cluster individual. Entonces los cluster se van conbinando conforma le estructura crece hasta unirse en única rama central.
-
-```{r}
-# Verificar el árbol
-
-datos <- scale(datos_luis)
-
-# Matriz de distancias euclídeas
-mat_dist <- dist(x = datos, method = "euclidean")
-# Dendrogramas con linkage complete y average
-hc_euclidea_complete <- hclust(d = mat_dist, method = "complete")
-hc_euclidea_average  <- hclust(d = mat_dist, method = "average")
-
-cor(x = mat_dist, cophenetic(hc_euclidea_complete))
-cor(x = mat_dist, cophenetic(hc_euclidea_average))
-
-```
-
-
-
-```{r}
-# Cortar el árbol para generar los clusters
-
-library(factoextra)
-datos <- scale(datos_luis)
-set.seed(101)
-
-hc_euclidea_completo <- hclust(d = dist(x = datos, method = "euclidean"),
-                               method = "complete")
-
-fviz_dend(x = hc_euclidea_completo, k = 2, cex = 0.6) +
-  geom_hline(yintercept = 5.5, linetype = "dashed") +
-  labs(title = "Herarchical clustering",
-       subtitle = "Distancia euclídea, Lincage complete, K=2")
-```
-
-```{r}
-fviz_cluster(object = list(data=datos, cluster=cutree(hc_euclidea_completo, k=4)),
-             ellipse.type = "convex", repel = TRUE, show.clust.cent = FALSE,
-             labelsize = 8)  +
-  labs(title = "Hierarchical clustering + Proyección PCA",
-       subtitle = "Distancia euclídea, Lincage complete, K=4") +
-  theme_bw() +
-  theme(legend.position = "bottom")
-```
-
-
-```{r}
-set.seed(101)
-# Se simulan datos aleatorios con dos dimensiones
-datos <- matrix(rnorm(n = 100*2), nrow = 100, ncol = 2, dimnames = list(NULL,c("x", "y")))
-datos <- as.data.frame(datos)
-
-# Se determina la media que va a tener cada grupo en cada una de las dos
-# dimensiones. En total 2*4 medias. Este valor se utiliza para separar
-# cada grupo de los demás.
-media_grupos <- matrix(rnorm(n = 8, mean = 0, sd = 4), nrow = 4, ncol = 2,
-                       dimnames = list(NULL, c("media_x", "media_y")))
-media_grupos <- as.data.frame(media_grupos)
-media_grupos <- media_grupos %>% mutate(grupo = c("a","b","c","d"))
-
-# Se genera un vector que asigne aleatoriamente cada observación a uno de
-# los 4 grupos
-datos <- datos %>% mutate(grupo = sample(x = c("a","b","c","d"), size = 100, replace = TRUE))
-
-# Se incrementa el valor de cada observación con la media correspondiente al
-# grupo asignado.
-library(dplyr)
-datos <- left_join(datos, media_grupos, by = "grupo")
-datos <- datos %>% mutate(x = x + media_x,
-                          y = y + media_y)
-datos <- datos %>% select(grupo, x, y)
-ggplot(data = datos, aes(x = x, y = y, color = grupo)) +
-  geom_point(size = 2.5) +
-  theme_bw()
-```
-
-
-
-```{r}
-# Se calculan las distancias
-matriz_distancias <- dist(x = datos[, c("x", "y")], method = "euclidean")
-set.seed(567)
-hc_euclidea_completo <- hclust(d = matriz_distancias, method = "complete")
-hc_euclidea_single   <- hclust(d = matriz_distancias, method = "single")
-hc_euclidea_average  <- hclust(d = matriz_distancias, method = "average")
-```
-
-
-```{r}
-par(mfrow = c(3,1))
-plot(x = hc_euclidea_completo, cex = 0.6, xlab = "", ylab = "", sub = "",
-     main = "Distancia euclídea, Linkage complete")
-plot(x = hc_euclidea_single, cex = 0.6, xlab = "", ylab = "", sub = "",
-     main = "Distancia euclídea, Linkage single")
-plot(x = hc_euclidea_average, cex = 0.6, xlab = "", ylab = "", sub = "",
-     main = "Distancia euclídea, Linkage average")
-```
-```{r}
-plot(x = hc_euclidea_completo, cex = 0.6, sub = "",
-     main = "Distancia euclídea, Linkage complete, k=4",
-     xlab = "", ylab = "", labels = datos[, "grupo"])
-abline(h = 6, lty = 2)
-
-table(cutree(hc_euclidea_completo, h = 6), datos[, "grupo"])
-```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

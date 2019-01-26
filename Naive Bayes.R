@@ -8,60 +8,62 @@ library(quanteda)
 #library(doMC)
 #registerDoMC(cores=detectCores())  # Use all available cores
 
-
 # Cargamos los tados
 datos_train <- read.table("datos/datos_train_preprocesado.csv", sep=",", comment.char="",quote = "\"", header=TRUE)
 datos_test <- read.table("datos/datos_test_preprocesado.csv", sep=",", comment.char="",quote = "\"", header=TRUE)
 # Establecemos la semilla
 set.seed(3)
 
-corpus = tm::Corpus(tm::VectorSource(datos_train$benefits_preprocesado))
-corpus_test = tm::Corpus(tm::VectorSource(datos_test$benefits_preprocesado))
-
-dtm <- DocumentTermMatrix(corpus)
-dtm_test <- DocumentTermMatrix(corpus_test)
-
-# De todo nuestro dtm no todo va a ser útil para realizar nuestra clasificación, por ello creemos que es conveniente 
-# reducir el tamaño ignorando las palabras que a aparecen en menos de 5 textos.
-
-fivefreq <- findFreqTerms(dtm, 5)
-
-dim(dtm)
-dtm.nb <- DocumentTermMatrix(corpus, control=list(dictionary = fivefreq))
-dim(dtm.nb)
-
-dim(dtm_test)
-dtm_test.nb <- DocumentTermMatrix(corpus_test, control=list(dictionary = fivefreq))
-dim(dtm_test.nb)
-
-msg.dfm <- dfm(dtm, tolower = TRUE)  #generating document freq matrix
-msg.dfm <- dfm_trim(msg.dfm, min_count = 5, min_docfreq = 3)  
-msg.dfm <- dfm_weight(msg.dfm, type = "tfidf")
-
-# Ahora vamos a reemplazar las frecuencias de los distintos términos en los distintos textos por valores Booleanos que 
-# representan la presencia/ausencia de los datos. Esto se hace para calcular una clasificación por sentimientos.
-
-# Function to convert the word frequencies to yes (presence) and no (absence) labels
-convert_count <- function(x) {
-  y <- ifelse(x > 0, 1,0)
-  y <- factor(y, levels=c(0,1), labels=c("No", "Yes"))
-  y
+algoritmo.naiveBayes <- function(texto_train,texto_test,label_train,label_test){
+  
+  #Calculamos los corpus de los comentarios pasados
+  corpus_train = tm::VCorpus(tm::VectorSource(texto_train))
+  corpus_test = tm::VCorpus(tm::VectorSource(texto_test))
+  
+  #Obtenemos la matriz de términos de esos comentarios
+  dtm_train <- DocumentTermMatrix(corpus_train)
+  dtm_test <- DocumentTermMatrix(corpus_test)
+  
+  #Obtenemos los términos más frecuentes (Aquellos en los que se repiten en más de 5 textos)
+  freq.words <- findFreqTerms(dtm_train, 5)
+  
+  #Recalculamos la matcatriz de términos en función de este concepto(Sparsity)
+  dtm_freq_train <- DocumentTermMatrix(corpus_train, control=list(dictionary = freq.words))
+  dtm_freq_test <- DocumentTermMatrix(corpus_test, control=list(dictionary = freq.words))
+  
+  #Función para convertir el peso de los términos en valores vinarios: yes=presente, no=ausente
+  convert_counts <- function(x) {
+    x <- ifelse(x > 0, "Yes", "No")
+  }
+  
+  #Obtenemos matriz de términos con valores binarios en lugar de pesos(continuos)
+  trainNB <- apply(dtm_freq_train, MARGIN = 2, convert_counts)
+  testNB <- apply(dtm_freq_test, MARGIN = 2, convert_counts)
+  
+  #Entrenamos el clasificador con el conjunto de entrenamiento
+  classifier <- naiveBayes(trainNB, as.factor(label_train), laplace = 1)
+  
+  #Hacemos la predicciones sobre el conjunto de test y calculamos los errores que tienen
+  pred_test <- predict(classifier, newdata=testNB)
+  pred_train <- predict(classifier, newdata=trainNB)
+  Etest <- mean(pred_test!=label_test)
+  Etrain <- mean(pred_train!=label_train)
+  
+  cat("-------------------------------\n")
+  cat("**MATRIZ DE CONFUSIÓN TEST**\n")
+  
+  print(table(pred=pred_test,real=label_test))
+  
+  cat(paste("Error de Test: ",Etest*100," %\n\n"))
+  
+  cat("------------------------------------\n")
+  cat("**MATRIZ DE CONFUSIÓN TRAIN**\n")
+  
+  print(table(pred=pred_train,real=label_train))
+  
+  cat(paste("Error de Train: ",Etrain*100," %\n"))
+  cat("------------------------------------")
+  
 }
 
-# Apply the convert_count function to get final training and testing DTMs
-trainNB <- apply(dtm.nb, 2, convert_count)
-testNB <- apply(dtm_test.nb, 2, convert_count)
-
-# Train the classifier
-classifier <- naiveBayes(trainNB, datos_train$effectivenessNumber, laplace = 1)
-
-# Use the NB classifier we built to make predictions on the test set.
-pred <- predict(classifier, newdata=testNB)
-
-table("Predictions"= pred,  "Actual" = datos_test$effectivenessNumber )
-
-# Prepare the confusion matrix
-conf.mat <- confusionMatrix(pred, datos_test$effectivenessNumber)
-
-conf.mat
-
+algoritmo.naiveBayes(datos_train$benefits_preprocesado,datos_test$benefits_preprocesado,datos_train$effectivenessNumber,datos_test$effectivenessNumber)

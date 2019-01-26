@@ -340,3 +340,148 @@ cat("El error minimo con 500 árboles:\n")
 obtener_arboles_optimo(x = valores_arboles_500)
 ```
 
+
+
+## Hierarchical clustering
+
+Hierarchical clustering es una alternativa a los métodos de partitioning clustering que no requiere que se pre-especifique el número de clusters. Se pueden seguir dos estrategias, aglomerativa o divisiva, en este caso vamos a usar la primera.
+
+En el método aglomerativo el agrupamiento se inicia en el base del árbol, siendo cada observación un cluster individual. Entonces los cluster se van conbinando conforma le estructura crece hasta unirse en única rama central.
+
+```{r}
+# Verificar el árbol
+
+datos <- scale(datos_luis)
+
+# Matriz de distancias euclídeas
+mat_dist <- dist(x = datos, method = "euclidean")
+# Dendrogramas con linkage complete y average
+hc_euclidea_complete <- hclust(d = mat_dist, method = "complete")
+hc_euclidea_average  <- hclust(d = mat_dist, method = "average")
+
+cor(x = mat_dist, cophenetic(hc_euclidea_complete))
+cor(x = mat_dist, cophenetic(hc_euclidea_average))
+
+```
+
+
+
+```{r}
+# Cortar el árbol para generar los clusters
+
+library(factoextra)
+datos <- scale(datos_luis)
+set.seed(101)
+
+hc_euclidea_completo <- hclust(d = dist(x = datos, method = "euclidean"),
+                               method = "complete")
+
+fviz_dend(x = hc_euclidea_completo, k = 2, cex = 0.6) +
+  geom_hline(yintercept = 5.5, linetype = "dashed") +
+  labs(title = "Herarchical clustering",
+       subtitle = "Distancia euclídea, Lincage complete, K=2")
+```
+
+```{r}
+fviz_cluster(object = list(data=datos, cluster=cutree(hc_euclidea_completo, k=4)),
+             ellipse.type = "convex", repel = TRUE, show.clust.cent = FALSE,
+             labelsize = 8)  +
+  labs(title = "Hierarchical clustering + Proyección PCA",
+       subtitle = "Distancia euclídea, Lincage complete, K=4") +
+  theme_bw() +
+  theme(legend.position = "bottom")
+```
+
+
+```{r}
+set.seed(101)
+# Se simulan datos aleatorios con dos dimensiones
+datos <- matrix(rnorm(n = 100*2), nrow = 100, ncol = 2, dimnames = list(NULL,c("x", "y")))
+datos <- as.data.frame(datos)
+
+# Se determina la media que va a tener cada grupo en cada una de las dos
+# dimensiones. En total 2*4 medias. Este valor se utiliza para separar
+# cada grupo de los demás.
+media_grupos <- matrix(rnorm(n = 8, mean = 0, sd = 4), nrow = 4, ncol = 2,
+                       dimnames = list(NULL, c("media_x", "media_y")))
+media_grupos <- as.data.frame(media_grupos)
+media_grupos <- media_grupos %>% mutate(grupo = c("a","b","c","d"))
+
+# Se genera un vector que asigne aleatoriamente cada observación a uno de
+# los 4 grupos
+datos <- datos %>% mutate(grupo = sample(x = c("a","b","c","d"), size = 100, replace = TRUE))
+
+# Se incrementa el valor de cada observación con la media correspondiente al
+# grupo asignado.
+library(dplyr)
+datos <- left_join(datos, media_grupos, by = "grupo")
+datos <- datos %>% mutate(x = x + media_x,
+                          y = y + media_y)
+datos <- datos %>% select(grupo, x, y)
+ggplot(data = datos, aes(x = x, y = y, color = grupo)) +
+  geom_point(size = 2.5) +
+  theme_bw()
+```
+
+
+
+```{r}
+# Se calculan las distancias
+matriz_distancias <- dist(x = datos[, c("x", "y")], method = "euclidean")
+set.seed(567)
+hc_euclidea_completo <- hclust(d = matriz_distancias, method = "complete")
+hc_euclidea_single   <- hclust(d = matriz_distancias, method = "single")
+hc_euclidea_average  <- hclust(d = matriz_distancias, method = "average")
+```
+
+
+```{r}
+par(mfrow = c(3,1))
+plot(x = hc_euclidea_completo, cex = 0.6, xlab = "", ylab = "", sub = "",
+     main = "Distancia euclídea, Linkage complete")
+plot(x = hc_euclidea_single, cex = 0.6, xlab = "", ylab = "", sub = "",
+     main = "Distancia euclídea, Linkage single")
+plot(x = hc_euclidea_average, cex = 0.6, xlab = "", ylab = "", sub = "",
+     main = "Distancia euclídea, Linkage average")
+```
+```{r}
+plot(x = hc_euclidea_completo, cex = 0.6, sub = "",
+     main = "Distancia euclídea, Linkage complete, k=4",
+     xlab = "", ylab = "", labels = datos[, "grupo"])
+abline(h = 6, lty = 2)
+
+table(cutree(hc_euclidea_completo, h = 6), datos[, "grupo"])
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

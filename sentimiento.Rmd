@@ -1,0 +1,95 @@
+---
+title: "sentimiento"
+author: "Alejandro Campoy Nieves"
+date: "27 de enero de 2019"
+output: pdf_document
+---
+
+En este apartado vamos a realizar un análisis descriptivo de los datos. En esta ocasión, vamos a visualizar cuáles son los sentimientos que expresa las personas en los comentarios que escriben sobre los distintos medicamentos que se encuentran en nuestro dataset. Lo haremos de los comentarios relacionados con los beneficios y efectos de los medicamentos.
+
+```{r}
+library(syuzhet)
+library(ggplot2)
+datos_train <- read.table("datos/datos_train_preprocesado.csv", sep=",", comment.char="",quote = "\"", header=TRUE)
+```
+
+La idea que se nos ocurrió consiste en saber cuales son los medicamentos y condiciones más frecuentes que ocurren, ya que mostrar toda la información puede saturar la visibilidad de los datos. 
+
+```{r}
+summary(datos_train)
+
+#https://stackoverflow.com/questions/1686569/filter-data-frame-rows-by-a-logical-condition
+condiciones = c("depression","acne","anxiety","insomnia","birth control","high blood pressure")
+medicamentos = c ("lexapro","prozac","retin-a","zoloft","paxil","propecia")
+```
+
+Gracias al resumen de nuestro dataset sabemos rápidamente cuales son las drogas y condiciones más comunes. Ahora vamos a hacer un análisis de sentimientos de los comentarios relacionados con estas drogas y condiciones.
+
+```{r}
+analisis_sentimientos <- function(comentarios,titulo){
+  
+  comentarios = Corpus(VectorSource(comentarios))
+  
+  d <- get_nrc_sentiment(comentarios$content)
+  
+  #https://medium.com/swlh/exploring-sentiment-analysis-a6b53b026131
+  dt <- data.frame(t(d))
+  
+  sentimientos <- data.frame(rowSums(dt))
+  
+  names(sentimientos)[1] <- "count"
+  sentimientos <- cbind("sentiment" = rownames(sentimientos), sentimientos)
+  rownames(sentimientos) <- NULL
+ 
+  qplot(sentiment, data=sentimientos[1:8,], weight=count, geom="bar",fill=sentiment)+ggtitle(titulo)
+  ggsave(paste(titulo,".png"),path = 'figuras/')
+  
+  
+  qplot(sentiment, data=sentimientos[9:10,], weight=count, geom="bar",fill=sentiment)+ggtitle(titulo)
+  ggsave(paste(titulo,"_positivismo.png"),path = 'figuras/')
+
+}
+```
+
+Básicamente lo que llevamos a cabo en esta función es la generación del Corpus de los comentarios pasados como parámetros (ya preprocesados). El siguiente paso es generar la tabla de sentimientos traspuesta, sino hacemos esto no funciona debido a la disposición de los datos. Luego preparamos una fila en la que aparezcan el nombre de los sentimientos en el mismo orden que la tabla y borramos los nombres de las filas. Esto último se realiza para la correcta visualización de los datos.
+
+Por último se lleva a cabo la representación en forma de gráficas de los comentarios de la gente. Recordemos, están acotadas a conjuntos de comentarios para las drogas y condiciones más comunes, por separado.
+
+Obtenemos las gráficas mencionadas:
+
+```{r echo=FALSE}
+for(cadena in condiciones){
+  datos <- datos_train[datos_train$condition==cadena ,]
+  analisis_sentimientos(datos$benefits_preprocesado,paste("Comentarios beneficios de condición ",cadena))
+}
+```
+
+```{r}
+for(cadena in condiciones){
+  datos <- datos_train[datos_train$condition==cadena ,]
+  analisis_sentimientos(datos$effects_preprocesado,paste("Comentarios efectos de condición ",cadena))
+}
+```
+
+```{r}
+for(cadena in medicamentos){
+  datos <- datos_train[datos_train$urlDrugName==cadena ,]
+  analisis_sentimientos(datos$benefits_preprocesado,paste("Comentarios beneficio de medicamento ",cadena))
+}
+```
+
+```{r}
+for(cadena in medicamentos){
+  datos <- datos_train[datos_train$urlDrugName==cadena ,]
+  analisis_sentimientos(datos$effects_preprocesado,paste("Comentarios efectos de medicamento ",cadena))
+}
+```
+
+Hemos visualizado las imágenes resultantes y llegamos a la conclusión de que, en general, hace una buena descripción de los datos. Por ejemplo, para la *propecia* tenemos un altísimo contenido de sentimientos tales como miedo, tristeza y rabia. Mientras que otros sentimientos pasan más desapercibidos. Sin embargo, parece ser que las personas están contentas de forma genérica para el conjunto de medicamentos que la tratan, ya que los comentarios sobre los beneficios de los medicamentos son más positivos que negativos. En cambio, Cuando hablamos de los efectos secundarios de este medicamento, el negativismo vence al positivismo, se ve que los efectos secundarios que pueden acarrear este tipo de medicinas no son muy agradables. Los sentimientos de los efectos son muy similares a los que hablan de los beneficios; vemos que hay una concordancia de los comentarios de las personas.
+
+Otro dato curioso es que, de forma genérica, hay una mayor presencia de negativismo que positivismo. Hay que darse cuenta de que las personas están escribiendo sobre problemas de salud que tienen, por lo que el único positivismo que podemos extraer es cuando una persona muestra su felicidad al ver que un cierto medicamento está surtiendo efecto (y aún así es posible que se queje igualmente por los efectos secundarios, por ejemplo).
+
+Hay que destacar que los sentimientos están muy entremezclados en los comentarios pesentes de nuestro dataset. Los valores del rating vendrán especificados implicitamente dependiendo del peso que le de cada persona a esos sentimientos. En definitiva, nos damos cuenta de que nuestro dataset es bastante subjetivo. Por ejemplo, las personas suelen mostrarse más dispuestas a expresar comentarios para quejarse que para informar de que un medicamento le está funcionando.
+
+
+

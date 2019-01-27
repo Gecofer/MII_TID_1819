@@ -6,73 +6,61 @@ library("plotly")
 library("arulesViz")
 ```
 
-Primero leemos los datos.
+En esta técnica haremos un análisis descriptivo de los datos de texto. Buscaremos la relación que existe entre las palabras expuestas en los distintos comentarios sobre los medicamentos y tratatemos a asociarlos a distintos conceptos para tener una mejor idea de nuestro dataset y saber de antemano que palabras a priori pueden tener que ver algo con distintos efectos de los medicamentos.
 
 ```{r}
-datos_train <- read.table("datos/drugLibTrain_raw.tsv", sep="\t", comment.char="",
-                          quote = "\"", header=TRUE)
-# Eliminar columnas  para el ID en el train
-datos_train = datos_train[-c(1,3)]
+datos_train <- read.table("datos/datos_train_preprocesado.csv", sep=",", comment.char="",quote = "\"", header=TRUE)
 ```
 
-
-
-```{r}
-datos_train$sideEffectsNumber[datos_train$sideEffects == "Extremely Severe Side Effects"] <- 5
-datos_train$sideEffectsNumber[datos_train$sideEffects == "Severe Side Effects"] <- 4
-datos_train$sideEffectsNumber[datos_train$sideEffects == "Moderate Side Effects"] <- 3
-datos_train$sideEffectsNumber[datos_train$sideEffects == "Mild Side Effects"] <- 2
-datos_train$sideEffectsNumber[datos_train$sideEffects == "No Side Effects"] <- 1
-
-head(datos_train$sideEffectsNumber, 10)
-
-#corpus_train <- corpus(datos_train)
-
-```
-
-En este paso, creamos un corpus de la columna "benefitsReview" para poder hacer uso de la libreria "tm". En la creación de dicho corpus cambiamos las palabras a minúcsculas, quitamos los signos de puntuación, las palabras comunes que no nos aportan nada (stopwords) y los espacios en blanco. Estos pasos son necesarios ya que si tomamos el corpus sin modificacion encontraremos palabras que no nos aportan información.
-
-Buscamos encontrar más información de los comentarios, como por ejemplo, como se relacionan, de que hablan, etc.
+Vamos a crearnos un corpus por cada uno de los tipos de comentarios que tenemos en cada item. Recordar que estos textos ya se encuentran preprocesados como se puede consultar en secciones anteriores de esta documentación.
 
 ```{r}
 #benefits_review_data = as.vector(datos_train$benefitsReview)
-benefits_corpus = Corpus(VectorSource(datos_train$benefitsReview))
-benefits_corpus <- tm_map(benefits_corpus, content_transformer(tolower))
-benefits_corpus <- tm_map(benefits_corpus, content_transformer(removePunctuation))
-benefits_corpus <- tm_map(benefits_corpus, content_transformer(removeWords), stopwords("english"))
-benefits_corpus <- tm_map(benefits_corpus, stripWhitespace)
+benefits_corpus = Corpus(VectorSource(datos_train$benefits_preprocesado))
+effects_corpus = Corpus(VectorSource(datos_train$effects_preprocesado))
 ```
 
-Ahora mismo el dataset es de tipo categórico pero nosotros los necesitamos de tipo string. Por tanto, todos los datos de la columna los vamos a transformar a tipo string. Entonces todos los datos de la columna los vamos a transformar a string de palabras distintas separados por espacios.
+Ahora mismo el dataset es de tipo categórico pero nosotros los necesitamos verlo como una cadena de caractéres para pasos posteriores. Por tanto, todos los datos que se encuentran en estas columnas van a ser transformados. Serán entendidas como palabras diferenciadas.
 
-Una vez que obtenemos las palabras en string, algunas de estas se quedan como palabras vacias, para ello utilizamos la función. Finalmente, ya podemos obtener los elementos de tipo "transactions".
+Una vez que obtenemos las palabras en string, algunas de estas se quedan como palabras vacías, para ello utilizamos la función. Finalmente, ya podemos obtener los elementos de tipo "transactions".
 
 ```{r}
-items <- strsplit(as.character(benefits_corpus$content), " ")
+items_benefits <- strsplit(as.character(benefits_corpus$content), " ")
+items_effects <- strsplit(as.character(effects_corpus$content), " ")
 # Para eliminar las cadenas vacías --> https://stackoverflow.com/questions/24178854/remove-blanks-from-strsplit-in-r
-items <- lapply(items, function(x){x[!x ==""]})
+items_benefits <- lapply(items_benefits, function(x){x[!x ==""]})
+items_effects <- lapply(items_effects, function(x){x[!x ==""]})
 
-transactions <- as(items,"transactions")
+transactions_benefits <- as(items_benefits,"transactions")
+transactions_effects <- as(items_effects,"transactions")
 
 ```
 
-Como ya tenemos los elementos de tipo "transactions", podemos aplicar la técnica para obtener las reglas de asosiación. Vamos a utilizar el algoritmo "apriori" visto en clase.
+Ya tenemos los datos de textos estructurados en una base de datos transaccional, podemos aplicar la técnica para obtener las reglas de asosiación. Vamos a utilizar el algoritmo "a priori" visto en clase. De lo contrario, el coste computacional y de tiempo no sería viable para obtener este conocimineto a partir de los comentarios.
 
-El primer parámetro que encontramos en la función se corresponde con los datos que le proporcionamos y el segundo, un listado de parámetros específicos. En cuanto a estos, el primero es el umbral para el soporte, el segundo el umbral de la confianza, el tercero el target para indicar que buscamos reglas de asociación y en el cuarto indicamos que como mínimo empecemos con itemset de tamaño 2.
+El primer parámetro que encontramos en la función se corresponde con los datos que le proporcionamos y el segundo, un listado de parámetros específicos. En cuanto a estos, el primero es el umbral para el soporte, el segundo el umbral de la confianza, el tercero el target para indicar que buscamos reglas de asociación y en el cuarto indicamos que como mínimo empecemos con itemset de tamaño 2. De esta forma estamos selecciondo un conjunto más reducido de reglas, que es lo que nos interesa desde el principio para ahorrar costes de procesamiento de los datos, al mismo tiempo que perdemos la mínima calidad posible en las reglas.
 
-Ordenamos por "confidence" a vista de mostrar posteriormente los resultados más importantes. Entonces mostraremos las reglas que tienen más confianza y mostraremos graficamente el resultado obtenido.
+Ordenamos por "confidence" a vista de mostrar posteriormente los resultados más importantes. Entonces mostraremos las reglas que tienen más confianza (Sino no podemos realizar una buena visualización de los datos) y mostraremos gráficamente el resultado obtenido.
 
 ```{r}
-rules <- apriori(transactions, parameter = list(sup = 0.001, conf = 0.7, target="rules", minlen=1))
+rules_benefits <- apriori(transactions_benefits, parameter = list(sup = 0.01, conf = 0.7, target="rules", minlen=2))
+rules_effects <- apriori(transactions_effects, parameter = list(sup = 0.001, conf = 0.7, target="rules", minlen=1))
 #rules <- sort(rules, by="support")
-top.rules.confidence <- sort(rules, decreasing = TRUE, na.last = NA, by = "confidence")
+rules_benefits <- sort(rules_benefits, decreasing = TRUE, na.last = NA, by = "confidence")
+rules_effects <- sort(rules_effects, decreasing = TRUE, na.last = NA, by = "confidence")
 
 # Si no funciona inspect --> https://stackoverflow.com/questions/18934098/r-error-with-inspect-function
 detach(package:tm, unload=TRUE) 
 inspect(head(top.rules.confidence,100))
 
-plot(top.rules.confidence, method="graph")
-
 # Cuando tenemos una regla con una única palabra en el antecedente y en el consecuente deben de ir unidas en el texto
+```
+
+```{r}
+plot(top.rules, method="graph")
+```
+
+```{r}
+plot(top.rules.confidence, method="graph")
 ```
 

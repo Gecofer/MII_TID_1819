@@ -1206,6 +1206,7 @@ plotcp(rpart)
               
 ```
 
+Mostramos la tabla de resultados
 
 ```{r}
 printcp(rpart)
@@ -1283,10 +1284,6 @@ Siguiendo el mismo proceso que se ha seguido para la obtención del árbol gener
 
 ```{r}
 
-library("rattle")
-library("rpart")
-library("rpart.plot")
-
 seed <- 42
 
 set.seed(seed)
@@ -1308,44 +1305,15 @@ fancyRpartPlot(rpart, main="Decision Tree sideEffectsNumberr $ ratingLabel")
 
 ```
 
+Mostramos la gráfica del error de la validación cruzada.
+
 ```{r}
-set.seed(seed)
 
-rpart <- rpart(sideEffectsNumber ~ rating, data=datos_test,
-                  method="class",
-                  parms=list(split="information"),
-                  control=rpart.control(minsplit=30,
-                  minbucket=10,
-                  cp=0.0,
-                  usesurrogate=0,
-                  maxsurrogate=0)
-              )
 plotcp(rpart)
-
               
 ```
 
-
-```{r}
-set.seed(seed)
-rpart <- rpart(sideEffectsNumber ~ rating, data=datos_train,
-                method="class",
-                parms=list(split="information"),
-                control=rpart.control(minsplit=30,
-                minbucket=10,
-                cp=0.0,
-                usesurrogate=0,
-                maxsurrogate=0)
-              )
-# Vista textual del modelo árbol de decisión:
-print(rpart)
-
-fancyRpartPlot(rpart, main="Árbol de decisión sideEffectsNumber $ rating")
-
-```
-
-
-
+ Generamos la predicción
 
 ```{r}
 pred <- predict(rpart, newdata=datos_test, type="class")
@@ -1357,6 +1325,7 @@ dnn=c("Real", "Predicho" ))
 tabla
 ```
 
+Obtenemos el resultado
 
 ```{r}
 
@@ -1369,7 +1338,7 @@ La precisión de este modelo es del **50,58%** aproximadamente.
 
 ### Predicción de effectivenessNumber en función del weightedRating
 
-Siguiendo el mismo proceso que se ha seguido para la obtención del árbol generado anteriormente, se va a predecir el valor de efectos secundarios del medicamento en función del rating ponderado que se ha generado durante el procesamiento ( 70% efectos secundarios, 30% efectividad).
+Siguiendo el mismo proceso que se ha seguido para la obtención del árbol generado anteriormente, se va a predecir el valor de la efectividad del medicamento en función del rating ponderado que se ha generado durante el procesamiento ( 70% efectos secundarios, 30% efectividad).
 
 ```{r}
 seed <- 42
@@ -1393,23 +1362,15 @@ fancyRpartPlot(rpart, main="Decision Tree effectivenessNumber $ weightedRating")
 
 ```
 
-```{r}
-set.seed(seed)
+Mostramos la gráfica del error de la validación cruzada.
 
-rpart <- rpart(effectivenessNumber ~ weightedRating, data=datos_test,
-                  method="class",
-                  parms=list(split="information"),
-                  control=rpart.control(minsplit=30,
-                  minbucket=10,
-                  cp=0.0,
-                  usesurrogate=0,
-                  maxsurrogate=0)
-              )
+```{r}
+
 plotcp(rpart)
 
-              
 ```
 
+Generamos la predicción
 
 ```{r}
 
@@ -1422,15 +1383,21 @@ dnn=c("Real", "Predicho" ))
 tabla
 ```
 
+Obtenemos el resultado
+
 ```{r}
 sum(diag(tabla))/nrow(datos_test)
 
 ```
 
-
+La precisión de este modelo es del **53,57%** aproximadamente.
 
 ### Predicción de sideEffectsNumber en función del weightedRating
 
+Siguiendo el mismo proceso que se ha seguido para la obtención del árbol generado anteriormente, se va a predecir el valor de efectos secundarios del medicamento en función del rating ponderado que se ha generado durante el procesamiento ( 70% efectos secundarios, 30% efectividad).
+
+
+Generamos el modelo
 ```{r}
 
 library("rattle")
@@ -1446,7 +1413,7 @@ rpart <- rpart(sideEffectsNumber ~ weightedRating, data=datos_train,
                 parms=list(split="information"),
                 control=rpart.control(minsplit=30,
                 minbucket=10,
-                cp=0.01,
+                cp=0.061,
                 usesurrogate=0,
                 maxsurrogate=0)
               )
@@ -1458,43 +1425,19 @@ fancyRpartPlot(rpart, main="Decision Tree sideEffectsNumberr $ weightedRatingl")
 
 ```
 
-```{r}
-set.seed(seed)
 
-rpart <- rpart(sideEffectsNumber ~ weightedRating, data=datos_test,
-                  method="class",
-                  parms=list(split="information"),
-                  control=rpart.control(minsplit=30,
-                  minbucket=10,
-                  cp=0.0,
-                  usesurrogate=0,
-                  maxsurrogate=0)
-              )
+
+Mostramos la gráfica del error de la validación cruzada.
+
+```{r}
+
 plotcp(rpart)
 
-              
 ```
 
 
-```{r}
-set.seed(seed)
-rpart <- rpart(sideEffectsNumber ~ weightedRating, data=datos_train,
-                method="class",
-                parms=list(split="information"),
-                control=rpart.control(minsplit=30,
-                minbucket=10,
-                cp=0.05,
-                usesurrogate=0,
-                maxsurrogate=0)
-              )
-# Vista textual del modelo árbol de decisión:
-print(rpart)
 
-fancyRpartPlot(rpart, main="Árbol de decisión sideEffectsNumber $ rating")
-
-```
-
-
+Generamos la predicción
 
 ```{r}
 
@@ -1506,26 +1449,39 @@ dnn=c("Real", "Predicho" ))
 
 tabla
 
+```
+
+Obtenemos el resultado
+
+```{r}
 sum(diag(tabla))/nrow(datos_test)
 
 ```
 
+La precisión de este modelo es del **73,21%** aproximadamente.
+
+
+
+
+### Predicción del rating en función del comentario de beneficios
+
+NO funciona. Se queda ejecutando
 
 ```{r}
-set.seed(seed)
-rpart <- rpart(rating ~ benefitsReview , data=datos_test,
-                method="class",
-                parms=list(split="information"),
-                control=rpart.control(minsplit=30,
-                minbucket=10,
-                cp=0.05,
-                usesurrogate=0,
-                maxsurrogate=0)
-              )
-# Vista textual del modelo árbol de decisión:
-print(rpart)
-
-fancyRpartPlot(rpart, main="Árbol de decisión sideEffectsNumber $ rating")
+# set.seed(seed)
+# rpart <- rpart(rating ~ benefitsReview , data=datos_test,
+#                 method="class",
+#                 parms=list(split="information"),
+#                 control=rpart.control(minsplit=30,
+#                 minbucket=10,
+#                 cp=0.05,
+#                 usesurrogate=0,
+#                 maxsurrogate=0)
+#               )
+# # Vista textual del modelo árbol de decisión:
+# print(rpart)
+# 
+# fancyRpartPlot(rpart, main="Árbol de decisión sideEffectsNumber $ rating")
 
 ```
 

@@ -1,0 +1,420 @@
+---
+title: "clustering"
+output: html_document
+---
+
+## Nota: COMPROBAR QUE SIDE_EFFECTS_INVERSE SE HA AÑADIDO CORRECTAMENTE
+
+```{r}
+
+# Establecemos una semilla para obtener siempre los mismos resultados
+set.seed(3)
+
+# Cargamos los tados
+datos_train <- read.table("datos_train_preprocesado.csv", sep=",", comment.char="",quote = "\"", header=TRUE)
+datos_test <- read.table("datos_test_preprocesado.csv", sep=",", comment.char="",quote = "\"", header=TRUE)
+
+# Nos quedamos con las columnas que nos interesan 
+# Las columnas que tenemos son: RATING, SIDE_EFFECTS_INVERSE, EFFECTIVENESS_NUMBER
+# Nos quedamos con las columnas que nos interesan 
+datos_train2 = datos_train[c(2,12,9)]
+datos_test2 = datos_test[c(2,12,9)]
+
+## Arreglamos el conjunto de datos para poder trabajar con lo que nos interesa
+# https://stackoverflow.com/questions/40003028/extracting-unique-values-from-data-frame-using-r
+# LO HACEMOS TANTO PARA TRAIN COMO PARA TEST
+
+nombres_farmacos_train <- unique(datos_train[,1])
+nombres_farmacos_test <- unique(datos_test[,1])
+#print(nombres_farmacos_test[1:10])
+#print(nombres_farmacos_train[1:10])
+
+# Creamos una matriz con tantas filas como fármacos, y columnas como datos queramos utilizar. 
+#En este caso son 3 columnas porque necesitamos guardar la info de "rating", "sideEffectsInverse" y "effectivenessNumber".
+datos_procesados_train <- matrix(ncol=3, nrow=length(nombres_farmacos_train))
+datos_procesados_test <- matrix(ncol=3, nrow=length(nombres_farmacos_test))
+
+# Primero procesamos TRAIN
+df_farmacos_train = as.data.frame(nombres_farmacos_train)
+for(i in 0:length(nombres_farmacos_train)){
+  #https://stackoverflow.com/questions/24831580/return-row-of-data-frame-based-on-value-in-a-column-r
+  filas_farmaco_train <- datos_train2[which(datos_train$urlDrugName == nombres_farmacos_train[i]),]
+
+  mean_rating_train <- mean(filas_farmaco_train$rating)
+  mean_side_effect_train <- mean(filas_farmaco_train$sideEffectsInverse)
+  mean_effectiveness_train <- mean(filas_farmaco_train$effectivenessNumber)
+
+  datos_procesados_train[i,] <- c(mean_rating_train, round(mean_side_effect_train), round(mean_effectiveness_train))
+}
+
+# Procesamos TEST
+# Necesario para poder hacer predict posteriormente
+df_farmacos_test = as.data.frame(nombres_farmacos_test)
+for(i in 0:length(nombres_farmacos_test)){
+  #https://stackoverflow.com/questions/24831580/return-row-of-data-frame-based-on-value-in-a-column-r
+  filas_farmaco_test <- datos_test2[which(datos_test$urlDrugName == nombres_farmacos_test[i]),]
+
+  mean_rating_test <- mean(filas_farmaco_test$rating)
+  mean_side_effect_test <- mean(filas_farmaco_test$sideEffectsInverse)
+  mean_effectiveness_test <- mean(filas_farmaco_test$effectivenessNumber)
+
+  datos_procesados_test[i,] <- c(mean_rating_test, round(mean_side_effect_test), round(mean_effectiveness_test))
+}
+
+data_train_procesado <- data.frame(datos_procesados_train)
+data_test_procesado <- data.frame(datos_procesados_test)
+rownames(data_train_procesado) <- nombres_farmacos_train
+rownames(data_test_procesado) <- nombres_farmacos_test
+colnames(data_train_procesado) <- c("rating", "sideEffectsInverse", "effectivenessNumber")
+colnames(data_test_procesado) <- c("rating", "sideEffectsInverse", "effectivenessNumber")
+#head(data_train_procesado)
+#head(data_train_procesado)
+
+```
+
+## K-medias
+
+```{r}
+
+res_clustering <- kmeans(data_train_procesado, 2)
+
+# Añadir labelsize = 0 si queremos quitar los nombres
+fviz_cluster(object = res_clustering, data = data_train_procesado, show.clust.cent = TRUE,
+             ellipse.type = "euclid", star.plot = TRUE, repel = TRUE) +
+  labs(title = "Resultados clustering K-means") +
+  theme_bw() +
+  theme(legend.position = "none")
+
+```
+
+
+```{r}
+
+datos <- scale(data_train_procesado)
+km_clusters <- eclust(x = datos, FUNcluster = "kmeans", k = 2, seed = 123,
+                      hc_metric = "euclidean", nstart = 50, graph = FALSE)
+fviz_silhouette(sil.obj = km_clusters, print.summary = TRUE, palette = "jco",
+                ggtheme = theme_classic()) 
+
+# Media silhouette por cluster
+km_clusters$silinfo$clus.avg.widths
+
+```
+
+
+```{r}
+
+km_clusters <- eclust(x = datos, FUNcluster = "kmeans", k = 2, seed = 123, 
+                      hc_metric = "euclidean", nstart = 50, graph = FALSE)
+p1 <- fviz_cluster(object = km_clusters, geom = "point", ellipse.type  = "norm",
+                   palette = "jco") +
+      theme_classic() + theme(legend.position = "none") 
+
+p2 <- fviz_silhouette(sil.obj = km_clusters, print.summary = FALSE,
+                      palette = "jco", ggtheme = theme_classic()) +
+      theme(legend.position = "none")
+
+ggarrange(p1, p2)
+
+```
+
+Ahora vamos a hacer predict con el clustering que nos ha generado train
+
+```{r}
+
+# Hacemos predict del clustering
+test_preds <- predict(res_clustering, data_test_procesado)
+
+table(test_preds)
+datos_test_carlos = cbind(test_preds)
+rownames(datos_test_carlos) = rownames(data_test_procesado)
+
+test_carlos = res_clustering
+test_carlos$cluster = datos_test_carlos
+
+fviz_cluster(object = test_carlos, data = data_test_procesado, show.clust.cent = TRUE,
+             ellipse.type = "euclid", star.plot = TRUE, repel = TRUE, labelsize = 0) +
+  labs(title = "Resultados clustering K-means") +
+  theme_bw() +
+  theme(legend.position = "none")
+
+```
+
+Función de predicción
+
+```{r}
+
+predicciones = function(cluster_train, cluster_test) {
+  count = 0
+  count_na = 0
+  x = intersect(datos_test$urlDrugName, datos_train$urlDrugName)
+  for(farmaco in x){
+    indice_train = match(farmaco,df_farmacos_train$nombres_farmacos_train)
+    indice_test = match(farmaco,df_farmacos_test$nombres_farmacos_test)
+    
+    # imprimimos cluster que tiene en train 
+    c_train = res_clustering$cluster[indice_train]
+  
+    # imprimimos cluster que tiene en test
+    c_test = test_carlos$cluster[indice_test]
+    
+    if ( !is.na(c_train) && !is.na(c_test) && c_train == c_test){
+      count = count +1
+    }
+  }  
+  count/nrow(df_farmacos_test)
+}
+
+```
+
+
+```{r}
+
+## Vamos a comprobar si las predicciones se realizan correctamente.
+
+# Primero buscamos los fármacos que estén en tanto en train como en test, pq son con los que podemos ver si funciona o no el clustering. Vamos a ver si coinciden. 
+x = intersect(datos_test$urlDrugName, datos_train$urlDrugName)
+#head(x)
+
+# Probamos para un caso concreto
+# Buscamos el indice donde esta el valor
+#indice_train = match('sarafem',df_farmacos_train$nombres_farmacos_train)
+#indice_test = match('sarafem',df_farmacos_test$nombres_farmacos_test)
+# imprimimos cluster que tiene en train 
+#res_clustering$cluster[indice_train]
+#test_carlos$cluster[indice_test]
+
+# Lanzamos la función anterior
+res = predicciones(res_clustering, test_carlos)
+print(res)
+
+```
+
+Obtenemos un acierto del 0.5527157.
+
+## K - MEDIOIDES CLUSTERING
+
+```{r}
+
+# datos ya lo tenemos previamente escalado (K-medias)
+
+fviz_nbclust(x = datos, FUNcluster = kmeans, method = "silhouette", k.max = 15) +
+  labs(title = "Número óptimo de clusters")
+
+```
+
+Nuevo método en el que agrupamos las observaciones en K clusters, siendo este valor K preestablecido. En este caso, cada cluster está representado por una observación presente en el cluster. Mediante este método hacemos uso de medoids, consiguiendo que sea menos afectado por ruido.
+
+Para su resolución usaremos el alogitmo PAM (Partitioning Around Medoids). Este minimiza la suma de las diferencias de cada observación respecto a su medoid.
+
+```{r}
+
+# Vemos cosas
+km_clusters <- eclust(x = datos, FUNcluster = "pam", k = 6, seed = 123,
+                      hc_metric = "wss",  graph = FALSE)
+fviz_silhouette(sil.obj = km_clusters, print.summary = TRUE, palette = "jco",
+                ggtheme = theme_classic()) 
+
+# Identificamos el número optimo de clusters
+fviz_nbclust(x = datos, FUNcluster = pam, method = "wss", k.max = 15, diss = dist(datos, method = "manhattan"))
+
+
+# Vemos que a partir de 6 clusters parece estabilizarse, por tanto, k=6
+pam_clusters <- pam(x = datos, k = 6, metric = "manhattan")
+#pam_clusters
+# Observaciones que finalmente se han seleccionado
+#pam_clusters$medoids
+# Cluster al que se ha asignado cada observación
+#pam_clusters$clustering
+
+fviz_cluster(object = pam_clusters, data = datos, ellipse.type = "t", repel = TRUE) +
+  theme_bw() +
+  labs(title = "Resultados clustering PAM") +
+  theme(legend.position = "none")
+
+```
+
+Como podemos observar, no hay centroides. Ahora vamos a resaltar las observaciones que actúan como medoids.
+
+```{r}
+
+# Calculamos el PCA y extraemos las proyecciones almacenadas en el elemento x.
+medoids <- prcomp(datos)$x
+
+# Se seleccionan únicamente las proyecciones de las observaciones que son medoids
+medoids <- medoids[rownames(pam_clusters$medoids), c("PC1", "PC2")]
+medoids <- as.data.frame(medoids)
+
+# Se emplean los mismos nombres que en el objeto ggplot
+colnames(medoids) <- c("x", "y")
+
+# Creación del gráfico
+fviz_cluster(object = pam_clusters, data = datos, ellipse.type = "t",
+             repel = TRUE) +
+  theme_bw() +
+  # Se resaltan las observaciones que actúan como medoids
+  geom_point(data = medoids, color = "firebrick", size = 2) +
+  labs(title = "Resultados clustering PAM") +
+  theme(legend.position = "none")
+```
+
+## Clustering Difuso (FUZZY CLUSTERING)
+
+```{r}
+
+fuzzy_cluster <- fanny(x = datos, k = 3, metric = "euclidean", stand = FALSE)
+head(fuzzy_cluster$membership)
+# fuzzy_cluster$coeff
+# head(fuzzy_cluster$clustering)
+fviz_cluster(object = fuzzy_cluster, repel = TRUE, ellipse.type = "norm", pallete = "jco") + theme_bw() + labs(title = "Fuzzy Cluster plot")
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## RANDOM FOREST
+
+A ver, aquí hay que repasar un poquito esto, porque, con el modelo de RandomForest sale que el errorn
+
+```{r}
+
+output.forest <- randomForest(as.factor(effectivenessNumber) ~ . , data = data_train_procesado, replace = T,ntree=400)
+
+output.forest
+
+plot(output.forest)
+
+# Predicciones
+mod_rf = predict(output.forest, newdata = data_test_procesado[-3], type="response")
+
+# Fallo
+y.falladas = sum(mod_rf!=data_test_procesado$effectivenessNumber)/length(data_test_procesado$effectivenessNumber)
+
+print("Error en test:")
+print(y.falladas)
+
+```
+
+Segun esto, nos podemos hcer una funcion que te diga en qué rango encontramos el mejor resultado, y con 150 árboles tenemos más que suficiente para alcanzar un 35% de error. Este error en nuestro caso es muy bueno porque tenemos muchisima subjetividad. Para unas personas, poca efectividad tendrá asociado rating 1 y para otras puede ser rating 3. Esto nos afecta mucho los resultados, y por tanto, aumenta el error. 
+
+```{r}
+
+valores_arboles_150 = seq(from=1, to=150, by=1)
+valores_arboles_35 = seq(from=1, to=35, by=1)
+valores_arboles_15 = seq(from=1, to=15, by=1)
+valores_arboles_20 = seq(from=1, to=20, by=1)
+valores_arboles_400 = seq(from=1, to=400, by=1)
+valores_arboles_500 = seq(from=1, to=500, by=1)
+
+obtener_arboles_optimo = function(x){
+  #error_min = 100.0
+  arboles_optimo = 1;
+  
+  for(i in x){
+    error_min = 100.0
+    set.seed(3)
+    
+    output.forest <- randomForest(as.factor(effectivenessNumber) ~ . , data = data_train_procesado, replace = T,ntree=i)
+
+    
+    # Predicciones
+    mod_rf = predict(output.forest, newdata = data_test_procesado[-3], type="response")
+    
+    # Fallo
+    y.falladas = sum(mod_rf!=data_test_procesado$effectivenessNumber)/length(data_test_procesado$effectivenessNumber)
+    
+    
+    if(y.falladas < error_min){
+      error_min = y.falladas
+      arboles_optimo = i
+    }
+  }
+  
+  cat("Numero de árboles óptimo",arboles_optimo, "\n")
+  
+  cat("Error minimo conseguido",error_min, "\n")
+  
+}
+
+
+cat("El error minimo con 150 árboles:\n")
+## El error minimo con 150 árboles:
+obtener_arboles_optimo(x = valores_arboles_150)
+
+
+cat("El error minimo con 20 árboles:\n")
+## El error minimo con 20 árboles:
+obtener_arboles_optimo(x = valores_arboles_20)
+
+cat("El error minimo con 15 árboles:\n")
+## El error minimo con 15 árboles:
+obtener_arboles_optimo(x = valores_arboles_15)
+
+cat("El error minimo con 400 árboles:\n")
+## El error minimo con 400 árboles:
+obtener_arboles_optimo(x = valores_arboles_400)
+
+
+cat("El error minimo con 500 árboles:\n")
+## El error minimo con 500 árboles:
+obtener_arboles_optimo(x = valores_arboles_500)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

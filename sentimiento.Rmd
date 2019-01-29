@@ -10,7 +10,8 @@ En este apartado vamos a realizar un análisis descriptivo de los datos. En esta
 ```{r eval=FALSE}
 library(syuzhet)
 library(ggplot2)
-datos_train <- read.table("datos/datos_train_preprocesado.csv", sep=",", comment.char="",quote = "\"", header=TRUE)
+datos_train <- read.table("datos/datos_train_preprocesado.csv", sep=",", comment.char=""
+                          ,quote = "\"", header=TRUE)
 ```
 
 La idea que se nos ocurrió consiste en saber cuales son los medicamentos y condiciones más frecuentes que ocurren, ya que mostrar toda la información puede saturar la visibilidad de los datos. 
@@ -41,11 +42,13 @@ analisis_sentimientos <- function(comentarios,titulo){
   sentimientos <- cbind("sentiment" = rownames(sentimientos), sentimientos)
   rownames(sentimientos) <- NULL
  
-  qplot(sentiment, data=sentimientos[1:8,], weight=count, geom="bar",fill=sentiment)+ggtitle(titulo)
+  qplot(sentiment, data=sentimientos[1:8,], weight=count, geom="bar",fill=sentiment)+
+    ggtitle(titulo)
   ggsave(paste(titulo,".png"),path = 'figuras/sentimientos')
   
   
-  qplot(sentiment, data=sentimientos[9:10,], weight=count, geom="bar",fill=sentiment)+ggtitle(titulo)
+  qplot(sentiment, data=sentimientos[9:10,], weight=count, geom="bar",fill=sentiment)+
+    ggtitle(titulo)
   ggsave(paste(titulo,"_positivismo.png"),path = 'figuras/sentimientos')
 
 }
@@ -60,28 +63,32 @@ Obtenemos las gráficas mencionadas:
 ```{r  eval=FALSE}
 for(cadena in condiciones){
   datos <- datos_train[datos_train$condition==cadena ,]
-  analisis_sentimientos(datos$benefits_preprocesado,paste("Comentarios_beneficios_de_condición_",cadena))
+  analisis_sentimientos(datos$benefits_preprocesado,
+                        paste("Comentarios_beneficios_de_condición_",cadena))
 }
 ```
 
 ```{r eval=FALSE}
 for(cadena in condiciones){
   datos <- datos_train[datos_train$condition==cadena ,]
-  analisis_sentimientos(datos$effects_preprocesado,paste("Comentarios_efectos_de_condición_",cadena))
+  analisis_sentimientos(datos$effects_preprocesado,
+                        paste("Comentarios_efectos_de_condición_",cadena))
 }
 ```
 
 ```{r, eval=FALSE}
 for(cadena in medicamentos){
   datos <- datos_train[datos_train$urlDrugName==cadena ,]
-  analisis_sentimientos(datos$benefits_preprocesado,paste("Comentarios_beneficio_de_medicamento_",cadena))
+  analisis_sentimientos(datos$benefits_preprocesado,
+                        paste("Comentarios_beneficio_de_medicamento_",cadena))
 }
 ```
 
-```{r, echo=FALSE}
+```{r, eval=FALSE}
 for(cadena in medicamentos){
   datos <- datos_train[datos_train$urlDrugName==cadena ,]
-  analisis_sentimientos(datos$effects_preprocesado,paste("Comentarios_efectos_de_medicamento_",cadena))
+  analisis_sentimientos(datos$effects_preprocesado,
+                        paste("Comentarios_efectos_de_medicamento_",cadena))
 }
 ```
 

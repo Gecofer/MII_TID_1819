@@ -262,8 +262,8 @@ fviz_cluster(object = pam_clusters, data = datos, ellipse.type = "t",
 
 ```{r}
 
-fuzzy_cluster <- fanny(x = datos, k = 3, metric = "euclidean", stand = FALSE)
-head(fuzzy_cluster$membership)
+fuzzy_cluster <- fanny(x = datos, k = 6, metric = "euclidean", stand = FALSE, maxit = 5000)
+# head(fuzzy_cluster$membership)
 # fuzzy_cluster$coeff
 # head(fuzzy_cluster$clustering)
 fviz_cluster(object = fuzzy_cluster, repel = TRUE, ellipse.type = "norm", pallete = "jco") + theme_bw() + labs(title = "Fuzzy Cluster plot")
@@ -271,22 +271,96 @@ fviz_cluster(object = fuzzy_cluster, repel = TRUE, ellipse.type = "norm", pallet
 ```
 
 
+## Hierarchical clustering
+
+Hierarchical clustering es una alternativa a los métodos de partitioning clustering que no requiere que se pre-especifique el número de clusters. Se pueden seguir dos estrategias, aglomerativa o divisiva, en este caso vamos a usar la primera.
+
+En el método aglomerativo el agrupamiento se inicia en el base del árbol, siendo cada observación un cluster individual. Entonces los cluster se van combinando conforme la estructura crece hasta unirse en única rama central.
+
+```{r}
+
+# Vemos cosas
+km_clusters <- eclust(x = datos, FUNcluster = "hclust", k = 6, seed = 123,
+                      hc_metric = "euclidean",  graph = FALSE)
+fviz_silhouette(sil.obj = km_clusters, print.summary = TRUE, palette = "jco",
+                ggtheme = theme_classic()) 
 
 
+# Verificar el árbol
+
+# Evaluamos hasta que punto la estructura refleja las distancias originales entre observaciones. Para ello usamos el coeficiente de correlación entre las distancias cophenetic de la altura de los nodos y la matriz de distancias original.
+
+# Cuanto más cercano al 1 mejor. Valores superiores al 0.75 se consideran buenos.
+# Matriz de distancias euclídeas
+mat_dist <- dist(x = datos, method = "euclidean")
+# Dendrogramas con linkage complete y average
+hc_euclidea_complete <- hclust(d = mat_dist, method = "complete")
+hc_euclidea_average  <- hclust(d = mat_dist, method = "average")
+
+cor(x = mat_dist, cophenetic(hc_euclidea_complete)) # 0.7864
+cor(x = mat_dist, cophenetic(hc_euclidea_average)) # 0.9374272
+
+```
+
+Además, debemos de poder identificar el número de clusters creados y que observaciones forman parte de cada uno. Si realizamos un corte horizontal en el dendrograma, el número de ramas que lo sobrepasan se corresponden con el número de clusters.
+
+Usamos como altura de corte el valor K de K-means. K=6
+
+```{r}
+
+# Cortar el árbol para generar los clusters
+
+hc_euclidea_completo <- hclust(d = dist(x = datos, method = "euclidean"), method = "complete")
+
+fviz_dend(x = hc_euclidea_completo, k = 6, cex = 0.6) +
+  geom_hline(yintercept = 5.5, linetype = "dashed") +
+  labs(title = "Herarchical clustering",
+       subtitle = "Distancia euclídea, Lincage complete, K=6")
+
+```
 
 
+```{r}
+
+fviz_dend(x = hc_euclidea_completo,
+          k = 6,
+          color_labels_by_k = TRUE,
+          cex = 0.8,
+          type = "phylogenic",
+          repel = TRUE, labelsize=0)
+
+```
+
+Otra forma de representar sería combinando con una reducción de dimensionalidad por PCA. Primero, se calculan los componentes principales y después se representan empleando las dos primeras componentes. Finalmente, se colorean los clusters mediante elipses.
+
+```{r}
+
+fviz_cluster(object = list(data=datos, cluster=cutree(hc_euclidea_completo, k=6)),
+             ellipse.type = "convex", repel = TRUE, show.clust.cent = FALSE,
+             labelsize = 8)  +
+  labs(title = "Hierarchical clustering + Proyección PCA",
+       subtitle = "Distancia euclídea, Lincage complete, K=6") +
+  theme_bw() +
+  theme(legend.position = "bottom")
+
+```
 
 
+## Density based clustering (DBSCAN)
 
+```{r}
 
+datos_ <- data_train_procesado
+km_clusters <- kmeans(x = datos_, centers = 6, nstart = 50)
 
+# Ellipse FALSE??
+# geom = "point"
+fviz_cluster(object = km_clusters, data = datos_, repel = TRUE, ellipse = FALSE,
+             show.clust.cent = FALSE, pallete = "jco") +
+  theme_bw() +
+  theme(legend.position = "none")
 
-
-
-
-
-
-
+```
 
 
 
@@ -378,43 +452,6 @@ obtener_arboles_optimo(x = valores_arboles_400)
 cat("El error minimo con 500 árboles:\n")
 ## El error minimo con 500 árboles:
 obtener_arboles_optimo(x = valores_arboles_500)
+
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

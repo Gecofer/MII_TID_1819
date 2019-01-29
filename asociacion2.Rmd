@@ -6,73 +6,226 @@ library("plotly")
 library("arulesViz")
 ```
 
-Primero leemos los datos.
+En esta técnica haremos un análisis descriptivo de los datos de texto. Buscaremos la relación que existe entre las palabras expuestas en los distintos comentarios sobre los medicamentos y tratatemos a asociarlos a distintos conceptos para tener una mejor idea de nuestro dataset y saber de antemano que palabras a priori pueden tener que ver algo con distintos efectos de los medicamentos.
 
 ```{r}
-datos_train <- read.table("datos/drugLibTrain_raw.tsv", sep="\t", comment.char="",
-                          quote = "\"", header=TRUE)
-# Eliminar columnas  para el ID en el train
-datos_train = datos_train[-c(1,3)]
+datos_train <- read.table("datos/datos_train_preprocesado.csv", sep=",", comment.char="",quote = "\"", header=TRUE)
 ```
 
-
-
-```{r}
-datos_train$sideEffectsNumber[datos_train$sideEffects == "Extremely Severe Side Effects"] <- 5
-datos_train$sideEffectsNumber[datos_train$sideEffects == "Severe Side Effects"] <- 4
-datos_train$sideEffectsNumber[datos_train$sideEffects == "Moderate Side Effects"] <- 3
-datos_train$sideEffectsNumber[datos_train$sideEffects == "Mild Side Effects"] <- 2
-datos_train$sideEffectsNumber[datos_train$sideEffects == "No Side Effects"] <- 1
-
-head(datos_train$sideEffectsNumber, 10)
-
-#corpus_train <- corpus(datos_train)
-
-```
-
-En este paso, creamos un corpus de la columna "benefitsReview" para poder hacer uso de la libreria "tm". En la creación de dicho corpus cambiamos las palabras a minúcsculas, quitamos los signos de puntuación, las palabras comunes que no nos aportan nada (stopwords) y los espacios en blanco. Estos pasos son necesarios ya que si tomamos el corpus sin modificacion encontraremos palabras que no nos aportan información.
-
-Buscamos encontrar más información de los comentarios, como por ejemplo, como se relacionan, de que hablan, etc.
+Vamos a crearnos un corpus por cada uno de los tipos de comentarios que tenemos en cada item. Recordar que estos textos ya se encuentran preprocesados como se puede consultar en secciones anteriores de esta documentación.
 
 ```{r}
 #benefits_review_data = as.vector(datos_train$benefitsReview)
-benefits_corpus = Corpus(VectorSource(datos_train$benefitsReview))
-benefits_corpus <- tm_map(benefits_corpus, content_transformer(tolower))
-benefits_corpus <- tm_map(benefits_corpus, content_transformer(removePunctuation))
-benefits_corpus <- tm_map(benefits_corpus, content_transformer(removeWords), stopwords("english"))
-benefits_corpus <- tm_map(benefits_corpus, stripWhitespace)
+benefits_corpus = Corpus(VectorSource(datos_train$benefits_preprocesado))
+effects_corpus = Corpus(VectorSource(datos_train$effects_preprocesado))
 ```
 
-Ahora mismo el dataset es de tipo categórico pero nosotros los necesitamos de tipo string. Por tanto, todos los datos de la columna los vamos a transformar a tipo string. Entonces todos los datos de la columna los vamos a transformar a string de palabras distintas separados por espacios.
+Ahora mismo el dataset es de tipo categórico pero nosotros los necesitamos verlo como una cadena de caractéres para pasos posteriores. Por tanto, todos los datos que se encuentran en estas columnas van a ser transformados. Serán entendidas como palabras diferenciadas.
 
-Una vez que obtenemos las palabras en string, algunas de estas se quedan como palabras vacias, para ello utilizamos la función. Finalmente, ya podemos obtener los elementos de tipo "transactions".
+Una vez que obtenemos las palabras en string, algunas de estas se quedan como palabras vacías, para ello utilizamos la función. Finalmente, ya podemos obtener los elementos de tipo "transactions".
 
 ```{r}
-items <- strsplit(as.character(benefits_corpus$content), " ")
+items_benefits <- strsplit(as.character(benefits_corpus$content), " ")
+items_effects <- strsplit(as.character(effects_corpus$content), " ")
 # Para eliminar las cadenas vacías --> https://stackoverflow.com/questions/24178854/remove-blanks-from-strsplit-in-r
-items <- lapply(items, function(x){x[!x ==""]})
+items_benefits <- lapply(items_benefits, function(x){x[!x ==""]})
+items_effects <- lapply(items_effects, function(x){x[!x ==""]})
 
-transactions <- as(items,"transactions")
+transactions_benefits <- as(items_benefits,"transactions")
+transactions_effects <- as(items_effects,"transactions")
 
 ```
 
-Como ya tenemos los elementos de tipo "transactions", podemos aplicar la técnica para obtener las reglas de asosiación. Vamos a utilizar el algoritmo "apriori" visto en clase.
+Ya tenemos los datos de textos estructurados en una base de datos transaccional, podemos aplicar la técnica para obtener las reglas de asosiación. Vamos a utilizar el algoritmo "a priori" visto en clase. De lo contrario, el coste computacional y de tiempo no sería viable para obtener este conocimineto a partir de los comentarios.
 
-El primer parámetro que encontramos en la función se corresponde con los datos que le proporcionamos y el segundo, un listado de parámetros específicos. En cuanto a estos, el primero es el umbral para el soporte, el segundo el umbral de la confianza, el tercero el target para indicar que buscamos reglas de asociación y en el cuarto indicamos que como mínimo empecemos con itemset de tamaño 2.
+El primer parámetro que encontramos en la función se corresponde con los datos que le proporcionamos y el segundo, un listado de parámetros específicos. En cuanto a estos, el primero es el umbral para el soporte, el segundo el umbral de la confianza, el tercero el target para indicar que buscamos reglas de asociación y en el cuarto indicamos que como mínimo empecemos con itemset de tamaño 2. De esta forma estamos selecciondo un conjunto más reducido de reglas, que es lo que nos interesa desde el principio para ahorrar costes de procesamiento de los datos, al mismo tiempo que perdemos la mínima calidad posible en las reglas.
 
-Ordenamos por "confidence" a vista de mostrar posteriormente los resultados más importantes. Entonces mostraremos las reglas que tienen más confianza y mostraremos graficamente el resultado obtenido.
+Ordenamos por "confidence" a vista de mostrar posteriormente los resultados más importantes. Entonces mostraremos las reglas que tienen más confianza (Sino no podemos realizar una buena visualización de los datos) y mostraremos gráficamente el resultado obtenido.
 
 ```{r}
-rules <- apriori(transactions, parameter = list(sup = 0.001, conf = 0.7, target="rules", minlen=1))
+rules_benefits <- apriori(transactions_benefits, parameter = list(sup = 0.001, conf = 0.7, target="rules", minlen=2))
+rules_effects <- apriori(transactions_effects, parameter = list(sup = 0.001, conf = 0.7, target="rules", minlen=2))
 #rules <- sort(rules, by="support")
-top.rules.confidence <- sort(rules, decreasing = TRUE, na.last = NA, by = "confidence")
+rules_benefits <- sort(rules_benefits, decreasing = TRUE, na.last = NA, by = "confidence")
+rules_effects <- sort(rules_effects, decreasing = TRUE, na.last = NA, by = "confidence")
 
 # Si no funciona inspect --> https://stackoverflow.com/questions/18934098/r-error-with-inspect-function
 detach(package:tm, unload=TRUE) 
-inspect(head(top.rules.confidence,100))
-
-plot(top.rules.confidence, method="graph")
-
+inspect(head(rules_benefits,100))
+inspect(head(rules_effects,100))
+library(tm)
 # Cuando tenemos una regla con una única palabra en el antecedente y en el consecuente deben de ir unidas en el texto
+```
+
+```{r}
+plot(rules_benefits, method="graph")
+title("Reglas de asociación sobre comentarios de beneficios")
+```
+
+```{r}
+plot(rules_effects, method="graph")
+title("Reglas de asociación sobre comentarios de efectos secundarios")
+```
+
+```{r}
+datos_train$effectivenessGuion[datos_train$effectiveness == "Highly Effective"] <- "Highly-Effective"
+datos_train$effectivenessGuion[datos_train$effectiveness == "Considerably Effective"] <- "Considerably-Effective"
+datos_train$effectivenessGuion[datos_train$effectiveness == "Moderately Effective"] <- "Moderately-Effective"
+datos_train$effectivenessGuion[datos_train$effectiveness == "Marginally Effective"] <- "Marginally-Effective"
+datos_train$effectivenessGuion[datos_train$effectiveness == "Ineffective"] <- "Ineffective"
+
+# Pasamos a factor el effectivenes unido por guiones para concatenarlo con los comentarios
+datos_train$effectivenessGuion = as.factor(datos_train$effectivenessGuion)
+```
+
+
+```{r}
+# Juntamos las cadenas en una nueva columna del dataset que combina con los comentarios con los beneficios
+datos_train$benefits_effectiveness <- with(datos_train, interaction(benefits_preprocesado,effectivenessGuion), sep=" ")
+datos_train$benefits_effectiveness <- gsub("[.]", " ", datos_train$benefits_effectiveness)
+
+# Hacemos lo mismo pero para los comentatios de efectos secundarios
+datos_train$effects_effectiveness <- with(datos_train, interaction(effects_preprocesado,effectivenessGuion), sep=" ")
+datos_train$effects_effectiveness <- gsub("[.]", " ", datos_train$benefits_effectiveness)
+
+```
+
+```{r}
+# Generamos los corpus con estas nuevas columnas en la que añadimos la efectividad como término en cada comentario
+benefits_corpus = Corpus(VectorSource(datos_train$benefits_effectiveness))
+effects_corpus = Corpus(VectorSource(datos_train$effects_effectiveness))
+```
+
+```{r}
+#Separamos todas las palabras entre sí
+benefits_items <- strsplit(as.character(benefits_corpus$content), " ")
+effects_items <- strsplit(as.character(effects_corpus$content), " ")
+# Para eliminar las cadenas vacías --> https://stackoverflow.com/questions/24178854/remove-blanks-from-strsplit-in-r
+benefits_items <- lapply(benefits_items, function(x){x[!x ==""]})
+effects_items <- lapply(effects_items, function(x){x[!x ==""]})
+```
+
+```{r}
+#Generamos la estructura de datos transaccional
+benefits_transactions <- as(benefits_items,"transactions")
+effects_transactions <- as(effects_items,"transactions")
+```
+
+```{r}
+benefits_rulesInnefective <- apriori (data=benefits_transactions, 
+                                 parameter=list (supp=0.0007,conf = 0.9, minlen=2), 
+                                 appearance = list(default="lhs",rhs=c("Ineffective")), 
+                                 control = list (verbose=F))
+
+benefits_rulesHighlyEffective <- apriori (data=benefits_transactions, 
+                             parameter=list (supp=0.0007,conf = 0.9, minlen=2), 
+                             appearance = list(default="lhs",rhs=c("Highly-Effective")), 
+                             control = list (verbose=F))
+
+benefits_rulesConsiderablyEffective <- apriori (data=benefits_transactions, 
+                                parameter=list (supp=0.0007,conf = 0.9, minlen=2), 
+                                appearance = list(default="lhs",rhs=c("Considerably-Effective")), 
+                                control = list (verbose=F))
+
+benefits_rulesModeratelyEffective <- apriori (data=benefits_transactions, 
+                                parameter=list (supp=0.0007,conf = 0.9, minlen=2), 
+                                appearance = list(default="lhs",rhs=c("Moderately-Effective")), 
+                                control = list (verbose=F))
+
+benefits_rulesMarginallyEffective <- apriori (data=benefits_transactions, 
+                                     parameter=list (supp=0.0007,conf = 0.9, minlen=2), 
+                                     appearance = list(default="lhs",rhs=c("Marginally-Effective")), 
+                                     control = list (verbose=F))
+
+
+benefits_rulesInnefective <- sort(benefits_rulesInnefective, decreasing = TRUE, na.last = NA, by = "confidence")
+benefits_rulesHiglyEffective <- sort(benefits_rulesHiglyEffective, decreasing = TRUE, na.last = NA, by = "confidence")
+benefits_rulesConsiderablyEffective <- sort(benefits_rulesConsiderablyEffective, decreasing = TRUE, na.last = NA, by = "confidence")
+benefits_rulesModeratelyEffective <- sort(benefits_rulesModeratelyEffective, decreasing = TRUE, na.last = NA, by = "confidence")
+benefits_rulesMarginallyEffective <- sort(benefits_rulesMarginallyEffective, decreasing = TRUE, na.last = NA, by = "confidence")
+```
+
+```{r}
+detach(package:tm, unload=TRUE)
+inspect(head(benefits_rulesInnefective,10))
+inspect(head(benefits_rulesHighlyEffective,10))
+inspect(head(benefits_rulesConsiderablyEffective,10))
+inspect(head(benefits_rulesModeratelyEffective,10))
+inspect(head(benefits_rulesMarginallyEffective,10))
+library(tm)
+```
+
+
+```{r}
+effects_rulesInnefective <- apriori (data=effects_transactions, 
+                                 parameter=list (supp=0.0007,conf = 0.9, minlen=2), 
+                                 appearance = list(default="lhs",rhs=c("Ineffective")), 
+                                 control = list (verbose=F))
+
+effects_rulesHighlyEffective <- apriori (data=effects_transactions, 
+                             parameter=list (supp=0.0007,conf = 0.9, minlen=2), 
+                             appearance = list(default="lhs",rhs=c("Highly-Effective")), 
+                             control = list (verbose=F))
+
+effects_rulesConsiderablyEffective <- apriori (data=effects_transactions, 
+                                parameter=list (supp=0.0007,conf = 0.9, minlen=2), 
+                                appearance = list(default="lhs",rhs=c("Considerably-Effective")), 
+                                control = list (verbose=F))
+
+effects_rulesModeratelyEffective <- apriori (data=effects_transactions, 
+                                parameter=list (supp=0.0007,conf = 0.9, minlen=2), 
+                                appearance = list(default="lhs",rhs=c("Moderately-Effective")), 
+                                control = list (verbose=F))
+
+effects_rulesMarginallyEffective <- apriori (data=effects_transactions, 
+                                     parameter=list (supp=0.0007,conf = 0.9, minlen=2), 
+                                     appearance = list(default="lhs",rhs=c("Marginally-Effective")), 
+                                     control = list (verbose=F))
+
+
+effects_rulesInnefective <- sort(effects_rulesInnefective, decreasing = TRUE, na.last = NA, by = "confidence")
+effects_rulesHiglyEffective <- sort(effects_rulesHiglyEffective, decreasing = TRUE, na.last = NA, by = "confidence")
+effects_rulesConsiderablyEffective <- sort(effects_rulesConsiderablyEffective, decreasing = TRUE, na.last = NA, by = "confidence")
+effects_rulesModeratelyEffective <- sort(effects_rulesModeratelyEffective, decreasing = TRUE, na.last = NA, by = "confidence")
+effects_rulesMarginallyEffective <- sort(effects_rulesMarginallyEffective, decreasing = TRUE, na.last = NA, by = "confidence")
+```
+
+```{r}
+detach(package:tm, unload=TRUE)
+inspect(head(effects_rulesInnefective,10))
+inspect(head(effects_rulesHighlyEffective,10))
+inspect(head(effects_rulesConsiderablyEffective,10))
+inspect(head(effects_rulesModeratelyEffective,10))
+inspect(head(effects_rulesMarginallyEffective,10))
+library(tm)
+```
+
+```{r}
+#Sacamos las imágenes (MODIFICAR)
+png("Innefective.png",width=1800,height=1700,units="px",
+    pointsize=10,bg="white",res=300)
+plot(rulesInnefective, method="graph")
+dev.off()
+
+png("HighlyEffective.png",width=1800,height=1700,units="px",
+    pointsize=10,bg="white",res=300)
+plot(rulesHiglyEffective, method="graph")
+dev.off()
+
+png("ConsiderablyEffective.png",width=1800,height=1700,units="px",
+    pointsize=10,bg="white",res=300)
+plot(rulesConsiderablyEffective, method="graph")
+dev.off()
+
+png("ModeratelyEffective.png",width=1800,height=1700,units="px",
+    pointsize=10,bg="white",res=300)
+plot(rulesModeratelyEffective, method="graph")
+dev.off()
+
+
+png("MarginallyEffective.png",width=1800,height=1700,units="px",
+    pointsize=10,bg="white",res=300)
+plot(rulesMarginallyEffective, method="graph")
+dev.off()
 ```
 

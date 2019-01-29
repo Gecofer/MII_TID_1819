@@ -4,7 +4,6 @@ output: html_document
 ---
 
 
-
 ## Nota: recordar que hay que usar el sideeffects INVERSEEEEEE
 ```{r}
 # Establecemos una semilla para obtener siempre los mismos resultados
@@ -43,6 +42,7 @@ Los resultados que se obtienen son muy impredecibles. Vamos a obtener los fárma
 ```
 
 ## Arreglamos el conjunto de datos para poder trabajar con lo que nos interesa
+
 ```{r}
 
 # https://stackoverflow.com/questions/40003028/extracting-unique-values-from-data-frame-using-r
@@ -53,6 +53,7 @@ print(nombres_farmacos[1:10])
 # Creamos una matriz con tantas filas como fármacos, y columnas como datos queramos utilizar. En este caso son 3 columnas porque necesitamos guardar la info de "rating", "sideEffectNumber" y "effectivenessNumber".
 datos_procesados <- matrix(ncol=3, nrow=length(nombres_farmacos))
 
+df_farmacos = as.data.frame(nombres_farmacos)
 for(i in 0:length(nombres_farmacos)){
   #https://stackoverflow.com/questions/24831580/return-row-of-data-frame-based-on-value-in-a-column-r
   filas_farmaco <- datos_train2[which(datos_train$urlDrugName == nombres_farmacos[i]),]
@@ -61,9 +62,7 @@ for(i in 0:length(nombres_farmacos)){
   mean_side_effect <- mean(filas_farmaco$sideEffectsNumber)
   mean_effectiveness <- mean(filas_farmaco$effectivenessNumber)
 
-  #print(mean_rating)
   datos_procesados[i,] <- c(mean_rating, round(mean_side_effect), round(mean_effectiveness))
-  
 }
 
 
@@ -71,7 +70,9 @@ data_train_procesado <- data.frame(datos_procesados)
 rownames(data_train_procesado) <- nombres_farmacos
 colnames(data_train_procesado) <- c("rating", "sideEffectNumber", "effectivenessNumber")
 ```
+
 ## K-medias
+
 ```{r}
 res_clustering <- kmeans(data_train_procesado, 2)
 
@@ -90,6 +91,7 @@ Así que he copiado la misma función de arriba, pero le he añadido un nuevo pa
 
 
 De momento  hemos comentado todo esto porque vamos a hacer los cálculos con todos… Esta funcion,  que se queda solo con los que parecen ser más repetidos, la vamos a comentar de momento porque solo la utilizariamos en el caso de que queramos hacer que la funcion sea mas visible pero visualmente y asi poder ver mejor los clusters. De momento, comentada. CUANDO DOCUMENTEMOS MÁS, YA NOS LO PENSAMOS :) 
+
 ```{r}
 
 # 
@@ -135,11 +137,38 @@ fviz_cluster(object = res_clustering, data = data_train_procesado, show.clust.ce
 ```
 
 
+```{r}
+
+library(factoextra)
+datos <- scale(data_train_procesado)
+km_clusters <- eclust(x = datos, FUNcluster = "kmeans", k = 6, seed = 123,
+                      hc_metric = "euclidean", nstart = 50, graph = FALSE)
+fviz_silhouette(sil.obj = km_clusters, print.summary = TRUE, palette = "jco",
+                ggtheme = theme_classic()) 
+
+# Media silhouette por cluster
+km_clusters$silinfo$clus.avg.widths
+
+```
+
+```{r}
+km_clusters <- eclust(x = datos, FUNcluster = "kmeans", k = 8, seed = 123, 
+                      hc_metric = "euclidean", nstart = 50, graph = FALSE)
+p1 <- fviz_cluster(object = km_clusters, geom = "point", ellipse.type  = "norm",
+                   palette = "jco") +
+      theme_classic() + theme(legend.position = "none") 
+
+p2 <- fviz_silhouette(sil.obj = km_clusters, print.summary = FALSE,
+                      palette = "jco", ggtheme = theme_classic()) +
+      theme(legend.position = "none")
+
+ggarrange(p1, p2)
+```
+
 Vamos a intentar hacer predict...... lloran2
 
-
-
 Primero tenemos que preprocesar test de la misma forma que hemos hecho en train
+
 ```{r}
 
 nombres_farmacos <- unique(datos_test[,1])
@@ -149,6 +178,7 @@ print(nombres_farmacos[1:10])
 # Creamos una matriz con tantas filas como fármacos, y columnas como datos queramos utilizar. En este caso son 3 columnas porque necesitamos guardar la info de "rating", "sideEffectNumber" y "effectivenessNumber".
 datos_procesados <- matrix(ncol=3, nrow=length(nombres_farmacos))
 
+df_farmacos_test = as.data.frame(nombres_farmacos)
 for(i in 0:length(nombres_farmacos)){
   #https://stackoverflow.com/questions/24831580/return-row-of-data-frame-based-on-value-in-a-column-r
   filas_farmaco <- datos_test2[which(datos_test$urlDrugName == nombres_farmacos[i]),]
@@ -169,7 +199,9 @@ colnames(data_test_procesado) <- c("rating", "sideEffectNumber", "effectivenessN
 
 
 ```
+
 Ahora vamos a hacer predict con el clustering que nos ha generado train
+
 ```{r}
 library(rattle)
 #library(caret)
@@ -229,28 +261,45 @@ https://stats.stackexchange.com/questions/144616/comparing-k-means-results-to-or
 ahora voy a buscar un farmaco que exista en los dos conjuntos. Esto está MAL porque no estamos cogiendo los indices correctos. creo que tenenos que buscar los indices de data_train_procesado y data_test_procesado. CONTINUAR POR AQUI.
 
 ```{r}
+## Vamos a comprobar si las predicciones se realizan correctamente.
+
 # Primero buscamos los fármacos que estén en tanto en train como en test, pq son con los que podemos ver si funciona o no el clustering. Vamos a ver si coinciden. 
 x = intersect(datos_test$urlDrugName, datos_train$urlDrugName)
 head(x)
 
+# Buscamos el indice donde esta el valor
 # df[match(item,df$cname),]
 indice_train = match('biaxin',datos_train$urlDrugName)
 indice_test = match('biaxin',datos_test$urlDrugName)
 
+# Comprobamos mirando en datos_train que el indice es correcto
 print(indice_train)
 print(indice_test)
 # imprimimos cluster que tiene en train 
 res_clustering$cluster[indice_train]
+# Por ahor todo way
+
+# Comprobamos ahora test
+test_carlos$cluster[indice_test]
 
 
+
+# nuevo intento
+
+indice_train = match('sarafem',df_farmacos$nombres_farmacos)
+indice_test = match('sarafem',df_farmacos_test$nombres_farmacos)
+
+# imprimimos cluster que tiene en train 
+res_clustering$cluster[indice_train]
+test_carlos$cluster[indice_test]
 
 
 count = 0
 count_na = 0
 for(farmaco in x){
-  indice_train = match(farmaco,data_train_procesado$urlDrugName)
+  indice_train = match(farmaco,df_farmacos$nombres_farmacos)
   
-  indice_test = match(farmaco,data_test_procesado$urlDrugName)
+  indice_test = match(farmaco,df_farmacos_test$nombres_farmacos)
   
   # imprimimos cluster que tiene en train 
   c_train = res_clustering$cluster[indice_train]
@@ -261,15 +310,47 @@ for(farmaco in x){
   if ( !is.na(c_train) && !is.na(c_test) && c_train == c_test){
     count = count +1
   }
-  
-  if (is.na(c_train) || is.na(c_test))
-    count_na = count_na +1
 }
 
 print(count)
-print(count_na)
+print(count/nrow(df_farmacos_test))
 #  repasar la funcion de arriba por si tuviera algun fallo........
 ```
+
+```{r}
+
+predicciones = function(cluster_train, cluster_test) {
+  
+  count = 0
+  count_na = 0
+  x = intersect(datos_test$urlDrugName, datos_train$urlDrugName)
+  for(farmaco in x){
+    indice_train = match(farmaco,df_farmacos$nombres_farmacos)
+    indice_test = match(farmaco,df_farmacos_test$nombres_farmacos)
+    
+    # imprimimos cluster que tiene en train 
+    c_train = res_clustering$cluster[indice_train]
+  
+    # imprimimos cluster que tiene en test
+    c_test = test_carlos$cluster[indice_test]
+    
+    if ( !is.na(c_train) && !is.na(c_test) && c_train == c_test){
+      count = count +1
+    }
+  }  
+  count/nrow(df_farmacos_test)
+}
+
+```
+
+```{r}
+# Probamos la función
+res = predicciones(res_clustering, test_carlos)
+print(res)
+
+```
+
+
 
 A ver, aquí hay que repasar un poquito esto, porque, con el modelo de RandomForest sale que el errorn
 
@@ -380,11 +461,23 @@ fviz_cluster(object = fuzzy_cluster, repel = TRUE, ellipse.type = "norm", pallet
 
 ## K - MEDIOIDES CLUSTERING
 
+```{r}
+fviz_nbclust(x = datos, FUNcluster = kmeans, method = "silhouette", k.max = 15) +
+  labs(title = "Número óptimo de clusters")
+```
+
+
 Nuevo método en el que agrupamos las observaciones en K clusters, siendo este valor K preestablecido. En este caso, cada cluster está representado por una observación presente en el cluster. Mediante este método hacemos uso de medoids, consiguiendo que sea menos afectado por ruido.
 
 Para su resolución usaremos el alogitmo PAM (Partitioning Around Medoids). Este minimiza la suma de las diferencias de cada observación respecto a su medoid.
 
 ```{r}
+
+# Vemos cosas
+km_clusters <- eclust(x = datos, FUNcluster = "pam", k = 6, seed = 123,
+                      hc_metric = "wss",  graph = FALSE)
+fviz_silhouette(sil.obj = km_clusters, print.summary = TRUE, palette = "jco",
+                ggtheme = theme_classic()) 
 
 # Escalamos antes de aplicar el clustering
 datos <- scale(data_train_procesado)
@@ -406,6 +499,21 @@ fviz_cluster(object = pam_clusters, data = datos, ellipse.type = "t", repel = TR
   theme_bw() +
   labs(title = "Resultados clustering PAM") +
   theme(legend.position = "none")
+
+
+# Calculamos test
+
+
+test_preds <- predict(pam_clusters, data_test_procesado)
+
+table(test_preds)
+datos_test_carlos = cbind(test_preds)
+rownames(datos_test_carlos) = rownames(data_test_procesado)
+
+test_carlos = res_clustering
+test_carlos$cluster = datos_test_carlos
+
+
 
 ```
 
@@ -440,6 +548,14 @@ Hierarchical clustering es una alternativa a los métodos de partitioning cluste
 En el método aglomerativo el agrupamiento se inicia en el base del árbol, siendo cada observación un cluster individual. Entonces los cluster se van combinando conforme la estructura crece hasta unirse en única rama central.
 
 ```{r}
+
+# Vemos cosas
+km_clusters <- eclust(x = datos, FUNcluster = "hclust", k = 6, seed = 123,
+                      hc_metric = "euclidean",  graph = FALSE)
+fviz_silhouette(sil.obj = km_clusters, print.summary = TRUE, palette = "jco",
+                ggtheme = theme_classic()) 
+
+
 # Verificar el árbol
 
 # Evaluamos hasta que punto la estructura refleja las distancias originales entre observaciones. Para ello usamos el coeficiente de correlación entre las distancias cophenetic de la altura de los nodos y la matriz de distancias original.

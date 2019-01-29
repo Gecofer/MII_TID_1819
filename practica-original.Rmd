@@ -111,6 +111,10 @@ A continuación, se describen los paquetes necesarios para el desarollo del proy
 
 - [`arulesViz`](https://cran.r-project.org/web/packages/arulesViz/arulesViz.pdf) : Paquete que extiende el paquete 'arules' con varias técnicas de visualización para reglas de asociación y conjuntos de elementos. El paquete también incluye varias visualizaciones interactivas para la exploración de reglas. Se puede instalar usando : _install.packages("arulesViz")_.
 
+- [`car`](https://cran.r-project.org/web/packages/car/car.pdf) : Paquete que nos propociona distintas funciones. : _install.packages("car")_.
+
+- [`cluster`](https://cran.r-project.org/web/packages/cluster/cluster.pdf) : Paquete que nos proporciona métodos para el análisis de clusters.  : _install.packages("cluster")_.
+
 - [`caret`](https://cran.r-project.org/web/packages/caret/caret.pdf) : Paquete para entrenamiento de clasificación y regresión. Se puede instalar usando : _install.packages("quanteda")_.
 
 - [`dbscan`](https://cran.r-project.org/web/packages/dbscan/dbscan.pdf) : Paquete que proporciona implementaciones de varios algoritmos basados en densidad de la familia DBSCAN para datos espaciales. Se puede instalar usando : _install.packages("dbscan")_.
@@ -121,17 +125,37 @@ A continuación, se describen los paquetes necesarios para el desarollo del proy
 
 - [`e1071`](https://cran.r-project.org/web/packages/e1071/e1071.pdf) : Paquete para realizar _fuzzy clustering_, clasificador de _Naive Bayes_... Se puede instalar usando : _install.packages("e1071")_.
 
+- [`fclust`](https://cran.r-project.org/web/packages/fclust/fclust.pdf) : Paquete que nos proporciona algoritmos para la agrupación difusa, índices de validez de clústeres y gráficos para la validez de estos. Además de la visualización de los resultados de la agrupación difusa. : _install.packages("fclust")_.
+
+- [`factoextra`](https://cran.r-project.org/web/packages/factoextra/factoextra.pdf) : Proporciona algunas funciones sencillas para extraer y visualizar la producción de análisis de datos multivariados. : _install.packages("factoextra")_.
+
+- [`ggpubr`](https://cran.r-project.org/web/packages/ggpubr/ggpubr.pdf) : Paquete que proporciona algunas funciones de fácil manejo para crear y personalizar gráficos listos para ser usados en _ggplot2_. : _install.packages("ggpubr")_.
+
 - [`ggplot2`](https://cran.r-project.org/web/packages/ggplot2/ggplot2.pdf) : Paquete para realizar gráficas. Se puede instalar usando : _install.packages("ggplot2")_.
+
+- [`glmnet`](enlace) : Paquete que nos proporciona rocedimientos eficaces para la adaptación de la red para la regresión lineal, los modelos de regresión logística y multinomial, la regresión de Poisson y el modelo de Cox. : _install.packages("glmnet")_.
+
+- [`igraph`](https://cran.r-project.org/web/packages/igraph/igraph.pdf) : Paquete que nos proporciona procesos para gráficos simples y análisis de redes. Puede manejar gráficos grandes muy bien, gráficos aleatorios y gráficos regulares, además de visualización de estos. : _install.packages("igraph")_.
+
+- [`MASS`](https://cran.r-project.org/web/packages/MASS/MASS.pdf) : Paquete que nos propociona funciones y conjuntos de datos de soporte. : _install.packages("MASS")_.
 
 - [`magrittr`](https://cran.r-project.org/web/packages/magrittr/magrittr.pdf) : Paquete que proporciona un mecanismo para encadenar comandos con \%>\%. Se puede instalar usando : _install.packages("magrittr")_.
 
 - [`NLP`](https://cran.r-project.org/web/packages/NLP/NLP.pdf) : Paquete con clases básicas y métodos para el procesamiento del lenguaje natural. Se puede instalar usando : _install.packages("NLP")_.
+
+- [`ppclust`](https://cran.r-project.org/web/packages/ppclust/ppclust.pdf) : Paquete que nos permite la agrupación de particiones de un conjunto de datos en subconjuntos o clústeres no superpuestos mediante el uso de los algoritmos de agrupación probabilística basados en prototipos. : _install.packages("ppclust")_.
 
 - [`plyr`](https://cran.r-project.org/web/packages/plyr/plyr.pdf) : Paquete que nos ofrece herramientas para dividir, aplicar y combinar datos. Se puede instalar usando : _install.packages("plyr")_.
 
 - [`proxy`](https://cran.r-project.org/web/packages/proxy/proxy.pdf) : Paquete que proporciona un _framework_ para cálculo eficiente. Se puede instalar usando : _install.packages("proxy")_. 
 
 - [`quanteda`](https://cran.r-project.org/web/packages/quanteda/quanteda.pdf) : Paquete para análisis cuantitativo de texto en R, usado para gestionar corpus, crear y manipular tokens y n-gramas, analizar palabras clave..., representando visualmente el texto y los análisis de texto. Se puede instalar usando : _install.packages("quanteda")_.
+
+- [`rlm`](https://cran.r-project.org/web/packages/rlm/rlm.pdf) : Paquete que nos propociona una adaptación robusta de un modelo lineal que puede responder en forma de matriz. : _install.packages("rlm")_.
+
+- [`rattle`](https://cran.r-project.org/web/packages/rattle/rattle.pdf) : Paquete que permite al usuario cargar rápidamente datos desde un archivo CSV, transformarlos y explorarlos, construir y evaluar modelos, y además, exportarlos. : _install.packages("rattle")_.
+
+- [`randomForest`](https://cran.r-project.org/web/packages/randomForest/randomForest.pdf) : Paquete que nos proporciona clasificación y regresión basada en árboles usando entradas aleatorias. : _install.packages("randomForest")_.
 
 - [`RColorBrewer`](https://cran.r-project.org/web/packages/RColorBrewer/RColorBrewer.pdf) : Paquete que proporciona paletas de colores. Se puede instalar usando : _install.packages("wordcloud")_.
 
@@ -142,6 +166,8 @@ A continuación, se describen los paquetes necesarios para el desarollo del proy
 - [`RTextTools`](https://cran.r-project.org/web/packages/RTextTools/RTextTools.pdf) : Paquete para realizar clasificación automática de textos mediante aprendizaje supervisado. Se puede instalar usando : _install.packages("RTextTools")_.
 
 - [`rword2vec`](https://github.com/mukul13/rword2vec) : Paquete que toma un corpus de texto como entrada y produce los vectores de palabra como salida, usado especialmente para obtener las distancias que existen entre un término y los términos semejantes en el texto de formación (aprende la representación vectorial de las palabras). Se puede instalar usando : _install\_github("mukul13/rword2vec")_. 
+
+- [`stargazer`](https://cran.r-project.org/web/packages/stargazer/stargazer.pdf) : Paquete que produce código LaTeX, código HTML/CSS y texto ASCII para tablas bien formateadas que contienen resultados del análisis de regresión de varios modelos en paralelo, así como un resumen de estadísticas. : _install.packages("stargazer")_.
 
 - [`SnowballC`](https://cran.r-project.org/web/packages/SnowballC/SnowballC.pdf) : Paquete adicional para minería de datos, implementa un algoritmo que permite reducir el número de términos con lo que trabajar, es decir, agrupa aquellos términos que contienen la misma raíz. El paquete soporta los siguientes idiomas: alemán, danés, español, finlandés, francés, húngaro, inglés, italiano, noruego, portugués, rumano, ruso, sueco y turco. Se puede instalar usando : _install.packages("SnowballC")_.
 

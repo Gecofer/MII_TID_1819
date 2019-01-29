@@ -1,0 +1,60 @@
+---
+title: "arboDecisionLuis"
+output: html_document
+---
+
+```{r}
+
+
+
+datos_train = read.csv("datos_train_preprocesado.csv", stringsAsFactors = F)
+datos_test = read.csv("datos_test_preprocesado.csv", stringsAsFactors = F)
+datos_total <- union(datos_train,datos_test)
+
+corpus = Corpus(VectorSource(datos_total$benefits_preprocesado))
+
+# Creamos matriz de términos con las palabras de los comentarios. Entonces cada fila, va a estar formada por los comentarios, donde cada palabra es una columna
+tdm <- tm::DocumentTermMatrix(corpus)
+tdm.tfidf <- tm::weightTfIdf(tdm)
+
+reviews = as.data.frame(cbind(datos_total$effectivenessNumber, as.matrix(tdm.tfidf)))
+
+
+preparado_train <- reviews[1:1500,]
+preparado_test <- reviews[-(1:1000),]
+
+# reviews = as.data.frame(cbind(mis_mini_datos_jeje$benefits_preprocesado, as.matrix(tdm.tfidf)))
+```
+
+
+```{r}
+
+reviews.tree = rpart(V1~ .,  method = "class", data = preparado_train );  
+prp(reviews.tree)
+
+```
+
+En realidad, es lógico que si utilizamos un conjunto de datos mayor, sobretodo en el caso de los textos, que haga predicciones muy muy restringidas, ya que al haber tanta cantidad de palabras tiene que generalizar un montón y al final, esa generalización se reduce a utilizar pocas palabras para clasificar en las distintas etiquetas. Por ello, hemos ido probando distintos tamaños hasta dar con uno que visualmente nos compense. Pero obviamente, la importancia no está en que visualmente nos parezca un árbol representativo y que de buenos resultados, sino en que a la hora de predecir el conjunto de test, nos de resultado realmente representativos. 
+
+
+Por ello vamos a hacer predict con el árbol que hemos generado anteriormente. Simplemente le pasamos a la función predict de la librería `rattle` el árbol que hemos entrenado.  
+
+```{r}
+library(rattle)
+pred <- predict(reviews.tree, newdata=preparado_test, type="class")
+table(pred)
+table(preparado_test$V1)
+# Matriz de confusión
+tabla <-table(preparado_test$V1, pred, useNA="ifany",
+dnn=c("Real", "Predicho" ))
+
+tabla
+```
+
+Obtenemos el resultado
+
+```{r}
+
+sum(diag(tabla))/nrow(datos_test)
+
+```

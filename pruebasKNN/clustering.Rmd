@@ -203,7 +203,6 @@ fviz_nbclust(x = datos, FUNcluster = kmeans, method = "silhouette", k.max = 15) 
 
 ```
 
-
 Nuevo método en el que agrupamos las observaciones en K clusters, siendo este valor K preestablecido. En este caso, cada cluster está representado por una observación presente en el cluster. Mediante este método hacemos uso de medoids, consiguiendo que sea menos afectado por ruido.
 
 Para su resolución usaremos el alogitmo PAM (Partitioning Around Medoids). Este minimiza la suma de las diferencias de cada observación respecto a su medoid.
@@ -259,7 +258,17 @@ fviz_cluster(object = pam_clusters, data = datos, ellipse.type = "t",
   theme(legend.position = "none")
 ```
 
+## Clustering Difuso (FUZZY CLUSTERING)
 
+```{r}
+
+fuzzy_cluster <- fanny(x = datos, k = 3, metric = "euclidean", stand = FALSE)
+head(fuzzy_cluster$membership)
+# fuzzy_cluster$coeff
+# head(fuzzy_cluster$clustering)
+fviz_cluster(object = fuzzy_cluster, repel = TRUE, ellipse.type = "norm", pallete = "jco") + theme_bw() + labs(title = "Fuzzy Cluster plot")
+
+```
 
 
 

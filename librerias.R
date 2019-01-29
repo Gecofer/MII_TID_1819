@@ -3,23 +3,29 @@
 library(arules)
 library(arulesViz)
 library(caret)
+library(cluster)
 library(dbscan)
 library(devtools)
 library(dplyr)
 library(e1071)
 library(factoextra)
+library(fclust)
 library(ggplot2) 
 library(ggpubr)
 library(magrittr)
+library(nnet)
 library(NLP) # Paquete para minería de datos, permite procesar datos de tipo texto
 library(plyr)
 library(proxy)
+library(ppclust)
 library(quanteda)
 library(randomForest)
 library(rattle)
 library(RColorBrewer)
 library(rlist)
 library(ROCR)
+library(rpart)
+library(rpart.plot)
 library(rword2vec) #install_github("mukul13/rword2vec")
 library(RTextTools)
 library(SnowballC) # Paquete para minería de datos, agrupa aquellos términos que contienen la misma raíz
@@ -28,6 +34,10 @@ library(tm)
 library(tseries)
 library(wesanderson)
 library(wordcloud)
+
+
+
+
 
 
 

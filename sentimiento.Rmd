@@ -87,14 +87,14 @@ for(cadena in medicamentos){
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=1\textwidth]{figuras/asociacion/Comentarios_beneficio_de_medicamento_propecia.png}
+    \includegraphics[width=1\textwidth]{figuras/alegidas/Comentarios_beneficio_de_medicamento_propecia.png}
     \caption{Análisis de sentimientos de los comentarios sobre los beneficios de los medicamentos para obtener propecia.}
     \label{fig:sentimientos:propeciaSentimiento}
 \end{figure}
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=1\textwidth]{figuras/asociacion/Comentarios_beneficio_de_medicamento_propecia_positivismo.png}
+    \includegraphics[width=1\textwidth]{figuras/elegidas/Comentarios_beneficio_de_medicamento_propecia_positivismo.png}
     \caption{Análisis de positivismo de los comentarios sobre los beneficios de los medicamentos para obtener propecia.}
     \label{fig:sentimientos:propeciaSentimiento}
 \end{figure}

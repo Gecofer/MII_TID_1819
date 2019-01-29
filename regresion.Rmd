@@ -7,31 +7,38 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-Lectura de datos
-
 ```{r}
-datos_train_preprocesados <- read.csv(file="datos/datos_train_preprocesado.csv")
-View(datos_train_preprocesados)
-
-datos_test_preprocesados <- read.csv(file="datos/datos_test_preprocesado.csv")
-View(datos_test_preprocesados)
+source("librerias.R")
 ```
 
-Nuestro modelo de regresión, solo tiene variables discretass, por lo que sería de clasificación, ver eso en el tema 5.
+```{r, include=FALSE}
+# Lectura de los datos train preprocesados
+datos_train_preprocesados <- read.csv(file="datos/datos_train_preprocesado.csv")
 
+# Lectura de los datos test preprocesados
+datos_test_preprocesados <- read.csv(file="datos/datos_test_preprocesado.csv")
+```
 
-# Regresión 
+# 5. Regresión
 
-La regresión es un modelo de predicción de variables continuas, habitualmente las variables independientes tambien son continuas o al menos numéricas. Hay que tener cuidado con la regresión, porque esta, muy relacionada con la correlación, debemos tener claro que lo nuestro son variables categóricas..., es discreta, booleana, nominal etc.
+En este apartado, se va hacer uso de la técnica de **regresión**, con el objetivo de describir dependencias significativas entre las variables incluidas en la base de datos. La regresión es un modelo de predicción de variables continuas, habitualmente las variables independientes tambien son continuas o al menos numéricas. Dicho proceso viene caracterizado por aprender una función que aplica un conjunto de atributos $X_1..X_n$ en otro atributo $Y$. En nuestro caso, vamos a uso de las columnas:
 
-Calcular el coeficiente de correlacióon simple usado para medir la relación lineal entre dos variables (ver lo del coeficiente de correlacion lineal, calcular la R al cuadradro)
+- **ratingLabel**:
+- **effectivenessNumber**:
+- **sideEffectsInverse**:
 
-https://rpubs.com/Diego_Koz/326716
-https://rpubs.com/Joaquin_AR/254575
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.85\textwidth]{imagenes/regresion/1.png}
+    \caption{Visualización de las columnas aplicar regresión}
+    \label{medicamentos_repetidos}
+\end{figure}
 
-Antes de nada, vamos a quitar los fármacos que se repiten, para así predecir los fármacos:
+Como se ve, se va hacer uso de variables discretas. El objetivo de aplicar regresión, es obtener la curva ROC y la matriz de confusión, con el fin de obtener según el paciente que medicamentos tienen efectos secundarios o son efectivos.
 
-```{r}
+Para realizar la regresión, se ha optado por eliminar los fármacos repetidos, con el fin de despreciar el ruido.
+
+```{r, include=FALSE}
 datos_train2 <- datos_train_preprocesados[c(11,9,12)]
 
 # https://stackoverflow.com/questions/40003028/extracting-unique-values-from-data-frame-using-r
@@ -61,13 +68,11 @@ data_train_procesado <- data.frame(datos_procesados_train)
 rownames(data_train_procesado) <- nombres_farmacos
 colnames(data_train_procesado) <- c("ratingLabel", "effectivenessNumber", "sideEffectsInverse")
 
-View(data_train_procesado)
-
 # Nos quedamos con los data_train_procesado
 ```
 
 
-```{r}
+```{r, include=FALSE}
 datos_test2 <- datos_test_preprocesados[c(11,9,12)]
 
 # https://stackoverflow.com/questions/40003028/extracting-unique-values-from-data-frame-using-r
@@ -97,28 +102,24 @@ data_test_procesado <- data.frame(datos_procesados_test)
 rownames(data_test_procesado) <- nombres_farmacos
 colnames(data_test_procesado) <- c("ratingLabel", "effectivenessNumber", "sideEffectsInverse")
 
-View(data_test_procesado)
-
 # Nos quedamos con los data_test_procesado
 ```
 
-## Regresión Lineal Simple
+## 5.1. Regresión Lineal
 
-Regresión lineal con variables categóricas
+Con el comando `lm()` podemos ajustar el modelo. Algunos parñámetros importantes de esta función son:
 
-Con el comando lm() podemos ajustar el modelo. Algunos parametros importantes de esta función son:
+- Formula: definimos el modelo como: $Y ~ X$.
+  - Regresion Múltiple: $y ~ X_1+X_2+...X_n$.
+  - Regresión Polinómica: $y ~ poly(x = X, degree = k)$
+  - Interacción de variables: $y ~ X_1 \cdot X_2$. Si sólo queremos el término de interacción: $X1:X2$
+- Data : especificamos el dataset a utilizar
+- Subset : si dividimos la muestra en training y testing, podemos indicar el subconjunto de entrenamiento con un vector que indique sus números de fila.
 
-- formula: definimos el modelo como: $Y ~ X$.
-  - regresion multiple: $y ~ X1+X2+...Xn$.
-  - regresión polinómica: $y ~ poly(x = X, degree = k)$
-  - interacción de variables: $y ~ X1∗X2$. Si sólo queremos el término de interacción: X1:X2
-- data : especificamos el dataset a utilizar
-- subset : si dividimos la muestra en training y testing, podemos indicar el subconjunto de entrenamiento con un vector que indique sus números de fila
 
-```{r}
-predictionData <- list("sunny sunny sunny rainy rainy", "rainy sunny rainy rainy", "hello", "", "this is another rainy world") 
-predictionData
-```
+### 5.1.1. Regresión Lineal Simple
+
+Se pretende predecir el valor del rating en función de la puntuación de los medicamentos y, por otro lado de los efectos secundarios del mismo. Para ello se va a emplezar la función `lm()`, la cual genera un modelo de regresión lineal por mínimos cuadrados en el que la variable respuesta es ratingLabel y el predictor sideEffectsInverse, y por otro lado, la variable respuesta es ratingLabel y el predictor effectivenessNumber.
 
 
 ```{r}
@@ -141,21 +142,20 @@ errorres_regresion_lineal <- function(m){
   list(Etrain=Etrain, Etest=Etest)
 }
 
-# Creamos el modelo
-# la etiqueta tiene que estar entre 0 y 1
+# Creamos el modelo para ratingLabel ~ sideEffectsInverse
 lm_effects = lm(data = data_train_procesado, formula = ratingLabel ~ sideEffectsInverse)
-# summary(lm_effects)
+# Evaluamos el modelo
 errorres_regresion_lineal(lm_effects)
 
+# Creamos el modelo para ratingLabel ~ effectivenessNumber
 lm_effectiveness = lm(data = data_train_procesado, formula = ratingLabel ~ effectivenessNumber)
+# Evaluamos el modelo
 errorres_regresion_lineal(lm_effectiveness)
 ```
 
-```{r}
-# para effects
-# Obtenemos las probabilidades
-prob_LM_effects = predict(lm_effects, data.frame(data_test_procesado), type=c("response"))
+Una vez que hemos obtenidos las prediciones para nuestro modelo, vamos a obtener las probabilidades para el mismo con el fin de obtener la curva ROC.
 
+```{r}
 # Función que dibuja uan curva ROC
 plotROC <- function(modelo, etiq_real, adicionar=FALSE,color="red") { 
   pred <- prediction(modelo, etiq_real)
@@ -164,57 +164,47 @@ plotROC <- function(modelo, etiq_real, adicionar=FALSE,color="red") {
   segments(0, 0, 1, 1, col='black')
   grid() 
 }
+```
+
+```{r}
+# Obtenemos las probabilidades para effects
+prob_LM_effects = predict(lm_effects, data.frame(data_test_procesado), type=c("response"))
 
 # Cruva ROC para el modelo lineal
 plotROC(prob_LM_effects, data_test_procesado$ratingLabel)
 ```
 
 ```{r}
-# para effects
-
-# Obtenemos las probabilidades
+# Obtenemos las probabilidades para effectiveness
 prob_LM_effectiveness = predict(lm_effectiveness, data.frame(data_test_procesado), type=c("response"))
-
-# Función que dibuja uan curva ROC
-plotROC <- function(modelo, etiq_real, adicionar=FALSE,color="red") { 
-  pred <- prediction(modelo, etiq_real)
-  perf <- performance(pred,"tpr","fpr")
-  plot(perf, col=color, add=adicionar, main="Curva ROC - Regresión Lineal - Efectividad", lwd = 2) 
-  segments(0, 0, 1, 1, col='black')
-  grid() 
-}
 
 # Cruva ROC para el modelo lineal
 plotROC(prob_LM_effectiveness, data_test_procesado$ratingLabel)
-
 ```
 
-### Casos atípicos
+#### 5.1.1.1. Casos atípicos
 
-La visualización gráfica de las influencias se obtiene del siguiente modo:
+A continuación, vamos a obtener los caso atípicos, usando la visualización gráfica de las influencias se obtiene del siguiente modo:
 
 https://www.rdocumentation.org/packages/car/versions/3.0-2/topics/influencePlot
 https://www.institutomora.edu.mx/testU/SitePages/martinpaladino/modelos_lineales_con_R.html
 
 ```{r}
-# Detección y visualización de observaciones influyentes
-# Para sideEffectsInverse
-
+# Detección y visualización de observaciones influyentes para effects
 require(car)
 influencePlot(lm_effects, xlab="Hat-Values", ylab="Studentized Residuals")
 ```
 
 ```{r}
-# Detección y visualización de observaciones influyentes
-# Para effectivenessNumber
+# Detección y visualización de observaciones influyentes para effectivenessNumber
 require(car)
 influencePlot(lm_effectiveness, xlab="Hat-Values", ylab="Studentized Residuals")
 ```
 
 
-## Regresión Robusta
+*Regresión Robusta*
 
-Una alternativa para controlar casos atípicos es ajustar una modelo lineal robusto. Los modelos lineales robustos utilizan criterios diferentes al de los mínimos cuadrados y ponderan la influencia de los casos atípicos, por lo que producen coeficientes y -sobre todo- errores estandar más confiables. El paquete MASS:: incluye la función rlm(), de sintaxis similar a lm() que implementa el método M para el ajuste de los coeficientes y cálculo de los errores estándar.
+Una alternativa para controlar casos atípicos es ajustar una modelo lineal robusto. Los modelos lineales robustos utilizan criterios diferentes al de los mínimos cuadrados y ponderan la influencia de los casos atípicos, por lo que producen coeficientes y sobre todo errores estandar más confiables. El paquete MASS:: incluye la función rlm(), de sintaxis similar a lm() que implementa el método M para el ajuste de los coeficientes y cálculo de los errores estándar.
 
 https://www.institutomora.edu.mx/testU/SitePages/martinpaladino/modelos_lineales_con_R.html
 
@@ -236,14 +226,9 @@ library(stargazer)
 stargazer(lm_effectiveness, rlm_effectiveness, type = "text", model.numbers = FALSE, title="Comparación de modelo OLS y Robusto")
 ```
 
+### 5.1.2. Regresión Lineal Múltiple
 
-## Regresión Lineal Múltiple
-
-https://rpubs.com/Joaquin_AR/226291
-
-No porque no se puede hacer correlación
-
-Pero no sé de que serviría juntar estas.
+Se pretende predecir el valor del rating en función de la puntuación de los medicamentos y de los efectos secundarios del mismo. Para ello se va a emplezar la función `lm()`, la cual genera un modelo de regresión lineal por mínimos cuadrados en el que la variable respuesta es ratingLabel y los predictores sideEffectsInverse y effectivenessNumber.
 
 ```{r}
 lm_multiple <- lm(ratingLabel ~ sideEffectsInverse + effectivenessNumber, data = data_train_procesado)
@@ -251,11 +236,13 @@ summary(lm_multiple)
 
 # https://rpubs.com/Cristina_Gil/Regresion_Lineal_Multiple
 # nos dice si existe alguna variable que estamos usando que no nos hace falta
-step(modelo, direction = "both", trace = 1)
+step(lm_multiple, direction = "both", trace = 1)
 
 errorres_regresion_lineal(lm_multiple)
 # no se ha sido excluido en el proceso de selección a ninguna variable.
 ```
+
+A continuación, obtenemos la matriz de correlaciones:
 
 ```{r}
 # Matriz de correlación entre predictores.
@@ -265,15 +252,19 @@ corrplot(cor(dplyr::select(data_train_procesado, ratingLabel, sideEffectsInverse
 ```
 
 
-## Regresión Logística Simple
+## 5.2. Regresión Logística
 
-La regresión logística se usa para predecir la probabilidad de ocurrencia de una variable binaria. Es decir para predecir la probabilidad de pertenencia o no a una determinada clase (fallo no-fallo, pago impago etc.) es muy usada en control de calidad y en análisis de riesgo.
+A continuación vamos a ajustar un modelo con Regresión Logística binario sin regularización. De este modo podemos comprobar, si podemos intentar encontrar un buen modelo lineal para nuestro problema. Además, discutiremos las necesidades de regularización, para ver si de esta forma conseguimos mejorarlo en cuanto a resultados. En este caso, vamos a utilizar el conjunto de atributos definido en el modelo séptimo que hemos obtenido anteriormente con la función regsubsets(..). De esta forma, vamos a imitar la capacidad de selección del modelo Lasso, en el cual solo incluye aquellas variables que aportan información nueva. Nosotras vamos a hacer lo mismo, para ello hicimos anteriormente un análisis sobre la mejor combinación de variables, y es la del modelo seis, la que hemos escogido finalmente.
+
+### 5.2.1. Regresión Logística Simple
+
+La regresión logística se usa para predecir la probabilidad de ocurrencia de una variable binaria. Es decir para predecir la probabilidad de pertenencia o no a una determinada clase (efectividad - no efectividad) es muy usada en control de calidad y en análisis de riesgo.
+
+Para ello, vamos a utilizar la función la función glm(..) que en base al conjunto de muestras de entrenamiento suministrado, es capaz de calcular una probabilidad para cada dato. Si esta probabilidad sobrepasa el valor 0.5, entonces consideramos que dicha muestra pertence a la clase 1, sin embargo, si su probabilidad es menor que 0.5, entonces consideramos que se encuentra en la clase con etiqueta 0. Una vez tengamos las etiquetas predichas a partir de las probabilidades que calcula el modelo, vamos a calcular el error dentro de la muestra (Ein) y el error fuera de la muestra(Eout). Para ello, vamos a especificar como primer argumento, la variable respuesta denominada “V_etiquetas” y a continuación, el conjunto de variables incluidas en el modelo seis en el que nos basamos a fijar para ajustar este modelo y los siguientes. Como segundo argumento le proporcionamos el conjunto de entrenamiento, y como tercer argumento le volvemos a especificar que
 
 https://stackoverrun.com/es/q/3252973
 
 ```{r}
-# cuantos medicamentos dicen que son efectivos pero no lo son
-
 # Función que calcula los errores y E_test para regresión logística
 errorres_regresion_logistica <- function(m){ 
   probTr = predict(m, type="response")
@@ -290,82 +281,121 @@ errorres_regresion_logistica <- function(m){
   Etrain = mean(predTr != data_train_procesado$ratingLabel) 
   Etest = mean(predTst != data_test_procesado$ratingLabel) 
   
-  list(Etrain=Etrain, Etest=Etest)
+  list(Etrain=Etrain*100, Etest=Etest*100)
 }
 
-# Creamos el modelo
-# la etiqueta tiene que estar entre 0 y 1
+# Creamos el modelo para ratingLabel ~ sideEffectsInverse
 gml_effects = glm(ratingLabel ~ sideEffectsInverse, family = binomial(logit), data = data_train_procesado)
+# Evaluamos el modelo
 errorres_regresion_logistica(gml_effects)
 
+# Creamos el modelo para ratingLabel ~ sideEffectsInverse
 gml_effectiveness = glm(ratingLabel ~ effectivenessNumber, family = binomial(logit), data = data_train_procesado)
+# Evaluamos el modelo
 errorres_regresion_logistica(gml_effectiveness)
-
-## guardar en una variable 
 ```
 
 ```{r}
-# para gml_effects
-
-# Ponderaciones
-# Obtenemos las probabilidades
+# Obtenemos las probabilidades para effects
 prob_GLM_effects = predict(gml_effects, data.frame(data_test_procesado), type=c("response"))
 
-# Función que dibuja uan curva ROC
-plotROC <- function(modelo, etiq_real, adicionar=FALSE,color="red") { 
-  pred <- prediction(modelo, etiq_real)
-  perf <- performance(pred,"tpr","fpr")
-  plot(perf, col=color, add=adicionar, main="Curva ROC - Regresión Logística - Efectos secundarios", lwd = 2) 
-  segments(0, 0, 1, 1, col='black')
-  grid() 
-}
-
-# Cruva ROC para el modelo lineal
+# Cruva ROC para el modelo logística
 plotROC(prob_GLM_effects, data_test_procesado$ratingLabel)
-
 ```
 
 ```{r}
-# para gml_effectiveness
-
-# Obtenemos las probabilidades
+# Obtenemos las probabilidades para effectiveness
 prob_GLM_effectiveness = predict(gml_effectiveness, data.frame(data_test_procesado), type=c("response"))
-
-# Función que dibuja uan curva ROC
-plotROC <- function(modelo, etiq_real, adicionar=FALSE,color="red") { 
-  pred <- prediction(modelo, etiq_real)
-  perf <- performance(pred,"tpr","fpr")
-  plot(perf, col=color, add=adicionar, main="Curva ROC - Regresión Logística - Efectividad", lwd = 2) 
-  segments(0, 0, 1, 1, col='black')
-  grid() 
-}
 
 # Cruva ROC para el modelo lineal
 plotROC(prob_GLM_effectiveness, data_test_procesado$ratingLabel)
-
 ```
 
-
-## Regresión Logística Multiple
+### 5.2.2. Regresión Logística Multiple
 
 ```{r}
-modelo <- glm(ratingLabel ~ sideEffectsInverse + effectivenessNumber, data = data_train_procesado)
-summary(modelo)
+modelo_glm_multiple <- glm(ratingLabel ~ sideEffectsInverse + effectivenessNumber, data = data_train_procesado)
 
 # https://rpubs.com/Cristina_Gil/Regresion_Lineal_Multiple
-step(modelo, direction = "both", trace = 1)
+step(modelo_glm_multiple, direction = "both", trace = 1)
 
-errorres_regresion_logistica(modelo)
+errorres_regresion_logistica(modelo_glm_multiple)
 # no se ha sido excluido en el proceso de selección a ninguna variable.
 ```
 
 
-## Regresión Polinomial
+### 5.2.3. Regularización en Regresión Logística
+
+En este apartado vamos a ajustar un modelo a través de la Regresión Logística con regularización meidante la técnica Lasso Regression o con Ridge Regression. Ambas se explican a continuación:
+
+
+#### Ridge Regression
+
+Esta ténica, en esencia, es la Regresión Lineal con Weight Decay que utilizamos en la Práctica 2, y cuya
+fórmula es: (XTX + lambdaI)-1 *XˆT. Es el parámetro lambda, el que en función de su valor, marca el equilibrio
+entre los componentes de sesgo y varianza. Cuanto mayor sea su valor, mayor sesgo pero menor varianza. Es
+decir, cuanto mayor valor tenga lambda, mayor penalización y mayor reducción se les aplica a los valores de
+los coeficientes.
+
+#### Lasso Regression
+
+```{r}
+# Ajustamos un modelo a través de Regresión Logística multiclase
+library(caret)
+library(e1071)
+modelbest = train(form=as.factor(ratingLabel) ~ sideEffectsInverse + effectivenessNumber, data=data_train_procesado, method="glmnet", family="binomial")
+
+modelbest$bestTune$alpha
+modelbest$bestTune$lambda
+```
+
+```{r}
+library(glmnet)
+##### CONJUNTO DE TRAIN ####
+# Primero generamos una matriz con el conjunto de train separando las etiquetas de los datos
+x = model.matrix(ratingLabel~sideEffectsInverse + effectivenessNumber, data_train_procesado)[,-ncol(data_train_procesado)]
+y = data_train_procesado$ratingLabel
+##### CONJUNTO DE TEST ####
+x.test = model.matrix(ratingLabel~sideEffectsInverse + effectivenessNumber, data_test_procesado)[,-ncol(data_test_procesado)]
+y.test = data_test_procesado$ratingLabel
+# Reproducimos el modelo ajustado con el mejor lambda y el mejor alpha
+ridge.mod = glmnet(x=x, y=y, family="binomial", alpha=modelbest$bestTune$alpha,lambda=modelbest$bestTune$lambda,thresh=1e-12)
+
+# Calculamos la predicción
+predicciones.ridge = predict(ridge.mod, s=ridge.mod$lambda, newx=x.test, type="response")
+# Error de regresión con penalización Ridge
+error.ridge = mean (( predicciones.ridge - y.test)^2)
+cat("Eout con la técnica Ridge Regression: ",error.ridge*100,"%\n")
+```
+
+
+
+## Regularicion
+
+
+```{r}
+require(glmnet)
+# Data = considering that we have a data frame named dataF, with its first column being the class
+x <- as.matrix(data_train_procesado[,-1]) # Removes class
+y <- as.double(as.matrix(data_train_procesado[, 1])) # Only class
+
+# Fitting the model (Ridge: Alpha = 0)
+set.seed(999)
+cv.ridge <- cv.glmnet(x, y, family='binomial', alpha=0, parallel=TRUE, standardize=TRUE, type.measure='auc')
+
+# Results
+plot(cv.ridge)
+cv.ridge$lambda.min
+cv.ridge$lambda.1se
+coef(cv.ridge, s=cv.ridge$lambda.min)
+```
+
+## 5.3. Regresión Polinomial
 
 ```{r}
 # Hacemos uso del poly para 2, en donde no usamos otra grado, porque no se obtiene mejora
-lm = lm(data = data_train_procesado, formula = ratingLabel ~ poly(sideEffectsInverse, 2) + effectivenessNumber)
-errorres_regresion_lineal(lm)
+lm_poly = lm(data = data_train_procesado, formula = ratingLabel ~ poly(sideEffectsInverse, 2) + effectivenessNumber)
+errorres_regresion_lineal(lm_poly)
 ```
 
 En algunos casos, la verdadera relación entre la variable respuesta y los predictores puede no ser lineal, por lo que podemos aplicar por ejemplo una regresión polinomial (existen métodos más complejos). Una forma simple de incorporar asociaciones no lineales en un modelo lineal es incluir versiones transformadas de los predictores, elevándolos a distintas potencias, evitando un exceso de grados para evitar el sobreajuste o overfitting.
@@ -398,78 +428,12 @@ intervalo_conf <- data.frame(inferior = predicciones$fit -
                              superior = predicciones$fit +
                                         1.96*predicciones$se.fit)
 
-attach(datos_train)
+attach(data_train_procesado)
 plot(x = sideEffectsInverse, y = ratingLabel, pch = 20, col = "darkgrey")
 title("Polinomio de grado 2: ratingLabel ~ sideEffectsInverse")
 lines(x = nuevos_puntos$sideEffectsInverse, predicciones$fit, col = "red", pch = 20)
 lines(x = nuevos_puntos$sideEffectsInverse, intervalo_conf$inferior, col = "blue", pch = 4)
 lines(x = nuevos_puntos$sideEffectsInverse, intervalo_conf$superior, col = "blue", pch = 4)
 ```
-
-
-### Regularización en Regresión Logística
-
-En este apartado vamos a ajustar un modelo a través de la Regresión Logística con regularización meidante la técnica Lasso Regression o con Ridge Regression. Ambas se explican a continuación:
-
-
-#### Ridge Regression
-
-Esta ténica, en esencia, es la Regresión Lineal con Weight Decay que utilizamos en la Práctica 2, y cuya
-fórmula es: (XTX + lambdaI)-1 *XˆT. Es el parámetro lambda, el que en función de su valor, marca el equilibrio
-entre los componentes de sesgo y varianza. Cuanto mayor sea su valor, mayor sesgo pero menor varianza. Es
-decir, cuanto mayor valor tenga lambda, mayor penalización y mayor reducción se les aplica a los valores de
-los coeficientes.
-
-#### Lasso Regression
-
-```{r}
-# Ajustamos un modelo a través de Regresión Logística multiclase
-library(caret)
-library(e1071)
-modelbest = train(form=as.factor(ratingLabel) ~ sideEffectsInverse + effectivenessNumber, data=data_train_procesado, method="glmnet", family="binomial")
-
-modelbest$bestTune$alpha
-modelbest$bestTune$lambda
-```
-
-```{r}
-##### CONJUNTO DE TRAIN ####
-# Primero generamos una matriz con el conjunto de train separando las etiquetas de los datos
-x = model.matrix(ratingLabel~sideEffectsInverse + effectivenessNumber, data_train_procesado)[,-ncol(data_train_procesado)]
-y = data_train_procesado$ratingLabel
-##### CONJUNTO DE TEST ####
-x.test = model.matrix(ratingLabel~sideEffectsInverse + effectivenessNumber, data_test_procesado)[,-ncol(data_test_procesado)]
-y.test = data_test_procesado$ratingLabel
-# Reproducimos el modelo ajustado con el mejor lambda y el mejor alpha
-ridge.mod = glmnet(x=x, y=y, family="binomial", alpha=modelbest$bestTune$alpha,lambda=modelbest$bestTune$lambda,thresh=1e-12)
-
-# Calculamos la predicción
-predicciones.ridge = predict(ridge.mod, s=ridge.mod$lambda, newx=x.test, type="response")
-# Error de regresión con penalización Ridge
-error.ridge = mean (( predicciones.ridge - y.test)^2)
-cat("Eout con la técnica Ridge Regression: ",error.ridge*100,"%\n")
-```
-
-
-## Regularicion
-
-
-```{r}
-require(glmnet)
-# Data = considering that we have a data frame named dataF, with its first column being the class
-x <- as.matrix(data_train_procesado[,-1]) # Removes class
-y <- as.double(as.matrix(data_train_procesado[, 1])) # Only class
-
-# Fitting the model (Ridge: Alpha = 0)
-set.seed(999)
-cv.ridge <- cv.glmnet(x, y, family='binomial', alpha=0, parallel=TRUE, standardize=TRUE, type.measure='auc')
-
-# Results
-plot(cv.ridge)
-cv.ridge$lambda.min
-cv.ridge$lambda.1se
-coef(cv.ridge, s=cv.ridge$lambda.min)
-```
-
 
 # Conclusiones

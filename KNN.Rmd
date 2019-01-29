@@ -1,0 +1,86 @@
+---
+title: "KNN"
+output:
+  pdf_document: default
+---
+
+Lectura de datos
+
+```{r}
+datos_train_preprocesados <- read.csv(file="datos/datos_train_preprocesado.csv")
+View(datos_train_preprocesados)
+
+datos_test_preprocesados <- read.csv(file="datos/datos_test_preprocesado.csv")
+View(datos_test_preprocesados)
+
+library(class)
+```
+
+```{r}
+# PAra train KNN
+corpus_train = tm::Corpus(tm::VectorSource(datos_train_preprocesados$benefits_preprocesado))
+tdm_train <- tm::DocumentTermMatrix(corpus_train)
+
+# Transform dtm to matrix and then back into a data frame for modeling
+mat.df.train <- as.data.frame(data.matrix(tdm_train), stringsAsfactors = FALSE)
+
+# Column bind category (known classification)
+mat.df.train <- cbind(mat.df.train, datos_train_preprocesados$ratingLabel, row.names = NULL)
+
+colnames(mat.df.train)[ncol(mat.df.train)] <- "ratingLabel"
+
+# Classifier variable based on the personality typ
+cl <- mat.df.train[,"ratingLabel"]
+
+# Create model data and remove “type”
+modeldata <- mat.df.train[,!colnames(mat.df.train) %in% "ratingLabel"]
+
+train <- sample(nrow(mat.df.train), ceiling(nrow(mat.df.train) * .70))
+test <- (1:nrow(mat.df.train))[- train]
+
+knn.pred <- knn(modeldata[train,], modeldata[test,], cl[train], k=3) # 
+knn.pred.copy <- knn.pred
+
+knn.pred.train <- knn(modeldata[train,], modeldata[train,], cl[train], k=3)
+
+conf.mat <- table("Predictions" = knn.pred, Actual = cl[test])
+conf.mat
+
+(accuracy <- sum(diag(conf.mat))/length(test) * 100)
+```
+
+
+```{r}
+# PAra train KNN
+corpus_train = tm::Corpus(tm::VectorSource(datos_train_preprocesados$effects_preprocesado))
+tdm_train <- tm::DocumentTermMatrix(corpus_train)
+
+# Transform dtm to matrix and then back into a data frame for modeling
+mat.df.train <- as.data.frame(data.matrix(tdm_train), stringsAsfactors = FALSE)
+
+# Column bind category (known classification)
+mat.df.train <- cbind(mat.df.train, datos_train_preprocesados$ratingLabel, row.names = NULL)
+
+colnames(mat.df.train)[ncol(mat.df.train)] <- "ratingLabel"
+
+# Classifier variable based on the personality typ
+cl <- mat.df.train[,"ratingLabel"]
+
+# Create model data and remove “type”
+modeldata <- mat.df.train[,!colnames(mat.df.train) %in% "ratingLabel"]
+
+train <- sample(nrow(mat.df.train), ceiling(nrow(mat.df.train) * .70))
+test <- (1:nrow(mat.df.train))[- train]
+
+knn.pred <- knn(modeldata[train,], modeldata[test,], cl[train], k=3) # 
+knn.pred.copy <- knn.pred
+
+knn.pred.train <- knn(modeldata[train,], modeldata[train,], cl[train], k=3)
+
+conf.mat <- table("Predictions" = knn.pred, Actual = cl[test])
+conf.mat
+
+(accuracy <- sum(diag(conf.mat))/length(test) * 100)
+```
+```
+

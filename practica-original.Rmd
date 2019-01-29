@@ -1943,3 +1943,5 @@ write.csv(datos_test_preprocesado, file = "datos/datos_test_preprocesado.csv", r
 
 
 **_Nota: Cuando se necesite en las sucesivas técnicas, se realizarán las transformaciones necesarias de acuerdo a cada técnica en cuestión._**
+
+

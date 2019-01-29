@@ -3698,7 +3698,8 @@ errorres_regresion_logistica(gml_effectiveness)
 
 Como se observa se obtiene que hay 3 falsos positivos, es decir, medicamentos que se dicen que son efectivos pero que no lo son. Y existen 35 falsos negativos, es decir, medicamentos que se dicen que no son efectivos pero los son Dichos resultados, según los comentarios de los pacientes. Como podemos apreciar, el error del test nos devuelve un valor de 12.14058, un error aceptable teniendo en cuenta los resultados obtenidos en la matriz de confusión. Pero posiblemente dicho error se pueda reducir aplicando sobre los datos otros modelos que veremos más adelante.
 
-Una vez que hemos obtenidos las prediciones para nuestro modelo, vamos a obtener las probabilidades para el mismo con el fin de obtener la curva ROC.
+Una vez que hemos obtenidos las prediciones para nuestro modelo, vamos a obtener la curva ROC.
+
 ```{r, echo=FALSE}
 # Obtenemos las probabilidades para effects
 prob_GLM_effects = predict(gml_effects, data.frame(data_test_procesado), type=c("response"))
@@ -3713,7 +3714,7 @@ prob_GLM_effectiveness = predict(gml_effectiveness, data.frame(data_test_procesa
 plotROC(prob_GLM_effectiveness, data_test_procesado$ratingLabel)
 ```
 
-### 5.2.2. Regresión Logística Multiple
+### 5.2.2. Regresión Logística Multivariable
 
 Una vez que hemos la regresión logística simple, vamos a intentar predecir el valor del ratingLabel en función de la puntuación de los medicamentos y de los efectos secundarios del mismo. Para ello se va a emplear la misma (`glm()`).
 

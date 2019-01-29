@@ -384,8 +384,8 @@ Además de eliminar las columnas innecesarias, se han localizado tres filas que 
 - Se elimina la fila 3105, porque no tienen información en _benefitsReview_ ("---").
 
 ```{r}
-datos_train = datos_train[-c(387,928, 3105),] # Eliminar filas en el train
-datos_test = datos_test[-c(387,928, 3105),] # Eliminar filas en el test
+datos_train = datos_train[-c(387, 928, 3105),] # Eliminar filas en el train
+datos_test = datos_test[-c(387, 928, 3105),] # Eliminar filas en el test
 ```
 
 <!-------------------------------------------------------------------------------------------->
@@ -1810,6 +1810,7 @@ library(wordcloud)
 library(tm)
 
 data_benefits <- read.csv(file="datos/datos_train_preprocesado.csv")
+View(data_benefits)
 data_benefits$items <- as.character(data_benefits$benefits_preprocesado) # ordena_mayor_matrix_corpus
 
 # Función para crear el wordcloud 
@@ -1907,6 +1908,8 @@ setnames(datos_test_preprocesado, "text", "effects_preprocesado")
 library(data.table)
 write.csv(datos_train_preprocesado, file = "datos/datos_train_preprocesado.csv", row.names = FALSE) # guarda un archivo csv
 #View(datos_train_preprocesado)
+
+
 
 write.csv(datos_test_preprocesado, file = "datos/datos_test_preprocesado.csv", row.names = FALSE) # guarda un archivo csv
 #View(datos_test_preprocesado)

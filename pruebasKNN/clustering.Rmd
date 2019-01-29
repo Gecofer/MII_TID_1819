@@ -128,6 +128,29 @@ fviz_cluster(object = res_clustering, data = data_train_procesado, show.clust.ce
   theme_bw() +
   theme(legend.position = "none")
 
+m = as.matrix(res_clustering$cluster)
+m
+x=as.matrix( m[,1] == 1)
+res = as.matrix(m[x])
+
+res[,1]
+
+
+head(res,10)
+var = rownames(as.matrix(res_clustering$cluster))
+length(res[,1])
+mat = cbind(var,res[,1])
+
+# df con la etiqueta a 1
+xy= x[,1]==1
+zyy = data_train_procesado[xy,]
+mean(zyy$effectivenessNumber)
+
+xy2= x[,1]==2
+zyy2 = data_train_procesado[-xy,]
+mean(zyy2$effectivenessNumber)
+
+m
 ```
 
 Como comprobación del buen ajuste de la división de clusters, en el siguiente gráfico podemos ver la similitud y cohesión entre estos.

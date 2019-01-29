@@ -8,6 +8,8 @@ output: pdf_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+
+
 ```{r}
 
 library(rpart)
@@ -19,19 +21,28 @@ library(dplyr)
 library(tm)
 
 datos_train = read.csv("datos_train_preprocesado.csv", stringsAsFactors = F)
-datos_train$benefits_sin_numeros <-gsub("[0-9]+", "", datos_train$benefits_preprocesado)
 datos_train <- datos_train[-c(17,2585),]
+datos_train$benefits_sin_numeros <-gsub("[0-9]+", "", datos_train$benefits_preprocesado)
+datos_train$benefits_sin_rombos <-gsub("\uFFFD", "", datos_train$benefits_sin_numeros)
+
+
 # x= "hola1"
 # y = gsub('[0-9]+', "", x)
 # print(y)
 
 datos_test = read.csv("datos_test_preprocesado.csv", stringsAsFactors = F)
+datos_test <- datos_test[-c(17,2585),]
 datos_test$benefits_sin_numeros <-gsub("[0-9]+", "", datos_test$benefits_preprocesado)
+datos_test$benefits_sin_rombos <-gsub("\uFFFD", "", datos_test$benefits_sin_numeros)
+datos_test$benefits_sin_rombos <-gsub("alon", "", datos_test$benefits_sin_rombos)
+
 
 # He cambiado la línea con union a bind_rows pq no me iba en mi pc :(
 datos_total <- bind_rows(datos_train,datos_test)
 
-corpus = Corpus(VectorSource(datos_total$benefits_sin_numeros))
+# quitamos las columnas de texto que no queremos
+datos_total <- datos_total[-c(6,7)]
+corpus = Corpus(VectorSource(datos_total$benefits_sin_rombos))
 
 # Creamos matriz de términos con las palabras de los comentarios. Entonces cada fila, va a estar formada por los comentarios, donde cada palabra es una columna
 tdm <- tm::DocumentTermMatrix(corpus)
@@ -52,9 +63,11 @@ preparado_test <- reviews[-(1:1000),]
 library("randomForest")
 
 data_x = preparado_train[1:15,]
-colnames(data_x) <- paste(colnames(data_x), "_c", sep = "")
+# colnames(data_x) <- paste(colnames(data_x), "_c", sep = "")
+colnames(preparado_train) <- paste(colnames(preparado_train), "_c", sep = "")
 
-output.forest <- randomForest(as.factor(V1_c) ~ . , data = data_x, replace = T,ntree=100)
+
+output.forest <- randomForest(as.factor(V1_c) ~ . , data = preparado_train, replace = T,ntree=100)
 
 output.forest
 
@@ -65,10 +78,12 @@ plot(output.forest)
 
 ```{r}
 # Predicciones
-mod_rf = predict(output.forest, newdata = preparado_test[-3], type="response")
+colnames(preparado_test) <- paste(colnames(preparado_test), "_c", sep = "")
+mod_rf = predict(output.forest, newdata = preparado_test[-1], type="response")
 
 # Fallo
-y.falladas = sum(mod_rf!=preparado_test$effectivenessNumber)/length(preparado_test$effectivenessNumber)
+datos_test_usados = datos_total[-(1:1000),]
+y.falladas = sum(mod_rf!=datos_test_usados$effectivenessNumber)/length(datos_test_usados$effectivenessNumber)
 
 print("Error en test:")
 print(y.falladas)

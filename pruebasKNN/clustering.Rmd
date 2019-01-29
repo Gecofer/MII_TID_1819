@@ -1,24 +1,62 @@
 ---
 title: "clustering"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
-## Nota: COMPROBAR QUE SIDE_EFFECTS_INVERSE SE HA AÑADIDO CORRECTAMENTE
+# CLUSTERING
+
+## NOTAS: 
+## - COMPROBAR QUE SIDE_EFFECTS_INVERSE SE HA AÑADIDO CORRECTAMENTE
+## - CAMBIAR RUTA DE LOS DATOS A LA QUE CORRESPONDA FINALMENTE
+
+```{r echo=FALSE, warning=FALSE}
+
+library(tm)
+library(factoextra)
+library(proxy)
+library(ggpubr)
+library(rattle)
+library(randomForest)
+library(ppclust)
+library(cluster)
+library(fclust)
+require(igraph)
+
+```
+
+## Introducción
+
+En el siguiente capítulo nos enfrentamos al desarrollo de la clasificación no supervisada de patrones en grupos, mas conocido como clustering. Dichos grupos se establecen como particiones en las que las observaciones pertenencientes son similares entre ellas y distintas a las observaciones del resto de particiones.
+
+## Lectura y adecuación de los datos
+
+Como proceso anterior al punto en el que nos encontramos, se realizó todo el preprocesado de los datos. Ahora, para su uso en las técnicas de clustering, debemos de tomar las columnas de datos que más nos interesan para su análisis. 
+
+Para ello, primero establecemos una semilla común, para así poder obtener siempre los mismos datos, y posteriormente leemos nuestros dataset tanto para el conjunto de train como de test con dicho preprocesado realizado. Además, nos quedaremos con las columnas de ambos dataset que más nos interesan, siendo estas el rating, sideEffectsInverse y effectivenessNumber.
+
+##### NOTA: Explicar porqué tomamos esas columnas
 
 ```{r}
 
 # Establecemos una semilla para obtener siempre los mismos resultados
 set.seed(3)
 
-# Cargamos los tados
+# Cargamos los datos
 datos_train <- read.table("datos_train_preprocesado.csv", sep=",", comment.char="",quote = "\"", header=TRUE)
 datos_test <- read.table("datos_test_preprocesado.csv", sep=",", comment.char="",quote = "\"", header=TRUE)
 
 # Nos quedamos con las columnas que nos interesan 
 # Las columnas que tenemos son: RATING, SIDE_EFFECTS_INVERSE, EFFECTIVENESS_NUMBER
-# Nos quedamos con las columnas que nos interesan 
 datos_train2 = datos_train[c(2,12,9)]
 datos_test2 = datos_test[c(2,12,9)]
+
+```
+
+Esta selección inicial de columnas no es suficiente para poder empezar a aplicar las técnicas, antes debemos de arreglar el conjunto de datos que hemos tomado.......
+
+```{r}
 
 ## Arreglamos el conjunto de datos para poder trabajar con lo que nos interesa
 # https://stackoverflow.com/questions/40003028/extracting-unique-values-from-data-frame-using-r
@@ -72,7 +110,12 @@ colnames(data_test_procesado) <- c("rating", "sideEffectsInverse", "effectivenes
 
 ```
 
+
 ## K-medias
+
+La idea básica del presente método es que agrupa las observaciones en K clusters distintos, siendo el valor de K preestablecido mediante análisis previos. Entonces, K-medias encuentra los K mejores clusters, siendo estos aquellos cuya varianza interna sea lo más pequeña posible.
+
+En este caso, vamos a establecer un valor de K igual a 2, para así poder predecir el número de aciertos más adelante.
 
 ```{r}
 
@@ -87,6 +130,7 @@ fviz_cluster(object = res_clustering, data = data_train_procesado, show.clust.ce
 
 ```
 
+Como comprobación del buen ajuste de la división de clusters, en el siguiente gráfico podemos ver la similitud y cohesión entre estos.
 
 ```{r}
 
@@ -97,7 +141,7 @@ fviz_silhouette(sil.obj = km_clusters, print.summary = TRUE, palette = "jco",
                 ggtheme = theme_classic()) 
 
 # Media silhouette por cluster
-km_clusters$silinfo$clus.avg.widths
+#km_clusters$silinfo$clus.avg.widths
 
 ```
 
@@ -118,7 +162,7 @@ ggarrange(p1, p2)
 
 ```
 
-Ahora vamos a hacer predict con el clustering que nos ha generado train
+Como hemos comentado anteriormente, vamos a intentar predecir mediante el clustering que nos ha generado train el cluster al que pertenecería cada valor de test y comprobaremos el acierto de dicha predicción.
 
 ```{r}
 

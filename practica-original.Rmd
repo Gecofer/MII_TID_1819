@@ -1861,7 +1861,7 @@ wordcloud(res$word, res$n, random.order = FALSE, colors = res$color, ordered.col
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=1\textwidth]{imagenes/wordcloud1.png}
+    \includegraphics[width=0.5\textwidth]{imagenes/wordcloud1.png}
     \caption{Contenido de benefits sin stopwords}
     \label{benefits2}
 \end{figure}
@@ -1898,7 +1898,7 @@ wordcloud(drugscloudbinary$word, drugscloudbinary$n, random.order = FALSE, color
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=1\textwidth]{imagenes/wordcloud2.png}
+    \includegraphics[width=0.5\textwidth]{imagenes/wordcloud2.png}
     \caption{Contenido de benefits sin stopwords}
     \label{benefits2}
 \end{figure}
@@ -1944,8 +1944,9 @@ write.csv(datos_test_preprocesado, file = "datos/datos_test_preprocesado.csv", r
 
 **_Nota: Cuando se necesite en las sucesivas técnicas, se realizarán las transformaciones necesarias de acuerdo a cada técnica en cuestión._**
 
-<!----->
+<!----------------->
 
+\newpage
 
 # Lectura de datos
 
@@ -2523,9 +2524,863 @@ parcoord(datos_train[,c(8,9,2,10)], col=datos_train$rating,var.label=T)
 Por ejemplo, podemos destacar como si el número de efectos secundarios es 1 (no tiene efectos secundarios) y la efectividad del medicamento es 5 (muy efectivo), entonces la valoración del usuario será 10 y la valoración ponderada será también 10.
 
 
+\newpage
+<!------->
+
+# Análisis de sentimientos
+
+En este apartado vamos a realizar un análisis descriptivo de los datos. En esta ocasión, vamos a visualizar cuáles son los sentimientos que expresa las personas en los comentarios que escriben sobre los distintos medicamentos que se encuentran en nuestro dataset. Lo haremos de los comentarios relacionados con los beneficios y efectos de los medicamentos.
+
+```{r eval=FALSE}
+library(syuzhet)
+library(ggplot2)
+datos_train <- read.table("datos/datos_train_preprocesado.csv", sep=",", comment.char=""
+                          ,quote = "\"", header=TRUE)
+```
+
+La idea que se nos ocurrió consiste en saber cuales son los medicamentos y condiciones más frecuentes que ocurren, ya que mostrar toda la información puede saturar la visibilidad de los datos. 
+
+```{r eval=FALSE}
+summary(datos_train)
+
+#https://stackoverflow.com/questions/1686569/filter-data-frame-rows-by-a-logical-condition
+condiciones = c("depression","acne","anxiety","insomnia","birth control","high blood pressure")
+medicamentos = c ("lexapro","prozac","retin-a","zoloft","paxil","propecia")
+```
+
+Gracias al resumen de nuestro dataset sabemos rápidamente cuales son las drogas y condiciones más comunes. Ahora vamos a hacer un análisis de sentimientos de los comentarios relacionados con estas drogas y condiciones.
+
+```{r eval=FALSE}
+analisis_sentimientos <- function(comentarios,titulo){
+  
+  comentarios = Corpus(VectorSource(comentarios))
+  
+  d <- get_nrc_sentiment(comentarios$content)
+  
+  #https://medium.com/swlh/exploring-sentiment-analysis-a6b53b026131
+  dt <- data.frame(t(d))
+  
+  sentimientos <- data.frame(rowSums(dt))
+  
+  names(sentimientos)[1] <- "count"
+  sentimientos <- cbind("sentiment" = rownames(sentimientos), sentimientos)
+  rownames(sentimientos) <- NULL
+ 
+  qplot(sentiment, data=sentimientos[1:8,], weight=count, geom="bar",fill=sentiment)+
+    ggtitle(titulo)
+  ggsave(paste(titulo,".png"),path = 'figuras/sentimientos')
+  
+  
+  qplot(sentiment, data=sentimientos[9:10,], weight=count, geom="bar",fill=sentiment)+
+    ggtitle(titulo)
+  ggsave(paste(titulo,"_positivismo.png"),path = 'figuras/sentimientos')
+
+}
+```
+
+Básicamente lo que llevamos a cabo en esta función es la generación del Corpus de los comentarios pasados como parámetros (ya preprocesados). El siguiente paso es generar la tabla de sentimientos traspuesta, sino hacemos esto no funciona debido a la disposición de los datos. Luego preparamos una fila en la que aparezcan el nombre de los sentimientos en el mismo orden que la tabla y borramos los nombres de las filas. Esto último se realiza para la correcta visualización de los datos.
+
+Por último se lleva a cabo la representación en forma de gráficas de los comentarios de la gente. Recordemos, están acotadas a conjuntos de comentarios para las drogas y condiciones más comunes, por separado.
+
+Obtenemos las gráficas mencionadas:
+
+```{r  eval=FALSE}
+for(cadena in condiciones){
+  datos <- datos_train[datos_train$condition==cadena ,]
+  analisis_sentimientos(datos$benefits_preprocesado,
+                        paste("Comentarios_beneficios_de_condición_",cadena))
+}
+```
+
+```{r eval=FALSE}
+for(cadena in condiciones){
+  datos <- datos_train[datos_train$condition==cadena ,]
+  analisis_sentimientos(datos$effects_preprocesado,
+                        paste("Comentarios_efectos_de_condición_",cadena))
+}
+```
+
+```{r, eval=FALSE}
+for(cadena in medicamentos){
+  datos <- datos_train[datos_train$urlDrugName==cadena ,]
+  analisis_sentimientos(datos$benefits_preprocesado,
+                        paste("Comentarios_beneficio_de_medicamento_",cadena))
+}
+```
+
+```{r, eval=FALSE}
+for(cadena in medicamentos){
+  datos <- datos_train[datos_train$urlDrugName==cadena ,]
+  analisis_sentimientos(datos$effects_preprocesado,
+                        paste("Comentarios_efectos_de_medicamento_",cadena))
+}
+```
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{figuras/elegidas/Comentarios_beneficio_de_medicamento_propecia.png}
+    \caption{Análisis de sentimientos de los comentarios sobre los beneficios de los medicamentos para obtener propecia.}
+    \label{fig:sentimientos:propeciaSentimiento}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{figuras/elegidas/Comentarios_beneficio_de_medicamento_propecia_positivismo.png}
+    \caption{Análisis de positivismo de los comentarios sobre los beneficios de los medicamentos para obtener propecia.}
+    \label{fig:sentimientos:propeciaSentimiento}
+\end{figure}
+
+Hemos visualizado las imágenes resultantes y llegamos a la conclusión de que, en general, hace una buena descripción de los datos. Por ejemplo, para la **propecia** tenemos un altísimo contenido de sentimientos tales como miedo, tristeza y rabia. Mientras que otros sentimientos pasan más desapercibidos. Sin embargo, parece ser que las personas están contentas de forma genérica para el conjunto de medicamentos que la tratan, ya que los comentarios sobre los beneficios de los medicamentos son más positivos que negativos. En cambio, Cuando hablamos de los efectos secundarios de este medicamento, el negativismo vence al positivismo, se ve que los efectos secundarios que pueden acarrear este tipo de medicinas no son muy agradables. Los sentimientos de los efectos son muy similares a los que hablan de los beneficios; vemos que hay una concordancia de los comentarios de las personas.
+
+Otro dato curioso es que, de forma genérica, hay una mayor presencia de negativismo que positivismo. Hay que darse cuenta de que las personas están escribiendo sobre problemas de salud que tienen, por lo que el único positivismo que podemos extraer es cuando una persona muestra su felicidad al ver que un cierto medicamento está surtiendo efecto (y aún así es posible que se queje igualmente por los efectos secundarios, por ejemplo).
+
+Hay que destacar que los sentimientos están muy entremezclados en los comentarios pesentes de nuestro dataset. Los valores del rating vendrán especificados implicitamente dependiendo del peso que le de cada persona a esos sentimientos. En definitiva, nos damos cuenta de que nuestro dataset es bastante subjetivo. Por ejemplo, las personas suelen mostrarse más dispuestas a expresar comentarios para quejarse que para informar de que un medicamento le está funcionando.
+
+Todas estas gráficas pueden apreciarse en el anexo de esta práctica por si se quiere ver el resto de condiciones y medicamentos analizados con esta técnica.
+
+
+\newpage
+
+```{r, eval=FALSE}
+library("tm")
+library("arules")
+library("robustbase")
+library("plotly")
+library("arulesViz")
+```
+
+# Reglas de Asociación
+
+En esta técnica haremos un análisis descriptivo de los datos de texto. Buscaremos la relación que existe entre las palabras expuestas en los distintos comentarios sobre los medicamentos y tratatemos a asociarlos a distintos conceptos para tener una mejor idea de nuestro dataset y saber de antemano que palabras a priori pueden tener que ver algo con distintos efectos de los medicamentos.
+
+```{r, eval=FALSE}
+datos_train <- read.table("datos/datos_train_preprocesado.csv", sep=",",
+                          comment.char="",quote = "\"", header=TRUE)
+```
+
+Vamos a crearnos un corpus por cada uno de los tipos de comentarios que tenemos en cada item. Recordar que estos textos ya se encuentran preprocesados como se puede consultar en secciones anteriores de esta documentación.
+
+```{r, eval=FALSE}
+#benefits_review_data = as.vector(datos_train$benefitsReview)
+benefits_corpus = Corpus(VectorSource(datos_train$benefits_preprocesado))
+effects_corpus = Corpus(VectorSource(datos_train$effects_preprocesado))
+```
+
+Ahora mismo el dataset es de tipo categórico pero nosotros los necesitamos verlo como una cadena de caracteres para pasos posteriores. Por tanto, todos los datos que se encuentran en estas columnas van a ser transformados. Serán entendidas como palabras diferenciadas.
+
+Una vez que obtenemos las palabras en string, algunas de estas se quedan como palabras vacías, para ello utilizamos la función. Finalmente, ya podemos obtener una base de datos de tipo transaccional.
+
+```{r, eval=FALSE}
+items_benefits <- strsplit(as.character(benefits_corpus$content), " ")
+items_effects <- strsplit(as.character(effects_corpus$content), " ")
+
+# Para eliminar las cadenas vacías
+# https://stackoverflow.com/questions/24178854/remove-blanks-from-strsplit-in-r
+items_benefits <- lapply(items_benefits, function(x){x[!x ==""]})
+items_effects <- lapply(items_effects, function(x){x[!x ==""]})
+
+transactions_benefits <- as(items_benefits,"transactions")
+transactions_effects <- as(items_effects,"transactions")
+
+```
+
+Ya tenemos los datos de textos estructurados en una base de datos transaccional, podemos aplicar la técnica para obtener las reglas de asosiación. Vamos a utilizar el algoritmo "a priori" visto en clase. De lo contrario, el coste computacional y de tiempo no sería viable para obtener este conocimineto a partir de los comentarios.
+
+El primer parámetro que encontramos en la función se corresponde con los datos que le proporcionamos y el segundo, un listado de parámetros específicos. En cuanto a estos, el primero es el umbral para el soporte, el segundo el umbral de la confianza, el tercero el target para indicar que buscamos reglas de asociación y en el cuarto indicamos que como mínimo empecemos con itemset de tamaño 2. De esta forma estamos selecciondo un conjunto más reducido de reglas, que es lo que nos interesa desde el principio para ahorrar costes de procesamiento de los datos, al mismo tiempo que perdemos la mínima calidad posible en las reglas.
+
+Ordenamos por "confidence" a vista de mostrar posteriormente los resultados más importantes. Entonces mostraremos las reglas que tienen más confianza (Sino no podemos realizar una buena visualización de los datos) y mostraremos gráficamente el resultado obtenido.
+
+```{r, eval=FALSE}
+rules_benefits <- apriori(transactions_benefits, parameter = 
+                    list(sup = 0.001, conf = 0.7, target="rules", minlen=2))
+rules_effects <- apriori(transactions_effects, parameter =
+                    list(sup = 0.001, conf = 0.7, target="rules", minlen=2))
+#rules <- sort(rules, by="support")
+rules_benefits <- sort(rules_benefits, decreasing = TRUE, na.last = NA,
+                       by = "confidence")
+rules_effects <- sort(rules_effects, decreasing = TRUE, na.last = NA,
+                      by = "confidence")
+
+# Si no funciona inspect
+# https://stackoverflow.com/questions/18934098/r-error-with-inspect-function
+detach(package:tm, unload=TRUE) 
+inspect(head(rules_benefits,100))
+inspect(head(rules_effects,100))
+library(tm)
+# Cuando tenemos una regla con una única palabra en el antecedente y en el consecuente
+# deben de ir unidas en el texto
+```
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{figuras/asociacion/reglas_general_beneficios.png}
+    \caption{inspect(head(rules\_benefits),100) para visualizar reglas más importantes de los comentarios sobre beneficios.}
+    \label{fig:asociacion:reglasBenefits}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{figuras/asociacion/reglas_general_beneficios.png}
+    \caption{inspect(head(rules\_effects),100) para visualizar reglas más importantes de los comentarios sobre efectos secundarios.}
+    \label{fig:asociacion:reglasEffects}
+\end{figure}
+
+```{r, eval=FALSE}
+plot(rules_benefits, method="graph")
+title("Reglas de asociación sobre comentarios de beneficios")
+```
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{figuras/asociacion/asociacion_beneficios.png}
+    \caption{Mapa de reglas de asociación sobre los comentarios de beneficios.}
+    \label{fig:asociacion:benefits}
+\end{figure}
+
+Al pintar las reglas de asociación, nos dimos cuenta de que plot no puede con tantas reglas al mismo tiempo, por lo que se queda con las 100 primeras. Como las tenemos ordenadas por confianza, no nos resulta un problema, ya que siempre que ocurra esto cogerá las 100 que más nos interesan.
+
+Tal y como se aprecia en el mapa de asociaciones realizado, vemos que a simple vista las asociaciones obtenidas tienen mucho sentido. Por ejemplo, tenemos *attack* junto con *panic* que están relacionados con un lift considerable a *anxieti*. Cuanto más oscuros sean los puntos quieren decir que el lift es más alto. Por tanto, la aparición de una de las plabaras favorece la aparición de otra.
+
+Vemos que hay consecuentes en las reglas muy frecuentes, que ocupan el centro o núcleo de las reglas de asociación en el mapa. Estas palabras son principalmente *effect* y *side*. Esto también nos parece prometedor, ya que tiene todo el sentido del mundo que la gente haga comentarios siempre en torno a los efectos que tienen los medicamentos que están probando.
+
+Podríamos poner mil ejemplos más. La palabra *acid* favorece que aparezca la palabra *reflux*. La gente cuando habla de reflujo, se refiere al ácido del estómago que sube de forma accidental por el esófago y cauza quemazón.
+
+En definitiva, es una buena forma de tener una vista general sobre lo que hablan las personas en el conjunto de comentarios y tener una idea de que conceptos utilizan más y cómo para expresar los efectos que tienen los medicamentos.
+
+Hicimos lo mismo para los comentarios relacionados con los efectos secundarios.
+
+```{r, eval=FALSE}
+plot(rules_effects, method="graph")
+title("Reglas de asociación sobre comentarios de efectos secundarios")
+```
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{figuras/asociacion/asociacion_efectos.png}
+    \caption{Mapa de reglas de asociación sobre los comentarios de efectos secundarios.}
+    \label{fig:asociacion:effects}
+\end{figure}
+
+En este caso, vemos que no hay demasiadas asociaciones con un valor de lift por encima significativamente del resto. Creemos que se debe a que aquí la gente escribe una diversidad de tipos de comentarios mucho más grande. Es decir, quizás los comentarios sobre efectos secundarios pueda tener una mayor cantidad de variedad sobre lo que se habla que en los comentarios sobre los beneficios.
+
+No obstante, volvemos a tener los mismos consecuentes más frecuentes. OCupando una vez más el núcleo del mapa de las reglas de asociación; *side* y *effect*. Tiene sentido ya que en los efectos secundarios vuelven a hablar de este tema de forma general, sólo que desde un punto de vista diferente (por eso la estructura principal del mapa y las reglas de asociación son diferentes).
+
+Hay conceptos interesantes como *nausea*, *headach*, *pain*... Conceptos que están estrechamente relacionados con efectos secundarios.
+
+##Reglas de asociación específicas.
+
+Llegados a este punto, quisimos darle un nuevo enfoque a la extracción de reglas de asociación a parir de estos comentarios. En los mapas anteriores, veíamos que había demasiadas reglas enfocadas a una misma cosa, incluso llegando a ser difícil de visualizar en algunos sitios concretos.
+
+Por otro lado, temíamos estar cogiendo solo las reglas de asociación relacionadas con *effects* y *side* por ser las reglas con una mayor confianza y despreciando otras que podían ser interesantes y que tuvieran consecuentes en otros conceptos.
+
+Entonces, se nos ocurrió la siguiente idea: ¿Y si enfocamos la selección de reglas en la que el consecuente sea un término concreto que consideremos interesantes? En otras palabras, quremos realizar un filtrado de reglas interesantes directamente guiadas por el usuario, tal y como se ha visto en teoría.
+
+Queremos obtener las reglas en la que los consecuentes sean los valores de efectividad de nuestro dataset. Aquí realizamos un "mini-preprocesamiento", ya que está realizado en apartado anteriores, pero en esta técnica especificamente vimos conveniente realizar estos pequeños cambios y añadirlos en una nueva columna del dataset.
+
+Lo primero que debíamos de hacer es tener la efectividad unida en una sola cadena sin espacios, ya que de lo contrario no sería reconocida como un término a la hora de generar la estructura transaccional posterior.
+
+```{r, eval=FALSE}
+datos_train$effectivenessGuion[datos_train$effectiveness == 
+                                 "Highly Effective"] <- "Highly-Effective"
+datos_train$effectivenessGuion[datos_train$effectiveness == 
+                                 "Considerably Effective"] <- "Considerably-Effective"
+datos_train$effectivenessGuion[datos_train$effectiveness ==
+                                 "Moderately Effective"] <- "Moderately-Effective"
+datos_train$effectivenessGuion[datos_train$effectiveness ==
+                                 "Marginally Effective"] <- "Marginally-Effective"
+datos_train$effectivenessGuion[datos_train$effectiveness ==
+                                 "Ineffective"] <- "Ineffective"
+
+# Pasamos a factor el effectivenes unido por guiones para 
+# concatenarlo con los comentarios
+datos_train$effectivenessGuion = as.factor(datos_train$effectivenessGuion)
+```
+
+¿Cómo podemos hacer que estas efectividades sean cosas frecuentes en las reglas en función de los comentarios? Tuvimos una buena idea en este punto. Mientras discutiamos en cómo hacer que el algoritmo a priori pudiera generar estas reglas, pensamos en coger estas etiquetas de efectividad y ponerlas al final de cada comentario como un término más (fila por fila). De esta forma cada comentario tendría una palabra final en la que aparece el nivel de efectividad que el usuario reconoce en el medicamento y podemos pasarlo de esa forma directamente al algoritmo.
+
+```{r, eval=FALSE}
+# Juntamos las cadenas en una nueva columna del dataset que combina con los
+# comentarios con los beneficios
+datos_train$benefits_effectiveness <- with(datos_train, 
+                    interaction(benefits_preprocesado,effectivenessGuion), sep=" ")
+datos_train$benefits_effectiveness <- gsub("[.]", " ", datos_train$benefits_effectiveness)
+
+# Hacemos lo mismo pero para los comentatios de efectos secundarios
+datos_train$effects_effectiveness <- with(datos_train, interaction
+                                          (effects_preprocesado,effectivenessGuion), sep=" ")
+datos_train$effects_effectiveness <- gsub("[.]", " ", datos_train$benefits_effectiveness)
+
+datos_train$effects_effectiveness[1:10]
+
+```
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{figuras/asociacion/ejemplo_effects_effectiveness.png}
+    \caption{Ilustración de preprocesamiento específico para reglas de asociación acotada a efectividad.}
+    \label{fig:asociacion:preprocesamientoAsociacion}
+\end{figure}
+
+Los pasos siguientes ya son muy parecidos a los explicados anteriormente. Generamos los corpus.
+
+```{r, eval=FALSE}
+# Generamos los corpus con estas nuevas columnas en la que 
+# añadimos la efectividad como término en cada comentario
+benefits_corpus = Corpus(VectorSource(datos_train$benefits_effectiveness))
+effects_corpus = Corpus(VectorSource(datos_train$effects_effectiveness))
+```
+
+Separamos los términos y eliminamos términos vacíos.
+
+```{r, eval=FALSE}
+#Separamos todas las palabras entre sí
+benefits_items <- strsplit(as.character(benefits_corpus$content), " ")
+effects_items <- strsplit(as.character(effects_corpus$content), " ")
+# Para eliminar las cadenas vacías
+# https://stackoverflow.com/questions/24178854/remove-blanks-from-strsplit-in-r
+benefits_items <- lapply(benefits_items, function(x){x[!x ==""]})
+effects_items <- lapply(effects_items, function(x){x[!x ==""]})
+```
+
+Generamos las estructuras transaccionales.
+
+```{r, eval=FALSE}
+#Generamos la estructura de datos transaccional
+benefits_transactions <- as(benefits_items,"transactions")
+effects_transactions <- as(effects_items,"transactions")
+```
+
+Ahora tenemos que aplicar el algoritmo a priori. La estrategia consiste en hacer que los consecuentes frecuentes sean los tipos de efectividad que puede tener los medicamentos, es una forma más de filtrar reglas y no quedarnos con todas (ya que hemos visto en teoría que esto es computacionalmente muy costoso). Por ello, especificamos que los consecuentes de las reglas obtenidas sean cada una de las etiquetas posibles de este campo (con el guión puesto para las palabras compuestas como hicimos anteriormente). Los parámetros han sido fijados para que nos devuelva un conjunto de reglas razonable.
+
+Finalmente, ordenamos las reglas obtenidas por la confianza que tienen de mayor a menor.
+
+```{r, eval=FALSE}
+benefits_rulesInnefective <- apriori (data=benefits_transactions, 
+                             parameter=list (supp=0.0007,conf = 0.9, minlen=2), 
+                             appearance = list(default="lhs",rhs=c("Ineffective")), 
+                             control = list (verbose=F))
+
+benefits_rulesHighlyEffective <- apriori (data=benefits_transactions, 
+                             parameter=list (supp=0.0007,conf = 0.9, minlen=2), 
+                             appearance = list(default="lhs",rhs=c("Highly-Effective")), 
+                             control = list (verbose=F))
+
+benefits_rulesConsiderablyEffective <- apriori (data=benefits_transactions, 
+                              parameter=list (supp=0.0007,conf = 0.9, minlen=2), 
+                              appearance = list(default="lhs",rhs=c("Considerably-Effective")), 
+                              control = list (verbose=F))
+
+benefits_rulesModeratelyEffective <- apriori (data=benefits_transactions, 
+                              parameter=list (supp=0.0007,conf = 0.9, minlen=2), 
+                              appearance = list(default="lhs",rhs=c("Moderately-Effective")), 
+                              control = list (verbose=F))
+
+benefits_rulesMarginallyEffective <- apriori (data=benefits_transactions, 
+                             parameter=list (supp=0.0007,conf = 0.9, minlen=2), 
+                             appearance = list(default="lhs",rhs=c("Marginally-Effective")), 
+                             control = list (verbose=F))
+
+
+benefits_rulesInnefective <- 
+  sort(benefits_rulesInnefective, decreasing = TRUE, na.last = NA, by = "confidence")
+benefits_rulesHighlyEffective <- 
+  sort(benefits_rulesHighlyEffective, decreasing = TRUE, na.last = NA, by = "confidence")
+benefits_rulesConsiderablyEffective <- 
+  sort(benefits_rulesConsiderablyEffective, decreasing = TRUE, na.last = NA, by = "confidence")
+benefits_rulesModeratelyEffective <- 
+  sort(benefits_rulesModeratelyEffective, decreasing = TRUE, na.last = NA, by = "confidence")
+benefits_rulesMarginallyEffective <- 
+  sort(benefits_rulesMarginallyEffective, decreasing = TRUE, na.last = NA, by = "confidence")
+```
+
+Podemos mostrar las 10 reglas de mayor confianza relacionadas con cada uno de los consecuentes.
+
+```{r, eval=FALSE}
+detach(package:tm, unload=TRUE)
+inspect(head(benefits_rulesInnefective,10))
+inspect(head(benefits_rulesHighlyEffective,10))
+inspect(head(benefits_rulesConsiderablyEffective,10))
+inspect(head(benefits_rulesModeratelyEffective,10))
+inspect(head(benefits_rulesMarginallyEffective,10))
+library(tm)
+```
+
+Hacemos el mismo proceso pero con los comentatios de los efectos secundarios.
+
+```{r, eval=FALSE}
+effects_rulesInnefective <- apriori (data=effects_transactions, 
+                                 parameter=list (supp=0.0007,conf = 0.9, minlen=2), 
+                                 appearance = list(default="lhs",rhs=c("Ineffective")), 
+                                 control = list (verbose=F))
+
+effects_rulesHighlyEffective <- apriori (data=effects_transactions, 
+                             parameter=list (supp=0.0007,conf = 0.9, minlen=2), 
+                             appearance = list(default="lhs",rhs=c("Highly-Effective")), 
+                             control = list (verbose=F))
+
+effects_rulesConsiderablyEffective <- apriori (data=effects_transactions, 
+                                parameter=list (supp=0.0007,conf = 0.9, minlen=2), 
+                                appearance = list(default="lhs",rhs=c("Considerably-Effective")), 
+                                control = list (verbose=F))
+
+effects_rulesModeratelyEffective <- apriori (data=effects_transactions, 
+                                parameter=list (supp=0.0007,conf = 0.9, minlen=2), 
+                                appearance = list(default="lhs",rhs=c("Moderately-Effective")), 
+                                control = list (verbose=F))
+
+effects_rulesMarginallyEffective <- apriori (data=effects_transactions, 
+                                     parameter=list (supp=0.0007,conf = 0.9, minlen=2), 
+                                     appearance = list(default="lhs",rhs=c("Marginally-Effective")), 
+                                     control = list (verbose=F))
+
+
+effects_rulesInnefective <- sort(effects_rulesInnefective, 
+                                 decreasing = TRUE, na.last = NA, by = "confidence")
+effects_rulesHighlyEffective <- sort(effects_rulesHighlyEffective, 
+                                     decreasing = TRUE, na.last = NA, by = "confidence")
+effects_rulesConsiderablyEffective <- sort(effects_rulesConsiderablyEffective, 
+                                           decreasing = TRUE, na.last = NA, by = "confidence")
+effects_rulesModeratelyEffective <- sort(effects_rulesModeratelyEffective, 
+                                         decreasing = TRUE, na.last = NA, by = "confidence")
+effects_rulesMarginallyEffective <- sort(effects_rulesMarginallyEffective,
+                                         decreasing = TRUE, na.last = NA, by = "confidence")
+```
+
+Podríamos mostrar las 10 reglas con mayor confianza relacionadas con cada uno de los consecuentes si lo deseamos.
+
+```{r, eval=FALSE}
+detach(package:tm, unload=TRUE)
+inspect(head(effects_rulesInnefective,10))
+inspect(head(effects_rulesHighlyEffective,10))
+inspect(head(effects_rulesConsiderablyEffective,10))
+inspect(head(effects_rulesModeratelyEffective,10))
+inspect(head(effects_rulesMarginallyEffective,10))
+library(tm)
+```
+
+Finalmente podemos extraer todas los mapas de estas reglas de asociación.
+
+```{r, eval=FALSE}
+#Obtenemos las imágenes relacionadas con los comentarios sobre beneficios
+# de los medicamentos
+png("figuras/asociacion/benefits_Innefective.png",width=1800,height=1700,units="px",
+    pointsize=10,bg="white",res=300)
+plot(benefits_rulesInnefective, method="graph")
+title("Comentarios beneficios sobre inefectividad")
+dev.off()
+
+png("figuras/asociacion/benefits_HighlyEffective.png",width=1800,height=1700,units="px",
+    pointsize=10,bg="white",res=300)
+plot(benefits_rulesHighlyEffective, method="graph")
+title("Comentarios beneficios sobre altamente efectivos")
+dev.off()
+
+png("figuras/asociacion/benefits_ConsiderablyEffective.png",width=1800,height=1700,units="px",
+    pointsize=10,bg="white",res=300)
+plot(benefits_rulesConsiderablyEffective, method="graph")
+title("Comentarios beneficios sobre considerablemente efectivos")
+dev.off()
+
+png("figuras/asociacion/benefits_ModeratelyEffective.png",width=1800,height=1700,units="px",
+    pointsize=10,bg="white",res=300)
+plot(benefits_rulesModeratelyEffective, method="graph")
+title("Comentarios beneficios sobre moderadamente efectivos")
+dev.off()
+
+
+png("figuras/asociacion/benefits_MarginallyEffective.png",width=1800,height=1700,units="px",
+    pointsize=10,bg="white",res=300)
+plot(benefits_rulesMarginallyEffective, method="graph")
+title("Comentarios beneficios sobre casi inefectivo")
+dev.off()
+```
+
+Podemos ver que los mapas de reglas salen bastante saturadas igualmente, ya que saca bastantes.Podríamos reducir el número de reglas manipulando los umbrales de soporte y confianza si lo deseamos, aunque llevaría tiempo de computación realizar esas pruebas.
+
+Vamos a comentar por ejemplo la inefectividad, que ha salido más simple y fácil de visualizar:
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{figuras/asociacion/benefits_Innefective.png}
+    \caption{Mapa de reglas de asociación con Innefective en el consecuente en comentarios sobre beneficios.}
+    \label{fig:asociacion:innefectiveAsociacion}
+\end{figure}
+
+Como se puede ver en la imagen, los términos que giran en torno de a la inefectividad tienen bastante sentido. Por ejemplo, la palabra *none*. Lo normal es que, cuando un medicamente es inefectivo, las personas realicen comentarios del estilo "no me ha hecho nada" o "no sirve de nada". Otros como *pain* o *problem* tienen sentido ya que si un medicamento es inefectivo es normal que aparezcan palabras "negativas". 
+
+```{r, eval=FALSE}
+#Obtenemos las imágenes relacionadas con los comentarios sobre efectos secundarios de los medicamentos
+png("figuras/asociacion/effects_Innefective.png",width=1800,height=1700,units="px",
+    pointsize=10,bg="white",res=300)
+plot(effects_rulesInnefective, method="graph")
+title("Comentarios efectos secundarios sobre inefectividad")
+dev.off()
+
+png("figuras/asociacion/effects_HighlyEffective.png",width=1800,height=1700,units="px",
+    pointsize=10,bg="white",res=300)
+plot(effects_rulesHighlyEffective, method="graph")
+title("Comentarios efectos secundarios sobre altamente efectivos")
+dev.off()
+
+png("figuras/asociacion/effects_ConsiderablyEffective.png",width=1800,height=1700,units="px",
+    pointsize=10,bg="white",res=300)
+plot(effects_rulesConsiderablyEffective, method="graph")
+title("Comentarios efectos secundarios sobre considerablemente efectivos")
+dev.off()
+
+png("figuras/asociacion/effects_ModeratelyEffective.png",width=1800,height=1700,units="px",
+    pointsize=10,bg="white",res=300)
+plot(effects_rulesModeratelyEffective, method="graph")
+title("Comentarios efectos secundarios sobre moderadamente efectivos")
+dev.off()
+
+
+png("figuras/asociacion/effects_MarginallyEffective.png",width=1800,height=1700,units="px",
+    pointsize=10,bg="white",res=300)
+plot(effects_rulesMarginallyEffective, method="graph")
+title("Comentarios efectos secundarios sobre casi inefectivo")
+dev.off()
+```
+
+Sobre los comentarios de efectos secundarios podemos analizar, por ejemplo, el concepto de altamente efectivo:
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{figuras/asociacion/effects_HighlyEffective.png}
+    \caption{Mapa de reglas de asociación con Highly-Effective en el consecuente en comentarios sobre efectos secundarios.}
+    \label{fig:asociacion:innefectiveAsociacion}
+\end{figure}
+
+Como podemos apreciar en la imagen, el mapa de por sí es poco visualizable debido a la cantidad de reglas que aparecen en tan poco espacio. En definitiva, si nos fijamos bien podemos darnos cuenta de que tiene bastante sentido. 
+
+\newpage
 
 <!------->
 
+# KNN
+
+En esta sección vamos a realizar técnicas de clasificación basada en instancias. Concretamente el de vecinos más cercanos (KNN). Esta técnica es puramente predictiva, por lo que nos proporciona ninguna información acerca de dependecia de variables. Dado un texto, busca en el conjunto de entrenamiento los items que tienen un mayor parentesco del que estamos tratando de deducir y copia su clase. La clase que vamos a intentar reducir es **ratingLabel** que es la columna preprocesada de **rating**. Nos hubiera gustado probar y comentar esta técnica tratando de clasificar otras clases, pero no tenemos tiempo suficiente como para ello.
+
+Esta técnica es buena cuando el conjunto de items se encuentran disjuntos entre sí debido a sus clases. Aunque el clustering es una técnica no supervisada en la que de antemano no teníamos etiquetas concretas que clasificar, nos dimos cuenta de que no era una opción que nos aportara mucho debido a este hecho (la nube de puntos no se encontraba disjuntas en grupos claros). Por lo que de antemano pensamos que no va a devolvernos unas predicciones muy prometedoras.
+
+Antes de comenzar, destacar que probamos con variables numéricas antes de trabajar con los textos. Como nuestro dataset no tiene variables continuas, probamos con variables discretas. Tal y como se dice en la teoría de esta asignatura, este algoritmo no trabaja bien con este tipo de valores numéricos debido a que el cálculo de la distancias hacía que hubiera una gran cantidad de distancias iguales e items superpuestos en un plano bidimensional. En definitiva, tuvimos problemas a la hora de procesar el algoritmo (concretamente "too many ties in KNN", debido a lo comentado anteriormente). Así que nos pusimos a trabajar con cálculos de distancias en los comentarios, lo cual es más apropiado para esta técnica debido a que no tenemos valores continuos como tal en nuestro dataset.
+
+Nos encontramos con un problema que tuvimos en la implementación de este algoritmo y el cual nos llevó mucho tiempo detectar y solucionar. Básicamente, nosotros estamos trabajando con dos dataset ya diferenciados desde el comienzo; el train y el test. Para esta técnica debemos de calcular la matriz de términos, si lo hacemos de los dos dataset por separado, tenemos el problema de que ambas matrices de términos no tienen exactamente el mismo formato (las columnas pueden tener diferentes palabras). Entonces, teníamos errores de dimensiones al aplicar el algoritmo, ya que obteníamos un clasificador que no era apto para predecir el test.
+
+La solución, calcular la matriz de términos de un dataset, una vez realizados todos los cálculos y preparación de la matriz de términos que explicaremos más adelante, separamos esa misma matriz de términos (un 70% para el train y un 30% para el test). De esta forma nos aseguramos de que ambas matrices tienen exactamente las mismas columnas y los mismos términos y ya podemos trabajar correctamente con el algoritmo KNN.
+
+Dicho esto, vamos a comenzar. Primero cargamos los datos.
+
+```{r, eval=FALSE}
+datos_preprocesados <- read.csv(file="datos/datos_train_preprocesado.csv")
+View(datos_preprocesados)
+
+library(class)
+library("tm")
+```
+
+El siguiente paso consiste en obtener el Corpus como hemos hecho en técnicas anteriores. Primero vamos a hacerlo sobre los comentarios acerca de los beneficios de los medicamentos. Acto seguido, obtenemos la matriz de términos correspondiente con sus vectores de pesos.
+
+Para que el algoritmo funcione, es importante que esa matriz sea de tipo *matrix*. Una vez hecho esto, podemos separar la matriz en el conjunto de entrenamiento y prueba. Obtenemos el clasificador y predecimos solo el error del test porque la función obtiene el clasificador y la predicción en la misma llamada, por lo que para calcular el error de entrenamiento tendríamos que recalcular el mismo clasificador y nos parecía ineficiente.
+
+Como ya hemos mencionado anteriormente, KNN selecciona los **k** items del conjunto de entrenamiento más parecidos al que estamos deduciendo (calculando este parentesco con distancia euclidea). Acto seguido, el algoritmo deduce la clase del item siendo la clase más frecuente de entre sus vecinos.
+
+Por consiguiente, el valor de **k** es muy importante a la hora de realizar el clasificador. Un valor muy alto puede producir sobreaprendizaje y un valor muy bajo puede producir un aumento significativo en la tasa de error, por lo que probaremos con distintos valores. 
+
+```{r, eval=FALSE}
+# PAra train KNN
+corpus = tm::Corpus(tm::VectorSource(datos_preprocesados$benefits_preprocesado))
+tdm <- tm::DocumentTermMatrix(corpus)
+
+# Transform dtm to matrix and then back into a data frame for modeling
+mat.df <- as.data.frame(data.matrix(tdm), stringsAsfactors = FALSE)
+
+# Column bind category (known classification)
+mat.df <- cbind(mat.df, datos_preprocesados$ratingLabel, row.names = NULL)
+
+colnames(mat.df)[ncol(mat.df)] <- "ratingLabel"
+
+# Classifier variable based on the personality typ
+cl <- mat.df[,"ratingLabel"]
+
+# Create model data and remove “type”
+modeldata <- mat.df[,!colnames(mat.df) %in% "ratingLabel"]
+
+train <- sample(nrow(mat.df), ceiling(nrow(mat.df) * .70))
+test <- (1:nrow(mat.df))[- train]
+```
+
+Para **k=1**:
+
+```{r, eval=FALSE}
+knn.pred <- knn(modeldata[train,], modeldata[test,], cl[train], k=1) 
+
+conf.mat <- table("Predictions" = knn.pred, Actual = cl[test])
+conf.mat
+
+(accuracy <- sum(diag(conf.mat))/length(test) * 100)
+
+```
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{figuras/KNN/benefits_k1.png}
+    \caption{Matriz de confusión y tasa de precisión en modelo KNN con beneficios (k=1).}
+    \label{fig:KNN:benefitsK1}
+\end{figure}
+
+Para K=1 vemos que obtenemos de por sí una tasa de precisión razonable a sabiendas de que no iba a funcionar muy bien. Es decir, clasifica bien el ratingLabel en más de la mitad de las ocasiones.
+
+Como podemos observar en la matriz de confusión, tiene un error alrededor del 40% para el conjunto del test. Como nos temíamos, la técnica no es muy apropiada para nuestro problema debido a la disposición del los textos. Sin embargo, vamos a probar con valores distintos de k para intentar mejorar hasta cierto punto el desempeño del algoritmo. 
+
+Para **k=3**:
+
+```{r, eval=FALSE}
+knn.pred <- knn(modeldata[train,], modeldata[test,], cl[train], k=3) 
+
+conf.mat <- table("Predictions" = knn.pred, Actual = cl[test])
+conf.mat
+
+(accuracy <- sum(diag(conf.mat))/length(test) * 100)
+
+```
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{figuras/KNN/benefits_k3.png}
+    \caption{Matriz de confusión y tasa de precisión en modelo KNN con beneficios (k=3).}
+    \label{fig:KNN:benefitsK3}
+\end{figure}
+
+Para k=3 el cambio no es significativo, incluso empeora un poco.
+
+Para **k=5**:
+
+```{r, eval=FALSE}
+knn.pred <- knn(modeldata[train,], modeldata[test,], cl[train], k=5) 
+
+conf.mat <- table("Predictions" = knn.pred, Actual = cl[test])
+conf.mat
+
+(accuracy <- sum(diag(conf.mat))/length(test) * 100)
+
+```
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{figuras/KNN/benefits_k5.png}
+    \caption{Matriz de confusión y tasa de precisión en modelo KNN con beneficios (k=5).}
+    \label{fig:KNN:benefitsK5}
+\end{figure}
+
+Para k=5 tenemos el mejor clasificador hasta el momento, aunque vemos que se mantiene bastante estable, sin cambios realmente significativos.
+
+Para **k=10**:
+
+```{r, eval=FALSE}
+knn.pred <- knn(modeldata[train,], modeldata[test,], cl[train], k=10) 
+
+conf.mat <- table("Predictions" = knn.pred, Actual = cl[test])
+conf.mat
+
+(accuracy <- sum(diag(conf.mat))/length(test) * 100)
+```
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{figuras/KNN/benefits_k10.png}
+    \caption{Matriz de confusión y tasa de precisión en modelo KNN con beneficios (k=10).}
+    \label{fig:KNN:benefitsK10}
+\end{figure}
+
+En este punto, el clasificador tiene un bajón de un 6% en la precisión. Vemos que siempre tenemos más falsos positivos que negativos. Es decir, el clasificador es positivo y suele dar más ratings altos que bajos cuando se equivoca.
+
+Para **k=15**:
+
+```{r, eval=FALSE}
+knn.pred <- knn(modeldata[train,], modeldata[test,], cl[train], k=15) 
+
+conf.mat <- table("Predictions" = knn.pred, Actual = cl[test])
+conf.mat
+
+(accuracy <- sum(diag(conf.mat))/length(test) * 100)
+```
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{figuras/KNN/benefits_k15.png}
+    \caption{Matriz de confusión y tasa de precisión en modelo KNN con beneficios (k=15).}
+    \label{fig:KNN:benefitsK15}
+\end{figure}
+
+Para **k=30**:
+
+```{r, eval=FALSE}
+knn.pred <- knn(modeldata[train,], modeldata[test,], cl[train], k=30) 
+
+conf.mat <- table("Predictions" = knn.pred, Actual = cl[test])
+conf.mat
+
+(accuracy <- sum(diag(conf.mat))/length(test) * 100)
+```
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{figuras/KNN/benefits_k30.png}
+    \caption{Matriz de confusión y tasa de precisión en modelo KNN con beneficios (k=30).}
+    \label{fig:KNN:benefitsK30}
+\end{figure}
+
+Para **k=50**:
+
+```{r, eval=FALSE}
+knn.pred <- knn(modeldata[train,], modeldata[test,], cl[train], k=50) 
+
+conf.mat <- table("Predictions" = knn.pred, Actual = cl[test])
+conf.mat
+
+(accuracy <- sum(diag(conf.mat))/length(test) * 100)
+```
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{figuras/KNN/benefits_k50.png}
+    \caption{Matriz de confusión y tasa de precisión en modelo KNN con beneficios (k=50).}
+    \label{fig:KNN:benefitsK50}
+\end{figure}
+
+Como podemos observar, el modelo mantiene una precisión estable. Sin embargo a partir del valor 5 para **k** cuanto más vecinos, peor es el modelo. Podemos verlo de una forma más sencilla en la siguiente gráfica.
+
+```{r, eval=FALSE}
+valores_k <- c(1,3,5,10,15,30,50)
+precision <- c(60.79484,60.47261,60.90226,54.24275,47.79807,34.80129,29.32331)
+
+plot(x=valores_k,y=precision, xlab = "Valores de K", ylab="Precisión(%)", ylim = c(0,100), type="o", col="green")
+title("Precisión del modelo KNN en función del número de vecinos(K)")
+
+
+```
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{figuras/KNN/grafico_benefits.png}
+    \caption{Gráfico del progreso del modelo KNN en función del valor de k.}
+    \label{fig:KNN:grafica}
+\end{figure}
+
+Hacemos lo mismo para los comentarios de efectos secundarios que tenemos disponibles en nuestro dataset.
+
+```{r, eval=FALSE}
+
+# Para train KNN
+corpus = tm::Corpus(tm::VectorSource(datos_preprocesados$effects_preprocesado))
+tdm <- tm::DocumentTermMatrix(corpus)
+
+# Transform dtm to matrix and then back into a data frame for modeling
+mat.df <- as.data.frame(data.matrix(tdm), stringsAsfactors = FALSE)
+
+# Column bind category (known classification)
+mat.df <- cbind(mat.df, datos_preprocesados$ratingLabel, row.names = NULL)
+
+colnames(mat.df)[ncol(mat.df)] <- "ratingLabel"
+
+# Classifier variable based on the personality typ
+cl <- mat.df[,"ratingLabel"]
+
+# Create model data and remove “type”
+modeldata <- mat.df[,!colnames(mat.df) %in% "ratingLabel"]
+
+train <- sample(nrow(mat.df), ceiling(nrow(mat.df) * .70))
+test <- (1:nrow(mat.df))[- train]
+```
+
+Para **k=1**:
+
+```{r, eval=FALSE}
+knn.pred <- knn(modeldata[train,], modeldata[test,], cl[train], k=1) 
+
+conf.mat <- table("Predictions" = knn.pred, Actual = cl[test])
+conf.mat
+
+(accuracy <- sum(diag(conf.mat))/length(test) * 100)
+
+```
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{figuras/KNN/effects_k1.png}
+    \caption{Matriz de confusión y tasa de precisión en modelo KNN con efectos secundarios (k=1).}
+    \label{fig:KNN:effectsK1}
+\end{figure}
+
+Para **k=3**:
+
+```{r, eval=FALSE}
+knn.pred <- knn(modeldata[train,], modeldata[test,], cl[train], k=3) 
+
+conf.mat <- table("Predictions" = knn.pred, Actual = cl[test])
+conf.mat
+
+(accuracy <- sum(diag(conf.mat))/length(test) * 100)
+
+```
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{figuras/KNN/effects_k3.png}
+    \caption{Matriz de confusión y tasa de precisión en modelo KNN con efectos secundarios (k=3).}
+    \label{fig:KNN:effectsK3}
+\end{figure}
+
+Para **k=5**:
+
+```{r, eval=FALSE}
+knn.pred <- knn(modeldata[train,], modeldata[test,], cl[train], k=5) 
+
+conf.mat <- table("Predictions" = knn.pred, Actual = cl[test])
+conf.mat
+
+(accuracy <- sum(diag(conf.mat))/length(test) * 100)
+
+```
+
+Parece que este vuelve a ser el mejor valor para k en la construcción del modelo.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{figuras/KNN/effects_k5.png}
+    \caption{Matriz de confusión y tasa de precisión en modelo KNN con efectos secundarios (k=5).}
+    \label{fig:KNN:effectsK5}
+\end{figure}
+
+Para **k=15**:
+
+```{r, eval=FALSE}
+knn.pred <- knn(modeldata[train,], modeldata[test,], cl[train], k=15) 
+
+conf.mat <- table("Predictions" = knn.pred, Actual = cl[test])
+conf.mat
+
+(accuracy <- sum(diag(conf.mat))/length(test) * 100)
+```
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{figuras/KNN/effects_k15.png}
+    \caption{Matriz de confusión y tasa de precisión en modelo KNN con efectos secundarios (k=15).}
+    \label{fig:KNN:effectsK15}
+\end{figure}
+
+Es curiosos que en este último caso solo tiene falsos positivos, no negativos. 
+
+Vemos que ocurre algo similar que con los comentarios de beneficios, solo que con una tasa de precisión más alta (solo se equivocaría 1 de cada 5 predicciones aproximadamente). Por algún motivo, es capaz de predecir mejor este tipo de comentarios sobre efectos secundarios. Suponemos que porque la nube de puntos es más apropiada en esta ocasión para esta técnica. 
+
+Llegamos a la conclusión en ambos tipo de comentarios que los valores apropiados para k deben ser bajos (valor de 5), por los datos mostrados anteriormente.
+
+
+<!------->
+
+\newpage
 
 ```{r, include=FALSE}
 # Lectura de los datos train preprocesados

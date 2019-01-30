@@ -1852,7 +1852,7 @@ Por último, vamos a visualizar la nube de palabras para benefits preprocesado, 
 
 Este análisis es realmente determinante en nuestro problema, puesto que al fin y al cabo, tenemos comentarios de pacientes, que estarán orientados a una buena y positiva opinión del fármaco o al contrario (una mala, y posiblemente molesta opinión acerca del mismo). 
 
-**En este caso, visualizando la nube de palabras, obtenemos una cosa clara: principalmente tenemos malas opiniones de los fármacos, aspecto totalmente lógico puesto que, es más común que un usuario comente algo para quejarse o mostrar su mala experiencia, que para hablar bien del mismo.** Además, al tratarse de temas de enfermedades y problemas de salud, es mucho más fácil encontrar palabras relacionadas con el dolor, o la preocupación, que con la alegría u otros aspectos derivados de las connotaciones positivas.
+En este caso, visualizando la nube de palabras, obtenemos una cosa clara: principalmente tenemos palabras de connotación negativa, aspecto totalmente lógico puesto que, es más común que un usuario comente algo para quejarse o mostrar su mala experiencia, que para hablar bien del mismo. Además, al tratarse de temas de enfermedades y problemas de salud, es mucho más fácil encontrar palabras relacionadas con el dolor, o la preocupación, que con la alegría u otros aspectos derivados de las connotaciones positivas.
 
 
 

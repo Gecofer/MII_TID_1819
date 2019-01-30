@@ -1653,13 +1653,18 @@ z_benefits_train$terms1_5_new_benefits_train <- factor(z_benefits_train$terms1_5
 z_benefits_train$terms1_5_new_benefits_train[1:20]
 ```
 
+A continuación, vamos a visualizar los términos que más se repiten para el conjunto train de _benefits_:
+
 ```{r}
 # Graficamos los resultados para benefits train
 ggplot() + 
  geom_bar(data=z_benefits_train[1:10,],
           aes(x=z_benefits_train$terms1_5_new_benefits_train[1:10],
           y=z_benefits_train$v_benefits_train[1:10]), stat='identity', 
-          position='dodge')
+          position='dodge') + 
+  ggtitle("Las 10 palabras que más se repiten con TFIDF") + 
+  xlab("Términos") +
+  ylab("Frecuencia de los términos")
 ```
 
 ```{r, warning=FALSE, include=FALSE}
@@ -1714,7 +1719,7 @@ inspect(benefits_train_corpus_new_load[213])
 
 Tras el proceso de limpieza anterior en un volumen tan grande de datos cabe esperar que algún documento estuviera formado por tan solo palabras vacías, enlaces o combinaciones de estos, es por ello, que por medio de filtrado básico de R se obtienen aquellos que no contienen ninguna palabra y se elimina del conjunto del dataset para evitar problemas en los procesos posteriores.
 
-```{r}
+```{r, eval=FALSE}
 # https://github.com/joseangeldiazg/twitter-text-mining/blob/master/ner.R
 # Localizamos posibles valores perdidos que se hayan generado tras el proceso de limpieza
 which(benefits_train_corpus_new_load$content=="")
@@ -1723,10 +1728,14 @@ which(benefits_test_corpus_new_load$content=="  ")
 which(effects_test_corpus_new_load$content=="   ")
 
 # Vemos que no hay muchos vacios 
-benefits_train_corpus_new_load<-benefits_train_corpus_new_load[which(benefits_train_corpus_new_load$content!="")]
-effects_train_corpus_new_load<-effects_train_corpus_new_load[which(effects_train_corpus_new_load$content!=" ")]
-benefits_test_corpus_new_load<-benefits_test_corpus_new_load[which(benefits_test_corpus_new_load$content!="  ")]
-effects_test_corpus_new_load<-effects_test_corpus_new_load[which(effects_test_corpus_new_load$content!="   ")]
+benefits_train_corpus_new_load<-benefits_train_corpus_new_load[
+  which(benefits_train_corpus_new_load$content!="")]
+effects_train_corpus_new_load<-effects_train_corpus_new_load[
+  which(effects_train_corpus_new_load$content!=" ")]
+benefits_test_corpus_new_load<-benefits_test_corpus_new_load[
+  which(benefits_test_corpus_new_load$content!="  ")]
+effects_test_corpus_new_load<-effects_test_corpus_new_load[
+  which(effects_test_corpus_new_load$content!="   ")]
 ```
 
 <!-------------------------------------------------------------------------------------------->
@@ -1749,7 +1758,7 @@ effects_test_corpus_new_load <- tm_map(effects_test_corpus_new_load, stripWhites
 
 También puede resultar muy útil eliminar los términos que aparecen en muy pocos documentos antes de proceder a la clasificación. El motivo principal es la factibilidad computacional, ya que este proceso reduce drásticamente el tamaño de la matriz sin perder información significativa. Además puede eliminar errores en los datos, como podrían ser palabras mal escritas. Para suprimir estos términos, denominados escasos, se utiliza el comando `removeSparseTerms()`.
 
-$$ df(t) > N · (1 != sparse)$$
+$$ df(t) > N \cdot (1 != sparse)$$
 siendo $df$ la frecuencia de documentos del término $t$ y $N$ el número de vectores. El parámetro sparse toma valores entre 0 y 1. En este caso, el umbral de escasez es 0.999, se toman los términos que aparecen en más del 1\% de documentos.
 
 ```{r}
@@ -1759,7 +1768,7 @@ dtm <- removeSparseTerms(dtm, sparse=0.999)
 inspect(dtm)
 ```
 
-Se observa como de 3104 términos pasamos a 1702 términos, por tanto se ha considerado despreciar aplicar esta técnica ya que necesitamos todos los datos para la aplicación de las técnicas posteriores. Luego, en función de la técnica que se aplique, si fuera necesario se reducirá la dimensionalidad. En definitiva, ya tenemos nuestros datos listos.
+Se observa como de 5835 términos pasamos a 1702 términos, por tanto se ha considerado despreciar aplicar esta técnica ya que necesitamos todos los datos para la aplicación de las técnicas posteriores. Luego, en función de la técnica que se aplique, si fuera necesario se reducirá la dimensionalidad. En definitiva, ya tenemos nuestros datos listos.
 
 <!-------------------------------------------------------------------------------------------->
 
@@ -1773,13 +1782,13 @@ matrix_corpus <- TermDocumentMatrix(benefits_train_corpus_new_load)
 
 Podemos observar que tenemos 5838 términos, esto quiere decir que tenemos 5838 palabras diferentes en nuestro Corpus. Obtengamos la *frecuencia de las palabras*:
 
-```{r}
+```{r, include=FALSE}
 class(matrix_corpus)
 ```
 
 Como podemos ver, actualmente aún no tenemos nuestros datos en la matriz que buscamos, sino en un vector, por tanto:
 
-```{r}
+```{r, include=FALSE}
 matrix_corpus <- as.matrix(matrix_corpus)
 class(matrix_corpus)
 dim(matrix_corpus) 
@@ -1822,7 +1831,7 @@ copia_ordena_mayor <- as.matrix(copia_ordena_mayor)
 barplot(copia_ordena_mayor[1:10,],  xlab="Palabras", ylab="Número de frecuencia",
         col = c("lightblue", "mistyrose", "lightcyan",
                 "lavender", "cornsilk"))
-title(main = list("Las diez palabras más frecuentes después del preprocesamiento", font = 4))
+title(main = list("Las nueve palabras más frecuentes después del preprocesamiento", font = 4))
 ```
 
 ### 2.2.22. Nube de palabras
@@ -1865,7 +1874,7 @@ wordcloud(res$word, res$n, random.order = FALSE, colors = res$color, ordered.col
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.5\textwidth]{imagenes/wordcloud1.png}
-    \caption{Contenido de benefits sin stopwords}
+    \caption{Wordcloud con preprocesamiento}
     \label{benefits2}
 \end{figure}
 
@@ -1902,7 +1911,7 @@ wordcloud(drugscloudbinary$word, drugscloudbinary$n, random.order = FALSE, color
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.5\textwidth]{imagenes/wordcloud2.png}
-    \caption{Contenido de benefits sin stopwords}
+    \caption{Wordcloud sin preprcesamiento}
     \label{benefits2}
 \end{figure}
 
@@ -1951,9 +1960,9 @@ write.csv(datos_test_preprocesado, file = "datos/datos_test_preprocesado.csv", r
 
 \newpage
 
-# Lectura de datos
 
-```{r}
+
+```{r, include=FALSE}
 # Cargamos los tados
 datos_train <- read.table("datos/datos_train_preprocesado.csv", sep=",", 
                           comment.char="",quote = "\"", header=TRUE)
@@ -1963,31 +1972,24 @@ datos_test <- read.table("datos/datos_test_preprocesado.csv", sep=",",
 ```
 
 
-# Análisis exploratorio de los datos
+# 3. Análisis exploratorio de los datos
 
-El análisis exploratorio de datos o (EDA) engloba un conjunto de técnicas para poder comprender de manera rápida la naturaleza de una colección de datos o dataset.
+El análisis exploratorio de datos o (EDA) engloba un conjunto de técnicas para poder comprender de manera rápida la naturaleza de una colección de datos o dataset. Se basa principalmente en dos criterios: las **estadísticas de resumen**  y la **visualización de datos**.
 
-Se basa principalmente en dos criterios: las **estadísticas de resumen**  y la **visualización de datos**.
-
-En primer lugar, vamos a realizar un resumen de nuestros datos utilizando la función `summary`. Dicha función nos mostrará información relevante para cada una de las columnas del datataset, mostrando información general como valores mínimos, máximos, media, mediana..
-
-El resultado que obtenemos al evaluar nuestro dataset es el siguiente:
+En primer lugar, vamos a realizar un resumen de nuestros datos utilizando la función `summary()`. Dicha función nos mostrará información relevante para cada una de las columnas del datataset, mostrando información general como valores mínimos, máximos, media, mediana. El resultado que obtenemos al evaluar nuestro dataset es el siguiente:
 
 ```{r}
-
 summary(datos_train)
-
 ```
 
 A continuación se va a realizar un análisis de la información más relevante no textual, como el valor de **rating** de los usuarios, la **efectividad** y los **efectos secundarios** de dicho medicamento y por último, la **valoración ponderada del rating** teniendo en cuenta la proporción entre efectividad y efectos secundarios del medicamento.
 
 
-## Valoraciones de los medicamentos por parte de los usuarios.
+## 3.1. Valoraciones de los medicamentos por parte de los usuarios.
 
 En primer lugar vamos a analizar si el *rating* aportado por los usuarios sobre los medicamentos son buenos o no. Para ello empezamos obteniendo las frecuencias y porcentaje total de las valoraciones aportadas por los usuarios. Por tanto, se va a calcular la frecuencia de dicho atributo y su porcentaje respecto del total.
 
 ```{r}
-
 # Obtener frecuencias del rating
 table(datos_train$rating)
 
@@ -1996,15 +1998,11 @@ numDocuments <- dim(datos_train)[1]
 
 # Calculamos el porcentaje de cada puntuación respecto del total.
 table(datos_train$rating)/numDocuments
-
 ```
 
-Como podemos observar, hay una mayoría de valoraciones positivas respecto a las negativas. De hecho el mayor porcentaje (casi el 24%) tienen la máxima valoración.
-
-Podemos comprobar ésto mediante el uso de la moda.
+Como podemos observar, hay una mayoría de valoraciones positivas respecto a las negativas. De hecho el mayor porcentaje (casi el 24%) tienen la máxima valoración. Podemos comprobar ésto mediante el uso de la moda.
 
 ```{r}
-
 # Función para calcular la moda. Se le pasa como parámetro un atributo
 calcularModa<-function(var){
   frec.var<-table(var)
@@ -2016,22 +2014,18 @@ calcularModa<-function(var){
 calcularModa(datos_train$rating)
 ```
 
-
 Como resumen en general del rating, se va a calcular la media y la mediana para calcular la tendencia central para dicha variable. La media es la siguiente:
 
 ```{r}
 # Media
 mean(datos_train$rating)
-
 ```
 
 La mediana es la siguiente:
 
-
 ```{r}
 # Mediana
 median(datos_train$rating)
-
 ```
 
 El valor medio obtenido es 7 y la mediana es 8. Podemos concluir con dicha información, que en general las valoraciones sobre los medicamentos son bastante positivas, situándose el 50% de dichas valoraciones en el valor 8.
@@ -2040,9 +2034,7 @@ A continuación, se va a visualizar dicha información gráficamente:
 
 
 ```{r Warning=FALSE}
-
 # Histograma de la valoración dada por los usuarios sobre los medicamentos
-
 ratingExploration <- datos_train$rating
 
 hist(ratingExploration,
@@ -2054,35 +2046,24 @@ hist(ratingExploration,
      ylim=c(0,800),
      col= "cornsilk",
      breaks=10,)
-
 ```
 
-
-
 ```{r}
-
 # Diagrama de densidad de la valoración dada por los usuarios sobre los medicamentos
-
 plot(density(ratingExploration), 
      main="Densidad del rating",
      xlim=c(0,10),
      )
-
 ```
 
 ```{r}
-
 # Diagrama de sectores de las valoraciones dadas por los usuarios
 pie(table(datos_train$rating))
-
 ```
 
-
 ```{r}
-
 # Diagrama de cajas sobre las valoraciones dadas por los usuarios
 boxplot(datos_train$rating,main="Rating", col= "cornsilk" )
-
 ```
 
 Como medidas de dispersión, se va a calcular la **desviación típica**:
@@ -2090,7 +2071,6 @@ Como medidas de dispersión, se va a calcular la **desviación típica**:
 ```{r}
 # Desviación típica
 sd(datos_train$rating)
-
 ```
 
 Como se puede observar, la desviación típica nos da un valor de 2.93. Esto quiere decir que los valores no están concentrados en un único valor, sino que la mayoría se sitúan en un intervalo con distancia 3 respecto de la media.
@@ -2099,15 +2079,13 @@ Este valor concuerda, puesto que si observamos el histograma anterior, vemos que
 
 Esto también nos da como **conclusión** que en general las **opiniones** sobre los medicamentos **son buenas**, puesto que la mayor cantidad se sitúan en el intervalo [5,10].
 
-## Efectividad del medicamento
-
+## 3.2. Efectividad del medicamento
 
 En esta sección, se va a analizar si se consideran que los medicamentos son efectivos o no. Para ello se va a analizar el atributo **effectivenessNumber** (que mide la efectividad del medicamento, siendo 1 menos efectivo y 5 más efectivo).
 
 Empezamos obteniendo las frecuencias y porcentaje total de las anotaciones de efectividad. Para ello se va a calcular la frecuencia de dicho atributo y su porcentaje respecto del total.
 
 ```{r}
-
 # Obtener frecuencias del efectivenessNumber
 table(datos_train$effectivenessNumber)
 
@@ -2116,35 +2094,27 @@ numDocuments <- dim(datos_train)[1]
 
 # Calculamos el porcentaje de cada valor de efectividad respecto del total
 table(datos_train$effectivenessNumber)/numDocuments
-
 ```
-
 
 Como podemos observar, la mayoría de los medicamentos se consideran que son efectivos. De hecho, la mayoría de los medicamentos se consideran altamente efectivos (con un 42%). Podemos ahora comprobar ésto mediante el uso de la moda.
 
 ```{r}
-
 # Obtenemos la moda para el efectivenessNumber
 calcularModa(datos_train$effectivenessNumber)
-
 ```
-
 
 Como resumen en general de la efectividad, se va a calcular la media y la mediana para obtener la tendencia central de dicha variable. La media es la siguiente:
 
 ```{r}
 # Media
 mean(datos_train$effectivenessNumber)
-
 ```
 
 La mediana es la siguiente:
 
-
 ```{r}
 # Mediana
 median(datos_train$effectivenessNumber)
-
 ```
 
 El valor medio obtenido es 3.93 sobre 5 y la mediana es 4. Podemos concluir con dicha información, que en general los medicamentos son bastantes efectivos, situándose el 50% de dichas mediciones sobre el valor 4.
@@ -2152,9 +2122,7 @@ El valor medio obtenido es 3.93 sobre 5 y la mediana es 4. Podemos concluir con 
 A continuación, se va a visualizar dicha información gráficamente:
 
 ```{r}
-
 # Histograma sobre la efectividad de los medicamentos
-
 efecctivenessNumberExploration <- datos_train$effectivenessNumber
 
 hist(efecctivenessNumberExploration,
@@ -2167,34 +2135,25 @@ hist(efecctivenessNumberExploration,
      breaks=5,
      prob=TRUE
     )
-
 ```
 
-
 ```{r}
-
 # Diagrama de densidad de la efectividad de los medicamentos
-
 plot(density(datos_train$effectivenessNumber), 
      main="Densidad de la tasa de efectividad",
      xlim=c(0,5),
      )
-
 ```
 
 ```{r}
-
 # Diagrama de sectores de la efectividad de los medicamentos
 pie(table(datos_train$effectivenessNumber))
-
 ```
 
 
 ```{r}
-
 # Diagrama de cajas sobre la efectividad de los medicamentos
 boxplot(datos_train$effectivenessNumber,main="Tasa de efectividad", col= "darkseagreen1" )
-
 ```
 
 Como medidas de dispersión, se va a calcular la **desviación típica**:
@@ -2202,7 +2161,6 @@ Como medidas de dispersión, se va a calcular la **desviación típica**:
 ```{r}
 # Desviación típica
 sd(datos_train$effectivenessNumber)
-
 ```
 
 Como se puede observar, la desviación típica nos da un valor de 1.23. Esto quiere decir que la mayor parte de los valores se sitúan en un intervalo con una distancia de uno de la media.
@@ -2212,15 +2170,13 @@ Este valor concuerda, puesto que si observamos el histograma anterior, vemos que
 Esto también nos da como **conclusión** que en general los medicamentos tienen una tasa bastante **buena de efectividad** puesto que su tasa se sitúa entre [3,5].
 
 
-## Efectos secundarios del medicamento
-
+## 3.3. Efectos secundarios del medicamento
 
 En esta sección, se va a analizar si se consideran que los medicamentos tienen efectos secundarios o no. Para ello se va a analizar el atributo **sideEffectsNumber** (que mide la tasa de efectos secundarios del medicamento, siendo 1 el mínimo de efectos secundarios y 5 el máximo de efectos secundarios). 
 
 Empezamos obteniendo las frecuencias y porcentaje total de las anotaciones de efectos secundarios. Para ello se va a calcular la frecuencia de dicho atributo y su porcentaje respecto del total.
 
 ```{r}
-
 # Obtener frecuencias del sideEffectsNumber
 table(datos_train$sideEffectsNumber)
 
@@ -2229,37 +2185,29 @@ numDocuments <- dim(datos_train)[1]
 
 # Calculamos el porcentaje de tasa de efectos secundarios respecto del total.
 table(datos_train$sideEffectsNumber)/numDocuments
-
 ```
-
 
 Como podemos observar, la mayoría de los medicamentos se consideran que no tienen efectos secundarios severos. De hecho, la mayoría de los medicamentos se sitúan entre sin efectos secundarios (29%) o que tienen efectos secundarios leves (32%).
 
 Podemos comprobar ésto mediante el uso de la moda.
 
 ```{r}
-
 # Obtenemos la moda para el sideEffectsNumber
 calcularModa(datos_train$sideEffectsNumber)
-
 ```
-
 
 Como resumen en general, sobre la tasa de efectos secundarios, se va a calcular la media y la mediana para calcular la tendencia central para dicha variable. La media es la siguiente:
 
 ```{r}
 # Media
 mean(datos_train$sideEffectsNumber)
-
 ```
 
 La mediana es la siguiente:
 
-
 ```{r}
 # Mediana
 median(datos_train$sideEffectsNumber)
-
 ```
 
 El valor medio obtenido es 2.30 sobre 5 y la mediana es 2. Podemos concluir con dicha información, que en general los medicamentos no tienen efectos secundarios o que dichos efectos son leves.
@@ -2267,9 +2215,7 @@ El valor medio obtenido es 2.30 sobre 5 y la mediana es 2. Podemos concluir con 
 A continuación, se va a visualizar dicha información gráficamente:
 
 ```{r}
-
 # Histograma de la tasa de efectos secundarios
-
 sideEffectsNumberExploration <- datos_train$sideEffectsNumber
 
 hist(sideEffectsNumberExploration,
@@ -2282,33 +2228,26 @@ hist(sideEffectsNumberExploration,
      breaks=5,
      prob=TRUE
     )
-
 ```
 
 
 ```{r}
-
 # Diagrama de densidad sobre la tasa de efectos secundarios
-
 plot(density(datos_train$sideEffectsNumber), 
      main="Densidad de la tasa de efectos secundarios",
      xlim=c(0,5),
      )
-
 ```
 
 ```{r}
 # Diagrama de sectores de los efectos secundarios de los medicamentos
 pie(table(datos_train$sideEffectsNumber))
-
 ```
 
 
 ```{r}
-
 # Diagrama de cajas de los efectos secundarios de los medicamentos
 boxplot(datos_train$effectivenessNumber,main="Tasa de efectos secundarios", col= "firebrick2" )
-
 ```
 
 Como medidas de dispersión, se va a calcular la **desviación típica**:
@@ -2319,15 +2258,13 @@ sd(datos_train$sideEffectsNumber)
 
 ```
 
-Como se puede observar, la desviación típica nos da un valor de 1.17. Esto quiere decir que la mayor parte de los valores se sitúan en un intervalo con una distancia de uno respecto la media.
-
-Este valor concuerda, puesto que si observamos el histograma anterior, vemos que la mayoría de las puntuaciones se sitúan entre 1 y 2.
+Como se puede observar, la desviación típica nos da un valor de 1.17. Esto quiere decir que la mayor parte de los valores se sitúan en un intervalo con una distancia de uno respecto la media. Este valor concuerda, puesto que si observamos el histograma anterior, vemos que la mayoría de las puntuaciones se sitúan entre 1 y 2.
 
 Esto también nos da como **conclusión** que en general los medicamentos **no tienen efectos secundarios o son muy leves**.
 
 
 
-## Valoración ponderada sobre el medicamento
+## 3.4. Valoración ponderada sobre el medicamento
 
 
 En esta sección, se va a analizar si se consideran que los medicamentos son buenos o no teniendo en cuenta la relación entre los beneficios que aporta (efectividad) y las inconvenientes que tiene (efectos secundarios). Para ello se va a analizar el atributo **weightedRating** (que mide dicha relación teniendo en cuenta una tasa de efectividad del 30% y una tasa de efectos secundarios del 70%), y siendo 1 peor valorado y 10 mejor valorado.
@@ -2335,7 +2272,6 @@ En esta sección, se va a analizar si se consideran que los medicamentos son bue
 Empezamos obteniendo las frecuencias y porcentaje total de las anotaciones sobre la puntuación ponderada. Para ello se va a calcular la frecuencia de dicho atributo y su porcentaje respecto del total.
 
 ```{r}
-
 # Obtener frecuencias del weightedRating
 table(datos_train$weightedRating)
 
@@ -2344,17 +2280,14 @@ numDocuments <- dim(datos_train)[1]
 
 # Calculamos el porcentaje de puntuación ponderada respecto del total.
 table(datos_train$weightedRating)/numDocuments
-
 ```
 
 
 Como podemos observar, la mayoría de los medicamentos se consideran que son generalmente beneficiosos. De hecho, la mayoría de los medicamentos se sitúan con una valoración de 8 sobre 10 teniendo en cuenta la relación beneficio/perjuicio. Podemos comprobar ésto mediante el uso de la moda.
 
 ```{r}
-
 # Obtenemos la moda para el weightedRating
 calcularModa(datos_train$weightedRating)
-
 ```
 
 
@@ -2363,7 +2296,6 @@ Como resumen en general de sobre la tasa de efectos secundarios, se va a calcula
 ```{r}
 # Media
 mean(datos_train$weightedRating)
-
 ```
 
 La mediana es la siguiente:
@@ -2372,7 +2304,6 @@ La mediana es la siguiente:
 ```{r}
 # Mediana
 median(datos_train$weightedRating)
-
 ```
 
 El valor medio obtenido es 7.52 sobre 10 y la mediana es 2. Podemos concluir con dicha información que la puntuación general sobre los medicamentos es de **notable**.
@@ -2380,9 +2311,7 @@ El valor medio obtenido es 7.52 sobre 10 y la mediana es 2. Podemos concluir con
 A continuación, se va a visualizar dicha información gráficamente:
 
 ```{r}
-
 # Histograma de valoración ponderada
-
 weightedRatingExploration <- datos_train$weightedRating
 
 hist(weightedRatingExploration ,
@@ -2395,15 +2324,12 @@ hist(weightedRatingExploration ,
      breaks=5
      
     )
-
 ```
 
 
 
 ```{r}
-
 # Diagrama de densidad sobre la valoración ponderada
-
 plot(density(datos_train$weightedRating), 
      main="Densidad de valoración ponderada",
      xlim=c(0,10),
@@ -2414,15 +2340,12 @@ plot(density(datos_train$weightedRating),
 ```{r}
 # Diagrama de sectores sobre la valoración ponderada
 pie(table(datos_train$weightedRating))
-
 ```
 
 
 ```{r}
-
 # Diagrama de cajas sobre la valoración ponderada
 boxplot(datos_train$weightedRating,main="Valoración ponderada", col= "dodgerblue1" )
-
 ```
 
 Como medidas de dispersión, se va a calcular la **desviación típica**:
@@ -2430,7 +2353,6 @@ Como medidas de dispersión, se va a calcular la **desviación típica**:
 ```{r}
 # Desviación típica
 sd(datos_train$weightedRating)
-
 ```
 
 Como se puede observar, la desviación típica nos da un valor de 2.07. Esto quiere decir que la mayor parte de los valores se sitúan en un intervalo con una distancia de dos sobre la media.
@@ -2441,14 +2363,13 @@ Esto también nos da como **conclusión** que en general los medicamentos **son 
 
 
 
-## Correlación sobre las variables
+## 3.5. Correlación sobre las variables
 
 En esta sección se va a comprobar la correlación que existe entre las variables que miden la efectividad(effectivenessNumber), los efectos secundarios(sideEffectsNumber), la valoración aportada por los usuarios(rating) y la valoración ponderada que se ha realizado sobre el medicamento(weightedRating).
 
 Empezamos calculando la correlación entre la variable que mide la efectividad y los efectos secundarios.
 
 ```{r}
-
 # Correlación lineal entre efectivenessNumber y sideEffectsNumber
 cor(datos_train[,c(8,9)])
 ```
@@ -2459,19 +2380,15 @@ Podemos observar que cuantos más efectos secundarios tiene, menor es la efectiv
 A continuación vamos a calcular la correlación entre la efectividad y la valoración ponderada del medicamento.
 
 ```{r}
-
 # Correlación lineal entre efectivenessNumber y weightedRating
 cor(datos_train[,9:10])
-
 ```
 
 Como se puede observar, cuando el medicamento es más efectivo, la valoración ponderada del medicamento acumenta (como es obvio), y si ahora calculamos la valoración ponderada del medicamento teniendo en cuenta los efectos secundarios.
 
 ```{r}
-
 # Correlación lineal entre sideEffectsNumber y weightedRating
 cor(datos_train[,c(8,10)])
-
 ```
 
 Observamos como si el medicamento tiene una mayor tasa de efectos secundarios, la valoración ponderada disminuye considerablemente (obvio porque el 70% de la valoración ponderada tiene en cuenta los efectos secundarios del medicamento).
@@ -2480,19 +2397,15 @@ Ahora vamos a comprobar la relación que existe entre la valoración dada por el
 
 
 ```{r}
-
 # Correlación lineal entre rating y sideEffectsNumber
 cor(datos_train[,c(2,8)])
-
 ```
 
 Podemos comprobar como si el medicamento tiene una mayor tasa de efectos secundarios, la valoración dada por el usuario disminuye.
 
 ```{r}
-
 # Correlación lineal entre rating y effectivenessNumber
 cor(datos_train[,c(2,9)])
-
 ```
 
 Y si la efectividad del medicamento es alta, la valoración del usuario se incrementa.
@@ -2502,7 +2415,6 @@ Como observación general, se puede destacar que **la valoración del usuario es
 Por último, vamos a observar en el siguiente gráfico como se relacionan las variables entre sí en función se sus valores.
 
 ```{r}
-
 # Gráfico de coordenadas paralelas
 library(MASS)
 parcoord(datos_train[,c(8,9,2,10)], col=datos_train$rating,var.label=T)
@@ -2514,11 +2426,11 @@ Por ejemplo, podemos destacar como si el número de efectos secundarios es 1 (no
 \newpage
 <!------->
 
-# Análisis de sentimientos
+# 4. Análisis de sentimientos
 
 En este apartado vamos a realizar un análisis descriptivo de los datos. En esta ocasión, vamos a visualizar cuáles son los sentimientos que expresan las personas en los comentarios que escriben sobre los distintos medicamentos que se encuentran en nuestro dataset. Lo haremos de los comentarios relacionados con los beneficios y efectos de los medicamentos.
 
-```{r eval=FALSE}
+```{r eval=FALSE, include=FALSE}
 library(syuzhet)
 library(ggplot2)
 datos_train <- read.table("datos/datos_train_preprocesado.csv", sep=",", comment.char=""
@@ -2602,17 +2514,17 @@ for(cadena in medicamentos){
                         paste("Comentarios_efectos_de_medicamento_",cadena))
 }
 ```
-Comentarios_beneficio_de_medicamento_propecia_positivismo.png
-\begin{figure}[h]
+
+\begin{figure}[ht]
     \centering
-    \includegraphics[width=1\textwidth]{figuras/elegidas/Comentarios_beneficio_de_medicamento_propecia.png}
+    \includegraphics[width=0.5\textwidth]{figuras/elegidas/Comentarios_beneficio_de_medicamento_propecia.png}
     \caption{Análisis de sentimientos de los comentarios sobre los beneficios de los medicamentos para obtener propecia.}
     \label{fig:sentimientos:propeciaSentimiento}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}[ht]
     \centering
-    \includegraphics[width=1\textwidth]{figuras/elegidas/Comentarios_beneficio_de_medicamento_propecia_positivismo.png}
+    \includegraphics[width=0.5\textwidth]{figuras/elegidas/Comentarios_beneficio_de_medicamento_propecia_positivismo.png}
     \caption{Análisis de positivismo de los comentarios sobre los beneficios de los medicamentos para obtener propecia.}
     \label{fig:sentimientos:propeciaSentimiento}
 \end{figure}
@@ -2628,11 +2540,11 @@ Todas estas gráficas pueden apreciarse en el anexo de esta práctica por si se 
 
 \newpage
 
-# Reglas de Asociación
+# 5. Reglas de Asociación
 
 En esta técnica haremos un análisis descriptivo de los datos de texto. Buscaremos la relación que existe entre las palabras expuestas en los distintos comentarios sobre los medicamentos y tratatemos de asociarlos a distintos conceptos para tener una mejor idea de nuestro dataset. Esto nos permitirá saber de antemano que palabras a priori pueden tener que ver algo con distintos efectos de los medicamentos.
 
-```{r, eval=FALSE}
+```{r, eval=FALSE, include=FALSE}
 datos_train <- read.table("datos/datos_train_preprocesado.csv", sep=",",
                           comment.char="",quote = "\"", header=TRUE)
 ```
@@ -2684,16 +2596,16 @@ inspect(head(rules_benefits,100))
 inspect(head(rules_effects,100))
 ```
 
-\begin{figure}[h]
+\begin{figure}[ht]
     \centering
-    \includegraphics[width=1\textwidth]{figuras/asociacion/reglas_general_beneficios.png}
+    \includegraphics[width=0.7\textwidth]{figuras/asociacion/reglas_general_beneficios.png}
     \caption{inspect(head(rules\_benefits),100) para visualizar reglas más importantes de los comentarios sobre beneficios.}
     \label{fig:asociacion:reglasBenefits}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}[ht]
     \centering
-    \includegraphics[width=1\textwidth]{figuras/asociacion/reglas_general_beneficios.png}
+    \includegraphics[width=0.7\textwidth]{figuras/asociacion/reglas_general_beneficios.png}
     \caption{inspect(head(rules\_effects),100) para visualizar reglas más importantes de los comentarios sobre efectos secundarios.}
     \label{fig:asociacion:reglasEffects}
 \end{figure}
@@ -2703,9 +2615,9 @@ plot(rules_benefits, method="graph")
 title("Reglas de asociación sobre comentarios de beneficios")
 ```
 
-\begin{figure}[h]
+\begin{figure}[ht]
     \centering
-    \includegraphics[width=1\textwidth]{figuras/asociacion/asociacion_beneficios.png}
+    \includegraphics[width=0.7\textwidth]{figuras/asociacion/asociacion_beneficios.png}
     \caption{Mapa de reglas de asociación sobre los comentarios de beneficios.}
     \label{fig:asociacion:benefits}
 \end{figure}
@@ -2727,10 +2639,10 @@ plot(rules_effects, method="graph")
 title("Reglas de asociación sobre comentarios de efectos secundarios")
 ```
 
-\begin{figure}[h]
+\begin{figure}[ht]
     \centering
-    \includegraphics[width=1\textwidth]{figuras/asociacion/asociacion_efectos.png}
-    \caption{Mapa de reglas de asociación sobre los comentarios de efectos secundarios.}
+    \includegraphics[width=0.6\textwidth]{figuras/asociacion/asociacion_efectos.png}
+    \caption{Mapa de regla de asociación sobre los comentarios de efectos secundarios.}
     \label{fig:asociacion:effects}
 \end{figure}
 
@@ -2740,7 +2652,7 @@ No obstante, volvemos a tener los mismos consecuentes más frecuentes. Ocupando 
 
 Hay conceptos interesantes como *nausea*, *headach*, *pain*... Conceptos que están estrechamente relacionados con efectos secundarios.
 
-##Reglas de asociación específicas.
+## 5.1. Reglas de asociación específicas 
 
 Llegados a este punto, quisimos darle un nuevo enfoque a la extracción de reglas de asociación a partir de estos comentarios. En los mapas anteriores, veíamos que había demasiadas reglas enfocadas a una misma cosa, incluso llegando a ser difícil de visualizar en algunos sitios concretos.
 
@@ -2835,35 +2747,38 @@ benefits_rulesInnefective <- apriori (data=benefits_transactions,
 
 benefits_rulesHighlyEffective <- apriori (data=benefits_transactions, 
                              parameter=list (supp=0.0007,conf = 0.9, minlen=2), 
-                             appearance = list(default="lhs",rhs=c("Highly-Effective")), 
+                             appearance = list(default="lhs",
+                                               rhs=c("Highly-Effective")), 
                              control = list (verbose=F))
 
 benefits_rulesConsiderablyEffective <- apriori (data=benefits_transactions, 
                               parameter=list (supp=0.0007,conf = 0.9, minlen=2), 
-                              appearance = list(default="lhs",rhs=c("Considerably-Effective")), 
+                              appearance = list(default="lhs",
+                                                rhs=c("Considerably-Effective")), 
                               control = list (verbose=F))
 
 benefits_rulesModeratelyEffective <- apriori (data=benefits_transactions, 
                               parameter=list (supp=0.0007,conf = 0.9, minlen=2), 
-                              appearance = list(default="lhs",rhs=c("Moderately-Effective")), 
+                              appearance = list(default="lhs",
+                                                rhs=c("Moderately-Effective")), 
                               control = list (verbose=F))
 
 benefits_rulesMarginallyEffective <- apriori (data=benefits_transactions, 
                              parameter=list (supp=0.0007,conf = 0.9, minlen=2), 
-                             appearance = list(default="lhs",rhs=c("Marginally-Effective")), 
+                             appearance = list(default="lhs",
+                                               rhs=c("Marginally-Effective")), 
                              control = list (verbose=F))
 
-
 benefits_rulesInnefective <- 
-  sort(benefits_rulesInnefective, decreasing = TRUE, na.last = NA, by = "confidence")
+  sort(benefits_rulesInnefective, decreasing=TRUE, na.last=NA, by="confidence")
 benefits_rulesHighlyEffective <- 
-  sort(benefits_rulesHighlyEffective, decreasing = TRUE, na.last = NA, by = "confidence")
+  sort(benefits_rulesHighlyEffective, decreasing=TRUE, na.last = NA, by="confidence")
 benefits_rulesConsiderablyEffective <- 
-  sort(benefits_rulesConsiderablyEffective, decreasing = TRUE, na.last = NA, by = "confidence")
+  sort(benefits_rulesConsiderablyEffective, decreasing=TRUE, na.last=NA, by="confidence")
 benefits_rulesModeratelyEffective <- 
-  sort(benefits_rulesModeratelyEffective, decreasing = TRUE, na.last = NA, by = "confidence")
+  sort(benefits_rulesModeratelyEffective, decreasing=TRUE, na.last=NA, by="confidence")
 benefits_rulesMarginallyEffective <- 
-  sort(benefits_rulesMarginallyEffective, decreasing = TRUE, na.last = NA, by = "confidence")
+  sort(benefits_rulesMarginallyEffective, decreasing=TRUE, na.last=NA, by="confidence")
 ```
 
 Podemos mostrar las 10 reglas de mayor confianza relacionadas con cada uno de los consecuentes.
@@ -2893,30 +2808,33 @@ effects_rulesHighlyEffective <- apriori (data=effects_transactions,
 
 effects_rulesConsiderablyEffective <- apriori (data=effects_transactions, 
                                 parameter=list (supp=0.0007,conf = 0.9, minlen=2), 
-                                appearance = list(default="lhs",rhs=c("Considerably-Effective")), 
+                                appearance = list(default="lhs",
+                                                  rhs=c("Considerably-Effective")), 
                                 control = list (verbose=F))
 
 effects_rulesModeratelyEffective <- apriori (data=effects_transactions, 
                                 parameter=list (supp=0.0007,conf = 0.9, minlen=2), 
-                                appearance = list(default="lhs",rhs=c("Moderately-Effective")), 
+                                appearance = list(default="lhs",
+                                                  rhs=c("Moderately-Effective")), 
                                 control = list (verbose=F))
 
 effects_rulesMarginallyEffective <- apriori (data=effects_transactions, 
                                      parameter=list (supp=0.0007,conf = 0.9, minlen=2), 
-                                     appearance = list(default="lhs",rhs=c("Marginally-Effective")), 
+                                     appearance = list(default="lhs",
+                                                       rhs=c("Marginally-Effective")), 
                                      control = list (verbose=F))
 
 
 effects_rulesInnefective <- sort(effects_rulesInnefective, 
-                                 decreasing = TRUE, na.last = NA, by = "confidence")
+                                 decreasing=TRUE, na.last=NA, by="confidence")
 effects_rulesHighlyEffective <- sort(effects_rulesHighlyEffective, 
-                                     decreasing = TRUE, na.last = NA, by = "confidence")
+                                     decreasing=TRUE, na.last=NA, by="confidence")
 effects_rulesConsiderablyEffective <- sort(effects_rulesConsiderablyEffective, 
-                                           decreasing = TRUE, na.last = NA, by = "confidence")
+                                           decreasing=TRUE, na.last = NA, by="confidence")
 effects_rulesModeratelyEffective <- sort(effects_rulesModeratelyEffective, 
-                                         decreasing = TRUE, na.last = NA, by = "confidence")
+                                         decreasing=TRUE, na.last = NA, by="confidence")
 effects_rulesMarginallyEffective <- sort(effects_rulesMarginallyEffective,
-                                         decreasing = TRUE, na.last = NA, by = "confidence")
+                                         decreasing=TRUE, na.last=NA, by="confidence")
 ```
 
 Podríamos mostrar las 10 reglas con mayor confianza relacionadas con cada uno de los consecuentes si lo deseamos.
@@ -2936,33 +2854,32 @@ Finalmente podemos extraer todas los mapas de estas reglas de asociación.
 ```{r, eval=FALSE}
 #Obtenemos las imágenes relacionadas con los comentarios sobre beneficios
 # de los medicamentos
-png("figuras/asociacion/benefits_Innefective.png",width=1800,height=1700,units="px",
-    pointsize=10,bg="white",res=300)
+png("figuras/asociacion/benefits_Innefective.png",width=1800,
+    height=1700,units="px",pointsize=10,bg="white",res=300)
 plot(benefits_rulesInnefective, method="graph")
 title("Comentarios beneficios sobre inefectividad")
 dev.off()
 
-png("figuras/asociacion/benefits_HighlyEffective.png",width=1800,height=1700,units="px",
-    pointsize=10,bg="white",res=300)
+png("figuras/asociacion/benefits_HighlyEffective.png",width=1800,
+    height=1700,units="px",pointsize=10,bg="white",res=300)
 plot(benefits_rulesHighlyEffective, method="graph")
 title("Comentarios beneficios sobre altamente efectivos")
 dev.off()
 
-png("figuras/asociacion/benefits_ConsiderablyEffective.png",width=1800,height=1700,units="px",
-    pointsize=10,bg="white",res=300)
+png("figuras/asociacion/benefits_ConsiderablyEffective.png",width=1800,
+    height=1700,units="px",pointsize=10,bg="white",res=300)
 plot(benefits_rulesConsiderablyEffective, method="graph")
 title("Comentarios beneficios sobre considerablemente efectivos")
 dev.off()
 
-png("figuras/asociacion/benefits_ModeratelyEffective.png",width=1800,height=1700,units="px",
-    pointsize=10,bg="white",res=300)
+png("figuras/asociacion/benefits_ModeratelyEffective.png",width=1800,
+    height=1700,units="px",pointsize=10,bg="white",res=300)
 plot(benefits_rulesModeratelyEffective, method="graph")
 title("Comentarios beneficios sobre moderadamente efectivos")
 dev.off()
 
-
-png("figuras/asociacion/benefits_MarginallyEffective.png",width=1800,height=1700,units="px",
-    pointsize=10,bg="white",res=300)
+png("figuras/asociacion/benefits_MarginallyEffective.png",width=1800,
+    height=1700,units="px",pointsize=10,bg="white",res=300)
 plot(benefits_rulesMarginallyEffective, method="graph")
 title("Comentarios beneficios sobre casi inefectivo")
 dev.off()
@@ -2984,33 +2901,32 @@ Como se puede ver en la imagen, los términos que giran en torno de a la inefect
 ```{r, eval=FALSE}
 # Obtenemos las imágenes relacionadas con los comentarios 
 # sobre efectos secundarios de los medicamentos
-png("figuras/asociacion/effects_Innefective.png",width=1800,height=1700,units="px",
-    pointsize=10,bg="white",res=300)
+png("figuras/asociacion/effects_Innefective.png",width=1800,
+    height=1700,units="px",pointsize=10,bg="white",res=300)
 plot(effects_rulesInnefective, method="graph")
 title("Comentarios efectos secundarios sobre inefectividad")
 dev.off()
 
-png("figuras/asociacion/effects_HighlyEffective.png",width=1800,height=1700,units="px",
-    pointsize=10,bg="white",res=300)
+png("figuras/asociacion/effects_HighlyEffective.png",width=1800,
+    height=1700,units="px",pointsize=10,bg="white",res=300)
 plot(effects_rulesHighlyEffective, method="graph")
 title("Comentarios efectos secundarios sobre altamente efectivos")
 dev.off()
 
-png("figuras/asociacion/effects_ConsiderablyEffective.png",width=1800,height=1700,units="px",
-    pointsize=10,bg="white",res=300)
+png("figuras/asociacion/effects_ConsiderablyEffective.png",width=1800,
+    height=1700,units="px",pointsize=10,bg="white",res=300)
 plot(effects_rulesConsiderablyEffective, method="graph")
 title("Comentarios efectos secundarios sobre considerablemente efectivos")
 dev.off()
 
-png("figuras/asociacion/effects_ModeratelyEffective.png",width=1800,height=1700,units="px",
-    pointsize=10,bg="white",res=300)
+png("figuras/asociacion/effects_ModeratelyEffective.png",width=1800,
+    height=1700,units="px",pointsize=10,bg="white",res=300)
 plot(effects_rulesModeratelyEffective, method="graph")
 title("Comentarios efectos secundarios sobre moderadamente efectivos")
 dev.off()
 
-
-png("figuras/asociacion/effects_MarginallyEffective.png",width=1800,height=1700,units="px",
-    pointsize=10,bg="white",res=300)
+png("figuras/asociacion/effects_MarginallyEffective.png",width=1800,
+    height=1700,units="px",pointsize=10,bg="white",res=300)
 plot(effects_rulesMarginallyEffective, method="graph")
 title("Comentarios efectos secundarios sobre casi inefectivo")
 dev.off()
@@ -3031,7 +2947,12 @@ Como podemos apreciar en la imagen, el mapa de por sí es poco visualizable debi
 
 <!------->
 
-# KNN
+<!------->
+
+# 6. Agrupamiento y Clustering
+
+
+## 6.1. KNN
 
 En esta sección vamos a realizar técnicas de clasificación basada en instancias. Concretamente el de vecinos más cercanos (KNN). Esta técnica es puramente predictiva, por lo que no proporciona ninguna información acerca de la dependecia de variables. Dado un texto, busca en el conjunto de entrenamiento los items que tienen un mayor parentesco del que estamos tratando de deducir y copia su clase. La clase que vamos a intentar reducir es **ratingLabel** que es la columna preprocesada de **rating**. Nos hubiera gustado probar y comentar esta técnica tratando de clasificar otras clases, pero no tenemos tiempo suficiente como para ello.
 
@@ -3347,6 +3268,74 @@ Vemos que ocurre algo similar que con los comentarios de beneficios, solo que co
 Llegamos a la conclusión en ambos tipo de comentarios que los valores apropiados para k deben ser bajos (valor de 5), por los datos mostrados anteriormente.
 
 
+
+<!------->
+
+\newpage
+
+# 7. Árboles de decisión y Clasificación
+
+## 7.1. SVM
+
+En esta sección vamos a hablar sobre la técnica de Support Vector Machine (SVM). Principalmente presenta el inconveniente de que es poco escalable y costosa (computacionalmente y en tiempo), por lo que no vamos a hacer un análisis muy detallado del mismo.
+
+```{r, eval=FALSE, include=FALSE}
+# Cargamos los tados
+datos_train <- read.table("datos/datos_train_preprocesado.csv", sep=",",
+                          comment.char="",quote = "\"", header=TRUE)
+datos_test <- read.table("datos/datos_test_preprocesado.csv", sep=",",
+                         comment.char="",quote = "\"", header=TRUE)
+# Establecemos la semilla
+set.seed(3)
+```
+
+Inicialmente, tratamos de utilizarlo con valores numéricos de nuestro dataset. El problema es que solo tenemos valores discretos y categóricos, por lo que esta técnica no funcionaba de forma correcta a la hora de calcular distancias. Tratar de hacer continuo un valor discreto es una pérdida de tiempo, ya que no podemos basarnos en nada para decidir el valor exacto que alcanzaría un valor discreto en un espacio continuo.
+
+Tras darnos cuenta de esto, nos pasamos directamente al tratamiento del texto. Los pasos que llevamos a cabo fueron los siguientes:
+
+```{r, eval=FALSE}
+# Creamos la matriz de términos
+dtm_train <- create_matrix(datos_train$benefits_preprocesado)
+
+# Creamos un contenedor a partir de la matriz de términos
+contenedor <- create_container(dtm_train,datos_train$ratingLabel,
+                               trainSize=1:length(dtm_train),virgin=FALSE)
+
+# Entrenamos el modelo SVM con los parámetros que queramos 
+modelo_svm <- train_model(contenedor,"SVM",kernel="radial")
+
+# Creamos la matriz de términos para el conjunto de test
+dtm_test <- create_matrix(as.list(datos_test$benefits_preprocesado), 
+                          originalMatrix = dtm_train)
+
+#Obtenemos el contenedor correspondiente a la matriz de términos del conjunto de Test
+contenedor_test <- create_container(dtm_test,labels=as.factor(datos_test$ratingLabel),
+                         testSize=1:length(datos_test$ratingLabel),virgin=FALSE) 
+
+resultados_svm <- classify_model(contenedor_test,modelo_svm)
+resultados_svm
+```
+
+Destacar de este proceso que hacemos uso de la matriz de términos como viene siendo común a la hora de manipular texto. Utilizamos el kernel de tipo radial y la totalidad del conjunto de entrenamiento para llevar a cabo la construcción del modelo.
+
+Pero nos daba un error a la hora de ejecutar este código. Esto retrasó mucho el avance de la práctica ya que no conseguíamos darnos cuenta de que es lo que ocurría. Finalmente, parece ser una incompatibilidad de la librería en create_matrix. Por lo que tuvimos que cambiarla con la ayuda de *trace*. En el código hay un comentario que especifíca el cambio a realizar en caso de tener este problema.
+
+
+Posteriormente, tratamos de deducir el _ratingLabel_ a partir de los cometarios sobre los beneficios de los medicamentos. Obteniendo finalemte los siguientes resultados:
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{figuras/svm/resultado.png}
+    \caption{Salida de SVM para el ratingLabel a partir de los comentarios de texto sobre los beneficios.}
+    \label{fig:svm:resultados}
+\end{figure}
+
+Como podemos ver, el clasificador no funciona bien. Etiqueta todo a 0. Creemos que el error viene dado debido a la disposición de los términos (igual que vimos en el clustering). Al tener una nube de puntos tan densa y tan poco disjunta, esto hace que no haya una función aceptable para poder separarlas.
+
+Por otro lado, SVM no funciona bien con texto a no ser que tengas las mismas palabras tanto en el test como en el train, cosa que no ocurre en nuestro caso. Esto hace que SVM no tenga todo lo necesario para generar una buena función. Cosa que sí ocurre, por ejemplo, en este tutorial \url{https://www.svm-tutorial.com/2014/11/svm-classify-text-r/}.
+
+En definitiva, decidimos no perder más tiempo con esta técnica, ya que parece no ser adecuada para nuestro dataset y seguir avanzando en el resto que proponemos con esta práctica.
+
 <!------->
 
 \newpage
@@ -3359,7 +3348,7 @@ datos_train_preprocesados <- read.csv(file="datos/datos_train_preprocesado.csv")
 datos_test_preprocesados <- read.csv(file="datos/datos_test_preprocesado.csv")
 ```
 
-# 5. Regresión
+# 8. Regresión
 
 En este apartado se va hacer uso de la técnica de **regresión**, con el objetivo de describir dependencias significativas entre las variables incluidas en la base de datos. La regresión es un modelo de predicción de variables continuas, en donde las variables independientes tambien son continuas o al menos numéricas. Dicho proceso viene caracterizado por aprender una función que aplica un conjunto de atributos $X_1..X_n$ en otro atributo $Y$. En nuestro caso, vamos a hacer uso de las columnas:
 
@@ -3447,7 +3436,7 @@ colnames(data_test_procesado) <- c("ratingLabel", "effectivenessNumber", "sideEf
 # A partir de ahora "data_test_procesado"
 ```
 
-## 5.1. Regresión Lineal
+## 8.1. Regresión Lineal
 
 La regresión lineal simple consiste en generar un modelo de regresión (ecuación de una recta) que permita explicar la relación lineal que existe entre dos variables. A la variable dependiente o respuesta se le identifica como $Y$ y a la variable predictora o independiente como $X$. Con el comando `lm()` podemos ajustar el modelo. Algunos parámetros importantes de esta función son:
  
@@ -3461,7 +3450,7 @@ La regresión lineal simple consiste en generar un modelo de regresión (ecuaci�
 - _subset_ : si dividimos la muestra en training y testing, podemos indicar el subconjunto de entrenamiento con un vector que indique sus números de fila.
 
 
-### 5.1.1. Regresión Lineal Simple
+### 8.1.1. Regresión Lineal Simple
 
 Se pretende predecir el valor del rating (etiqueta 0-1) en función de la puntuación de los medicamentos y, por otro lado para los efectos secundarios del mismo. Para ello se va a emplear la función `lm()`, la cual genera un modelo de regresión lineal por mínimos cuadrados en el que la variable respuesta es ratingLabel y el predictor sideEffectsInverse, y por otro lado, la variable respuesta será ratingLabel y el predictor effectivenessNumber. 
 
@@ -3549,7 +3538,7 @@ plotROC(prob_LM_effectiveness, data_test_procesado$ratingLabel)
 ```
 
 
-#### 5.1.1.1. Casos atípicos
+#### 8.1.1.1. Casos atípicos
 
 A continuación para el modelo lineal simple, vamos a obtener los casos atípicos, una forma rápida de identificarlos es usando la función `influencePlot()` del paquete `car`. Esta función produce un gráfico que señala a los casos atípicos influyentes. 
 
@@ -3571,7 +3560,7 @@ influencePlot(lm_effectiveness, xlab="Hat-Values", ylab="Studentized Residuals")
 
 Para dicho modelo, los medicamentos _propecia_, _claritin_, _depakote_, _anafranil_ y _fluvoxamine_ aparecen como casos atípicos.
 
-#### 5.1.1.2. Regresión Robusta
+#### 8.1.1.2. Regresión Robusta
 
 Una alternativa para controlar los casos atípicos es ajustar un modelo lineal robusto. El modelo lineal robusto utiliza criterios diferentes al de los mínimos cuadrados y pondera la influencia de los casos atípicos, por lo que producen coeficientes y sobre todo errores estándar más confiables. El paquete `MASS` incluye la función `rlm()`, de sintaxis similar a `lm()` que implementa el método para el ajuste de los coeficientes y cálculo de los errores estándar.
 
@@ -3594,7 +3583,7 @@ stargazer(lm_effectiveness, rlm_effectiveness, type = "text", model.numbers = FA
 
 El modelo robusto aumenta los coeficientes y reduce los errores estándar, aunque no en gran cuantía. En este caso interpretamos que los casos atípicos no son un problema grave.
 
-### 5.1.2. Regresión Lineal Múltiple
+### 8.1.2. Regresión Lineal Múltiple
 
 Una vez que hemos la regresión lineal simple, vamos a intentar predecir el valor del ratingLabel en función de la puntuación de los medicamentos y de los efectos secundarios del mismo. Para ello se va a emplear la misma (`lm()`), la cual genera un modelo de regresión lineal por mínimos cuadrados en el que la variable respuesta es ratingLabel y los predictores son sideEffectsInverse y effectivenessNumber. Previamente a la realización del modelo, vamos a comprobar que las variables a usar pueden ser aplicadas juntas con la función `step()`, para así determinar la calidad del modelo.
 
@@ -3616,13 +3605,13 @@ Como se aprecia en salida de la función `step(lm_multiple, direction = "both", 
 Por tanto, se observa que se obtiene que hay 5 falsos positivos, es decir, medicamentos que se dicen que son favorables pero que no lo son. Y existen 24 falsos negativos, es decir, medicamentos que se dicen que no son favorables pero los son. Se debe tener en cuenta que dichos resultados obtenidos han sido según los comentarios de los pacientes. Como podemos apreciar, el error del test nos devuelve un valor de 9.265176, un buen error si tenemos en cuenta, los obtenidos con la regresión simple.
 
 
-## 5.2. Regresión Logística
+## 8.2. Regresión Logística
 
 A continuación, vamos a ajustar un modelo con regresión logística binario sin regularización. De este modo vamos a comprobar, si se puede intentar encontrar un buen modelo lineal para nuestro problema. Además, discutiremos las necesidades de regularización, para ver si de esta forma conseguimos mejorarlo en cuanto a resultados. 
 
 Para la obtención de la regresión, vamos hacer uso del comando `glm()`.
 
-### 5.2.1. Regresión Logística Simple
+### 8.2.1. Regresión Logística Simple
 
 La regresión logística simple, es un método de regresión que permite estimar la probabilidad de una variable cualitativa binaria en función de una variable cuantitativa. Una de las principales aplicaciones de la regresión logística es la de clasificación binaria, en el que las observaciones se clasifican en un grupo u otro dependiendo del valor que tome la variable empleada como predictor. Es decir para predecir la probabilidad de pertenencia o no a una determinada clase (efectividad - no efectividad).
 
@@ -3689,7 +3678,7 @@ prob_GLM_effectiveness = predict(gml_effectiveness, data.frame(data_test_procesa
 plotROC(prob_GLM_effectiveness, data_test_procesado$ratingLabel)
 ```
 
-### 5.2.2. Regresión Logística Multivariable
+### 8.2.2. Regresión Logística Multivariable
 
 Una vez que hemos la regresión logística simple, vamos a intentar predecir el valor del ratingLabel en función de la puntuación de los medicamentos y de los efectos secundarios del mismo. Para ello se va a emplear la misma (`glm()`).
 
@@ -3701,16 +3690,16 @@ errorres_regresion_logistica(modelo_glm_multiple)
 ```
 
 
-### 5.2.3. Regularización en Regresión Logística
+### 8.2.3. Regularización en Regresión Logística
 
 En este apartado vamos a ajustar un modelo a través de la regresión logística con regularización meidante la técnica Lasso Regression.
 
-#### 5.2.3.1. Rigde Regression
+#### 8.2.3.1. Rigde Regression
 
 Esta ténica, en esencia, es la regresión lineal con Weight Decay que utilizamos en la Práctica 2, y cuya fórmula es: $(XTX + lambdaI)-1 *XˆT$. Es el parámetro lambda, el que en función de su valor, marca el equilibrio entre los componentes de sesgo y varianza. Cuanto mayor sea su valor, mayor sesgo pero menor varianza. Es decir, cuanto mayor valor tenga lambda, mayor penalización y mayor reducción se les aplica a los valores de los coeficientes.
 
 
-#### 5.2.3.2. Lasso Regression
+#### 8.2.3.2. Lasso Regression
 
 Esta técnica, además de realizar la misma tarea que la anterior, pero con una fórmula distinta para aplicar la penalización. Aún así, también utiliza el parámetro lambda para concretar el equilibrio entre sesgo y varianza. Además, también es capaz de realizar una selección de variables, anulando algunos coeficientes. Por lo que además de la reducción de los valores de estos coeficientes también reduce el número de estos necesarios para ajustar el modelo.
 
@@ -3765,7 +3754,7 @@ cat("Error con la técnica Ridge Regression: ",error.ridge*100,"%\n")
 
 Como se observa, se obtiene un error similar a los anteriores.
 
-## 5.3. Regresión Polinomial
+## 8.3. Regresión Polinomial
 
 En algunos casos, la verdadera relación entre la variable respuesta y los predictores puede no ser lineal, por lo que podemos aplicar por ejemplo una regresión polinomial. Una forma simple de incorporar asociaciones no lineales en un modelo lineal es incluir versiones transformadas de los predictores, elevándolos a distintas potencias, evitando un exceso de grados para evitar el sobreajuste o overfitting.
 
@@ -3814,6 +3803,12 @@ lines(x = nuevos_puntos$sideEffectsInverse, predicciones$fit, col = "red", pch =
 lines(x = nuevos_puntos$sideEffectsInverse, intervalo_conf$inferior, col = "blue", pch = 4)
 lines(x = nuevos_puntos$sideEffectsInverse, intervalo_conf$superior, col = "blue", pch = 4)
 ```
+
+En la gráfica, que acabamos de visualizar se puede observar como existe una relación, en donde a mayor valor de sideEffectsInverse, mayor ratingLavel, es decir, cuanto más favorable es un medicamento menos efectos secundarios tiene.
+
+Por tanto, se ha observado como el método de regresión sobre las variables numéricas, obtiene unas predicciones de etiquetas muy buenas, obteniendo con la regresión logística multivariable el mínimo error fuera de la muestra. Ya que dicho método, permite estimar de manera muy aceptable la probabilidad de una variable cualitativa binaria en función de una variable cuantitativa. 
+
+\newpage
 
 # 9. Conclusiones
 

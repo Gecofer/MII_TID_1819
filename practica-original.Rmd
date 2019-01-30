@@ -3886,7 +3886,7 @@ fviz_cluster(object = dbscan_cluster, data = datos_, stand = FALSE,
 
 ## 6.5. KNN
 
-En esta sección vamos a realizar técnicas de clasificación basada en instancias. Concretamente el de vecinos más cercanos (KNN). Esta técnica es puramente predictiva, por lo que no proporciona ninguna información acerca de la dependecia de variables. Dado un texto, busca en el conjunto de entrenamiento los items que tienen un mayor parentesco del que estamos tratando de deducir y copia su clase. La clase que vamos a intentar reducir es **ratingLabel** que es la columna preprocesada de **rating**. Nos hubiera gustado probar y comentar esta técnica tratando de clasificar otras clases, pero no tenemos tiempo suficiente como para ello.
+En esta sección vamos a realizar técnicas de clasificación basada en instancias. Concretamente el de vecinos más cercanos (KNN). Esta técnica es puramente predictiva, por lo que no proporciona ninguna información acerca de la dependencia de variables. Dado un texto, busca en el conjunto de entrenamiento los items que tienen un mayor parentesco del que estamos tratando de deducir y copia su clase. La clase que vamos a intentar reducir es **ratingLabel** que es la columna preprocesada de **rating**. Nos hubiera gustado probar y comentar esta técnica tratando de clasificar otras clases, pero no tenemos tiempo suficiente como para ello.
 
 Esta técnica es buena cuando el conjunto de items se encuentran disjuntos entre sí debido a sus clases. Aunque el clustering es una técnica no supervisada en la que de antemano no teníamos etiquetas concretas que clasificar, nos dimos cuenta de que no era una opción que nos aportara mucho debido a este hecho (la nube de puntos no se encontraba disjuntas en grupos claros). Por lo que de antemano pensamos que no va a devolvernos unas predicciones muy prometedoras.
 
@@ -3894,7 +3894,7 @@ Antes de comenzar, destacar que probamos con variables numéricas antes de traba
 
 Nos encontramos con un problema que tuvimos en la implementación de este algoritmo y el cual nos llevó mucho tiempo detectar y solucionar. Básicamente, nosotros estamos trabajando con dos dataset ya diferenciados desde el comienzo; el train y el test. Para esta técnica debemos de calcular la matriz de términos, si lo hacemos de los dos dataset por separado, tenemos el problema de que ambas matrices de términos no tienen exactamente el mismo formato (las columnas pueden tener diferentes palabras). Entonces, teníamos errores de dimensiones al aplicar el algoritmo, ya que obteníamos un clasificador que no era apto para predecir el test.
 
-La solución, calcular la matriz de términos de un dataset, una vez realizados todos los cálculos y preparación de la matriz de términos que explicaremos más adelante, separamos esa misma matriz de términos (un 70% para el train y un 30% para el test). De esta forma nos aseguramos de que ambas matrices tienen exactamente las mismas columnas y los mismos términos y ya podemos trabajar correctamente con el algoritmo KNN.
+La solución es calcular la matriz de términos de un dataset, y una vez realizados todos los cálculos y preparación de la matriz de términos que explicaremos más adelante, separamos esa misma matriz de términos (un 70% para el train y un 30% para el test). De esta forma nos aseguramos de que ambas matrices tienen exactamente las mismas columnas y los mismos términos y ya podemos trabajar correctamente con el algoritmo KNN.
 
 Dicho esto, vamos a comenzar. Primero cargamos los datos.
 
@@ -3952,7 +3952,7 @@ conf.mat
     \label{fig:KNN:benefitsK1}
 \end{figure}
 
-Para K=1 vemos que obtenemos de por sí una tasa de precisión razonable a sabiendas de que no iba a funcionar muy bien. Es decir, clasifica bien el ratingLabel en más de la mitad de las ocasiones.
+Para K=1 vemos que obtenemos de por sí una tasa de precisión razonable a sabiendas de que no iba a funcionar muy bien. Es decir, clasifica bien el *ratingLabel* en más de la mitad de las ocasiones.
 
 Como podemos observar en la matriz de confusión, tiene un error alrededor del 40% para el conjunto del test. Tal y como nos temíamos, la técnica no es muy apropiada para nuestro problema debido a la disposición del los textos. Sin embargo, vamos a probar con valores distintos de k para intentar mejorar hasta cierto punto el desempeño del algoritmo. 
 
@@ -4195,7 +4195,7 @@ conf.mat
 
 Es curioso que en este último caso solo tiene falsos positivos, no negativos. 
 
-Vemos que ocurre algo similar que con los comentarios de beneficios, solo que con una tasa de precisión más alta (solo se equivocaría 1 de cada 5 predicciones aproximadamente). Por algún motivo, es capaz de predecir mejor este tipo de comentarios sobre efectos secundarios. Suponemos que porque la nube de puntos es más apropiada en esta ocasión para esta técnica. 
+Vemos que ocurre algo similar que con los comentarios referentes a los beneficios, solo que con una tasa de precisión más alta (solo se equivocaría 1 de cada 5 predicciones aproximadamente). Por algún motivo, es capaz de predecir mejor este tipo de comentarios sobre efectos secundarios. Suponemos que porque, entre otras cosas, la nube de puntos es más apropiada en esta ocasión para esta técnica. 
 
 Llegamos a la conclusión en ambos tipo de comentarios que los valores apropiados para k deben ser bajos (valor de 5), por los datos mostrados anteriormente.
 
@@ -4219,11 +4219,11 @@ library(quanteda)
 ```
 
 
-En esta sección vamos a explicar un clasificador basado en el teorema de Bayes, denominado Naive Bayes. Este es un modelo predictivo, por lo que tendremos la posibilidad de deducir las clases de los items del conjunto del test por medio de un clasificador desarrollado con esta técnica.
+En esta sección vamos a aplicar un clasificador basado en el teorema de Bayes, denominado *Naive Bayes*. Este es un modelo predictivo, por lo que tendremos la posibilidad de deducir las clases de los items del conjunto de test por medio de un clasificador que entrenemos con esta técnica.
 
-Hemos decido realizar esta técnica para barajar la posible componente aleatoria que puedan tener las clases de los medicamentos. Además, nos viene perfecto ya que esta técnica funciona con variables discretas para poder crear el clasificador.
+Hemos decidido realizar esta técnica para barajar la posible componente aleatoria que puedan tener las clases de los medicamentos. Tal y como hemos visto en clase, esta técnica es útil cuando tenemos situaciones en las que, con el mismo contenido en las variables, tenemos asociado una etiqueta diferente, y este hecho, es muy propicio a darse en nuestro conjunto de datos (para las mismas características, un usuario puede asignar un nivel 4 de efectos secundarios, mientras otro un nivel 5, puesto que hay un gran factor de subjetividad). Además, nos viene perfecto ya que esta técnica funciona con variables discretas para poder crear el clasificador. 
 
-Vamos a realizar esta técnica directamente con el texto, no debería ser muy complicado adaptarlo a variables numéricas (incluso más sencillo del que hemos realizado), ya que nuestro dataset solamente tiene variables discretas, por tanto, preferimos centrarnos directamente en el texto.
+Vamos a realizar esta técnica directamente con el texto, porque nos parece más interesante en nuestro problema. Sin embargo, no debería ser muy complicado adaptarlo a variables numéricas (incluso más sencillo del que hemos realizado), ya que nuestro dataset solamente tiene variables discretas, por tanto, preferimos centrarnos directamente en el texto.
 
 ```{r, eval=FALSE}
 datos_train <- read.table("datos/datos_train_preprocesado.csv", sep=",",
@@ -4296,7 +4296,7 @@ Lo primero que hacemos es calcular los corpus correspondientes, tanto para el co
 En un intento de hacer esta matriz más pequeña para que fuese algo más eficiente, tratamos de encontrar aquellos términos que se encuentran en menos de 5 documentos (comentarios) en la totalidad de nuestro dataset de entrenamiento. 
 Entonces, recalculamos la matriz de términos despreciando estos términos. En otras palabras, aplicamos la técnica de Sparsity. Es cierto que esto es una parte que podría ir perfectamente en el preprocesamiento, tal y como se ha hablado en el apartado correspondiente. No obstante, no vimos conveniente realizarla en el resto de técnicas salvo en esta. Por lo que lo hacemos de forma específica y exclusiva para este problema.
 
-Como ya hemos mencionado antes, Naive Bayes es un clasificador que funciona bien con variables discretas. Por ello, es importante discretizar nuestras matrices de términos para este problema. Tenemos por cada documento un vector de pesos que varía dependiendo de las frecuencias de cada término en cada documento. Entonces, tal y como se menciona en la teoría de esta asignatura, decidimos discretizar estos valores bajo el criterio de si los términos se encuentran presentes (valor "yes") o ausentes (valor "no") en cada documento.
+Como ya hemos mencionado antes, *Naive Bayes* es un clasificador que funciona bien con variables discretas. Por ello, es importante discretizar nuestras matrices de términos para este problema. Tenemos por cada documento un vector de pesos que varía dependiendo de las frecuencias de cada término en cada documento. Entonces, tal y como se menciona en la teoría de esta asignatura, decidimos discretizar estos valores bajo el criterio de si los términos se encuentran presentes (valor "yes") o ausentes (valor "no") en cada documento.
 
 En otras palabras, transformamos nuestras matrices de términos en matrices binarias basándonos en este concepto de presente o ausente. Con esto ya tendríamos los comentarios de nuestro dataset preparados para poder crear el clasificador basado en el teorema de Bayes. Mencionar que las etiquetas pasadas deben de ser de tipo "factor", de lo contrario no funcionará (se realiza la conversión dentro de la función por si no estuviera en este tipo). Este fue un error que nos retrasó mucho en el desarrollo.
 
@@ -4436,7 +4436,7 @@ Posteriormente, tratamos de deducir el _ratingLabel_ a partir de los cometarios 
 
 Como podemos ver, el clasificador no funciona bien. Etiqueta todo a 0. Creemos que el error viene dado debido a la disposición de los términos (igual que vimos en el clustering). Al tener una nube de puntos tan densa y tan poco disjunta, esto hace que no haya una función aceptable para poder separarlas.
 
-Por otro lado, SVM no funciona bien con texto a no ser que tengas las mismas palabras tanto en el test como en el train, cosa que no ocurre en nuestro caso. Esto hace que SVM no tenga todo lo necesario para generar una buena función. Cosa que sí ocurre, por ejemplo, en este tutorial \url{https://www.svm-tutorial.com/2014/11/svm-classify-text-r/}.
+Por otro lado, SVM no funciona bien con texto a no ser que tengas las mismas palabras tanto en el test como en el train, cosa que no ocurre en nuestro caso. Esto hace que SVM no tenga todo lo necesario para generar una buena función, ya que nos impide predecir para futuros casos (puesto que tendrían una alta probabilidad de contener palabras no contempladas en el entrenamiento). Cosa que sí ocurre, por ejemplo, en este tutorial \url{https://www.svm-tutorial.com/2014/11/svm-classify-text-r/}.
 
 En definitiva, decidimos no perder más tiempo con esta técnica, ya que parece no ser adecuada para nuestro dataset y seguir avanzando en el resto que proponemos con esta práctica.
 

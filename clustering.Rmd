@@ -1,731 +1,172 @@
 ---
 title: "clustering"
-output:
-  pdf_document: default
-  html_document: default
+author: "Alejandro Campoy Nieves"
+date: "25 de enero de 2019"
+output: pdf_document
 ---
 
-# CLUSTERING
-
-## NOTAS: 
-## - COMPROBAR QUE SIDE_EFFECTS_INVERSE SE HA AÑADIDO CORRECTAMENTE
-## - CAMBIAR RUTA DE LOS DATOS A LA QUE CORRESPONDA FINALMENTE
-
-```{r echo=FALSE, warning=FALSE}
-
-library(tm)
-library(factoextra)
-library(proxy)
-library(ggpubr)
-library(rattle)
-library(randomForest)
-library(ppclust)
-library(cluster)
-library(fclust)
-library(dplyr)
-require(igraph)
-
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## Introducción
+### Clustering sobre datos de texto
 
-En el siguiente capítulo nos enfrentamos al desarrollo de la clasificación no supervisada de patrones en grupos, mas conocido como clustering. Dichos grupos se establecen como particiones en las que las observaciones pertenecientes son similares entre ellas y distintas a las observaciones del resto de particiones. 
+Vamos a ver cómo podemos aplicar técnicas de clustering a las distintas columnas de texto de nuestro dataset. Para ello vamos a explicar en mayor detalle el proceso seguido en la columna Benefits Review preprocesada y luego mostraremos los resultados con los otros textos de una forma más directa.
 
-Debido a la naturaleza de nuestros datos, y la estructuración que hemos hecho para su tratamiento, tenemos tanto datos numéricos (correspondientes a valores de distintas puntuaciones asignadas a los agrupamientos), como datos textuales. Por ello, vamos a dividir esta sección en dos problemas, que se tratarán de forma separada. 
+### Clustering de Benefits Review
 
-- \textbf{Agrupamiento de los fármacos en base a las puntuaciones obtenidas}. En este caso, tendremos en cuenta los distintos atributos numéricos que nos dan información acerca de las opiniones del fármaco, y los utilizaremos para realizar dicha clasificación. Estos atributos son *rating*, *effectivenessNumber* y *sideEffectsInverse*. 
+Lo primero que debemos hacer es cargar el dataset preprocesado que hemos creado en esta práctica. Formamos el corpus correspondiente a la columna de beneficios que estamos analizando.
 
-- \textbf{Agrupamiento de los fármacos en base a las opiniones de los usuarios}. Para este apartado, realizaremos, en primer lugar, un agrupamiento en base a *benefitsReview*, y por otra parte, en función de *sideEffectsReview*. 
-
-
-Para los distintos apartados, se estudiarán distintas técnicas de agrupamiento, con la explicación y comparación correspondiente de nuestros resultados, para así poder ver su utilidad y adecuación de la técnica en base a las características de los datos que estamos tratando (puesto que habrá técnicas que, debido a la naturaleza de nuestors datos, sean más apropiadas que otras). En esta sección se verá, como se ha comentado en capítulos previos, que en nuestra base de datos existe un alto factor de subjetividad, que influirá en nuestros resultados. 
-
-
-## Agrupamiento de los fármacos en base a las puntuaciones obtenidas
-
-### Establecimiento de una semilla
-
-Como esta técnica tiene un factor de aleatoriedad, lo primero que vamos a hacer es establecer una semilla común, para así poder replicar los resultados en las distintas ejecuciones futuras que queramos realizar. 
-
-### Lectura y adecuación de los datos
-
-Como proceso anterior al punto en el que nos encontramos, se realizó todo el preprocesado de los datos. Ahora, para su uso en las técnicas de clustering, debemos tomar las columnas de datos que más nos interesan para el análisis. 
-
-Como ya se comentó en la introducción de este capítulo, estas serán *rating*, *effectivenessNumber* y *sideEffectsInverse*. Por ello, tras leer los datos, lo primero que vamos a hacer, es crear un nuevo data-frame de la forma específica que necesitamos que estén los datos para esta técnica en concreto. Si consultamos el data-frame original, las variables que necesitamos se corresponde con las columnas número 2, 12 y 19 respectivamente, y estas serán por tanto, las que filtraremos para el nuevo conjunto de datos con el que vamos a trabajar. 
-
-```{r}
-
-# Establecemos una semilla para obtener siempre los mismos resultados
+```{r, warning=FALSE}
+# Cargamos los tados
+datos_train <- read.table("datos/datos_train_preprocesado.csv", sep=",", comment.char="",quote = "\"", header=TRUE)
+# Establecemos la semilla
 set.seed(3)
-
-# Cargamos los datos
-datos_train <- read.table("datos_train_preprocesado.csv", sep=",", 
-                          comment.char="",quote = "\"", header=TRUE)
-
-datos_test <- read.table("datos_test_preprocesado.csv", sep=",", 
-                         comment.char="",quote = "\"", header=TRUE)
-
-# Nos quedamos con las columnas que nos interesan 
-# Las columnas que tenemos son: RATING, SIDE_EFFECTS_INVERSE, EFFECTIVENESS_NUMBER
-datos_train2 = datos_train[c(2,12,9)]
-datos_test2 = datos_test[c(2,12,9)]
+corpus = tm::Corpus(tm::VectorSource(datos_train$benefits_preprocesad))
 
 ```
 
-A continuación, podemos ver la estructura que estamos utilizando para el conjunto de train.
-```{r}
-head(datos_train2)
+Como ya hemos hecho en alguna ocasión a lo largo de esta práctica, vamos a crear una matriz de términos en la que cada fila es un documento o comentario de beneficios y cada columna es un término o palabra que aparece en los textos.
+
+```{r, warning=FALSE}
+tdm <- tm::DocumentTermMatrix(corpus)
+tdm.tfidf <- tm::weightTfIdf(tdm)
+tfidf.matrix <- as.matrix(tdm.tfidf)
 ```
 
-Como ya sabemos, todos aquellos cambios que realicemos en train, tienen que ser replicados para el conjunto de test. Como se puede ver a continuación, se ha realizado este cambio.
-```{r}
-head(datos_test2)
+Para poder trabajar con clustering necesitamos trabajar con valores numéricos. Es por ello que hemos utilizado de nuevo TFIDF (esta vez hemos usado una función a de más alto nivel, sin entrar en detalles). Necesitamos tener estos datos como matriz para poder continuar con los siguientes pasos.
+
+
+```{r, warning=FALSE}
+tfidf.matrix[1:20,1:20]
+
 ```
 
+Esta es una muestra de la esquina superior izquierda de la matriz para ver el formato explicado anteriormente. Los valores son pesos normalizados de los términos en cada uno de los comentarios.
 
-Sin embargo, esta selección inicial de columnas no es suficiente para poder empezar a aplicar las técnicas, ya que, a pesar de que nos hemos quedado con los atributos que necesitamos para dicho agrupamiento, esta estructura tiene deficiencias:
+En una de las técnicas que veremos más adelante necesitamos las 100 palabras con mayor peso. La forma que se nos ocurrió de hacerlo consistía en hacer la sumatoria de los pesos por columnas y después ordenarlas en función del valor. El problema reside en que no podemos perder el número de filas que tenemos (la forma de la matriz), cosa que ocurre si hacemos la sumatoria por columnas. Entonces se nos ocurrió lo siguiente:
 
-- En primer lugar, hemos perdido el nombre de los medicamentos de nuestro conjunto de datos. Con esto queremos decir que, con el dataset que tenemos actualmente, no sabemos el nombre del fármaco que se asocia a cada fila. Esto es importante a la hora de visualizar el agrupamiento, ya que, la única manera de ver qué fármacos aparecen en cada clúster que visualicemos, es asociándole etiquetas. De dicha forma, podremos ver con qué fármaco se corresponde cada item de la gráfica. 
+```{r, warning=FALSE}
 
-Como solución a este problema, vamos a renombrar las filas del dataset, de forma que cada fila tenga como nombre el del fármaco correspondiente. Esto tiene un problema, y es que en un hipotético caso en el que tuviéramos varios comentarios para un mismo fármaco, no podríamos realizar este cambio de nombres, puesto que dos filas de un mismo dataset no pueden tener el mismo nombre. Con esta reflexión, nos surge un nuevo problema, y es que, no queremos que el mismo fármaco salga en distintos agrupamientos. Lo que nos parece más coherente es, que se agrupen los fármacos, de forma que cada uno de los fármacos pertenezca a un clúster. La idea general a la que pretendemos llegar, es a obtener distintas agrupaciones de fármacos en base a sus características. Tenemos dos formas de obtener un dataset donde cada fila sea un fármaco:
-
-- En el caso de que tengamos *x* items asociados a un mismo fármaco (varios comentarios respecto a un único fármaco), *quedarnos únicamente con un item*. Esta solución no nos pareció la más adecuada, puesto que **estaríamos perdiendo información**. 
-
-- *Realizar alguna medida estadística que nos permita agregar dicha información*. Como estuvimos observando que las opiniones respecto a los fármacos suelen coincidir cuando hay más de una, esta opción fue la que vimos menos problemática (aunque como ya sabemos, estaríamos perdiendo algo de información igualmente), y por tanto la que utilizaremos en esta sección. 
-
-```{r}
-
-# Arreglamos el conjunto de datos para poder trabajar con lo que nos interesa
-
-# Obtenemos en una variable todos los nombres de fármacos que existen en el conjunto de train
-nombres_farmacos_train <- unique(datos_train[,1])
-
-# Hacemos lo mismo para test
-nombres_farmacos_test <- unique(datos_test[,1])
-
-# Creamos una matriz (vacía) con tantas filas como fármacos haya, y tantas columnas como 
-#atributos queramos utilizar. En este caso son 3 columnas porque necesitamos guardar la 
-#info de "rating", "sideEffectsInverse" y "effectivenessNumber".
-datos_procesados_train <- matrix(ncol=3, nrow=length(nombres_farmacos_train))
-datos_procesados_test <- matrix(ncol=3, nrow=length(nombres_farmacos_test))
-
-
-# Primero procesamos TRAIN
-
-# Convertimos la estructura que tiene todos los nombres de los fármacos, en un data-frame, 
-# para poder trabajar con esta información de manera más cómoda
-df_farmacos_train = as.data.frame(nombres_farmacos_train)
-
-# Para cada uno de los fármacos existentes, vamos a guardar su información asociada en 
-# la matriz creada anteriormente
-for(i in 0:length(nombres_farmacos_train)){
-  
-  # Obtenemos todas las filas del dataset que se correspondan con el fármaco número i.
-  filas_farmaco_train <- datos_train2[which(datos_train$urlDrugName == nombres_farmacos_train[i]),]
-
-  # Como pueden ser más de una fila, resumimos dicha información.
-  mean_rating_train <- mean(filas_farmaco_train$rating)
-  mean_side_effect_train <- mean(filas_farmaco_train$sideEffectsInverse)
-  mean_effectiveness_train <- mean(filas_farmaco_train$effectivenessNumber)
-
-  # La información resumida es la que asociamos a dicho fármaco, montando la fila de la 
-  # manera adecuada. Nótese que redondeamos el número medio obtenido para sideEffects y
-  # effectivenessNumber. Esto es porque necesitamos que sea un número entero (recordemos
-  # que estos dos valores se corresponden con etiquetas).
-  datos_procesados_train[i,] <- c(mean_rating_train, round(mean_side_effect_train),
-                                  round(mean_effectiveness_train))
+#Hacemos la sumatoria de columnas para averiguar el peso total de cada término.
+v <- c()
+for(i in 1:length(tfidf.matrix[,1])){
+  v[i] <- sum(tfidf.matrix[,i])
 }
 
-# Procesamos TEST de forma análoga a TRAIN.
-df_farmacos_test = as.data.frame(nombres_farmacos_test)
+# Averiguamos el orden de indices de los pesos de mayor a menor y nos quedamos con los 100 mas grandes.
+indices <- order(v,decreasing = TRUE)[1:100]
 
-for(i in 0:length(nombres_farmacos_test)){
+# Nos creamos una submatriz de la original con los términos mas relevantes.
+tfidf.matrix100 <- tfidf.matrix[,indices]
+tfidf.matrix100 <- t(tfidf.matrix100)
+```
+
+En definitiva, en lugar de ordenar la matriz lo que obtenemos es una lista de los indices en la posición que deberían estar para que estuvieran ordenados sus pesos de mayor a menor. Después solo tenemos que quedarnos con los 100 primeros índices (los 100 términos con mayor peso) y generar una submatriz de la matriz original con las columnas que corresponden a esos índices.
+
+El siguiente paso sería calcular la matriz de distancias. Este es el proceso que consume más tiempo de todo el proceos de clustering por lo que debemos ser pacientes.
+
+
+```{r, warning=FALSE}
+
+# Calculamos la distancia de cada término en cada documento
+dist.matrix = proxy::dist(tfidf.matrix, method = "cosine")
+dist.matrix100 = proxy::dist(tfidf.matrix100, method = "cosine")
+```
+
+Ya tenemos los datos sobre los comentarios de los beneficios de los medicamentos listos para ser utilizados en la técnica de clustering. Principalmente hemos creado tres estrategias para generar los clusters como se puede observar a continuación.
+
+```{r, warning=FALSE}
+#------------------------------------------------------------------------------------------------#
+
+### FUNCIONES: QUEREMOS HACER CLUSTERING EN FUNCIÓN DEL NÚMERO DE CLUSTERS QUE DESEEMOS.
+
+#------------------------------------------------------------------------------------------------#
+
+clustering.kmeans <- function(centers=5){
+  # Calulamos el cluster
+  cluster <- kmeans(tfidf.matrix, centers) 
   
-  filas_farmaco_test <- datos_test2[which(datos_test$urlDrugName == nombres_farmacos_test[i]),]
-
-  mean_rating_test <- mean(filas_farmaco_test$rating)
-  mean_side_effect_test <- mean(filas_farmaco_test$sideEffectsInverse)
-  mean_effectiveness_test <- mean(filas_farmaco_test$effectivenessNumber)
-
-  datos_procesados_test[i,] <- c(mean_rating_test, round(mean_side_effect_test), round(mean_effectiveness_test))
+  # Para el de 100 terminos más frecuentes
+  cluster100 <- kmeans(tfidf.matrix100, centers) 
+  
+  # Pintamos la nube de puntos perteneciente a cada uno de los cluster (cada color es un cluster)
+  points <- cmdscale(t(dist.matrix), k = 2) 
+  palette <- colorspace::diverge_hcl(centers) # Creating a color palette 
+  
+  plot(points, main = 'K-Means clustering', col = as.factor(cluster$cluster), 
+       mai = c(0, 0, 0, 0), mar = c(0, 0, 0, 0), 
+       xaxt = 'n', yaxt = 'n', xlab = '', ylab = '') 
   
 }
 
-# Por último, convertimos las matrices procesadas anteriormente en data-frame
-data_train_procesado <- data.frame(datos_procesados_train)
-data_test_procesado <- data.frame(datos_procesados_test)
+#------------------------------------------------------------------------------------------------#
 
-# Una vez creados los data-frame, les asignamos nombres a las filas y columnas de 
-# los nuevos data-frames.
-rownames(data_train_procesado) <- nombres_farmacos_train
-rownames(data_test_procesado) <- nombres_farmacos_test
-colnames(data_train_procesado) <- c("rating", "sideEffectsInverse", "effectivenessNumber")
-colnames(data_test_procesado) <- c("rating", "sideEffectsInverse", "effectivenessNumber")
-```
-
-A continuación se puede visualizar parte del nuevo data-frame que hemos creado para el conjunto de train.
-```{r}
-head(data_train_procesado)
-```
-
-A continuación se puede visualizar parte del nuevo data-frame que hemos creado para el conjunto de test.
-```{r}
-head(data_test_procesado)
-```
-
-**Estos dos conjuntos de datos son con los que trabajaremos en el resto de técnicas asociadas a agrupamiento de items, que realizaremos a lo largo de este apartado. **
-
-
-### K-medias
-
-La idea básica del presente método es agrupar las observaciones en K clusters distintos, siendo el valor de K preestablecido mediante análisis previos. Entonces, K-medias encuentra los K mejores clusters, siendo estos aquellos cuya varianza interna sea lo más pequeña posible.
-
-
-Como queremos, al fin y al cabo, agrupar los fármacos en función de los datos, vamos a comenzar por lo más intuitivo posible. La primera pregunta que nos surgió fue, ¿sería posible agrupar los fármacos en dos clústers, de forma que tuvieramos un grupo para los fármacos "buenos" (aquellos que tienen una puntuación alta) y otro grupo para los fármacos "malos" (aquellos inefectivos, con efectos secundarios)?. En un primer lugar puede parecer, que la agrupación resultante no tiene que ser coherente en cuanto a lo que nosotros buscamos encontrar, puesto que al fin y al cabo, son datos, y como hemos dicho anteriormente tenemos un gran factor de subjetividad. Pero, observando nuestros datos, nos dimos cuenta de una cosa, y es que, cuando alguien tenía una buena opinión acerca de un fármaco, le asignaba a éste un alto valor de *effectiveness* y un alto bajo valor en *sideEffects*, lo que, a priori, es totalmente lógico e intuitivo.
-
-Puesto que los datos que estamos utilizando en el conjunto de train, son efectivamente esos, cabe esperar que sí podamos obtener una clasificación respecto a fármacos cuya opinión es posivitiva, y fármacos con opinión negativa. Siguiendo esta idea, vamos a probar a establecer un número de cluster igual a 2 (K=2), y posteriormente, intentaremos buscar un sentido a las agrupaciones que encontremos, ya que, al tener únicamente dos grupos, nos resultará sencillo. 
-
-Para ello, utilizaremos la función `kmeans`, que nos permitirá obtener la agrupación que hemos estado comentando anteriormente. Como parámetros, mencionar, que hemos establecido el número de clústers a 2 (tal y como hemos expuesto en el párrafo anterior), y que la distancia que utilizaremos en el algoritmo será la distancia *euclídea*. En la siguiente imagen, podemos ver el resultado alcanzado en este caso. Aunque resulta poco visible debido a la gran cantidad de información que hay en ella, podemos ver cómo prácticamente el espacio está dividido en dos clústeres, medianamente bien predefinidos.
-```{r}
-# ALgoritmo K-means con los datos de test y 2 clusters
-res_clustering <- kmeans(data_train_procesado, 2)
-
-# Lo mostramos
-fviz_cluster(object = res_clustering, data = data_train_procesado, show.clust.cent = TRUE,
-             ellipse.type = "euclid", star.plot = TRUE, repel = TRUE, labelsize = 9) +
-  labs(title = "Resultados clustering K-means (con etiquetas)") +
-  theme_bw() +
-  theme(legend.position = "none")
-
-```
-Intuitivamente, hemos intentado encontrar una relación entre los dos agrupamientos, viendo que, efectivamente, con los distintos ejemplos que hemos probado hemos podido ver, que los del grupo azul suelen tener una efectividad entre 1 y 3, mientras que los del grupo rojo suelen tener dicho valor entre 3 y 5. Idem para la variable de efectos secundarios, lo que nos lleva a pensar que, realmente, hemos podido obtener una buena clasificación de los fármacos en base a la opinión (positiva o negativa) de los usuarios. 
-
-Véase por ejemplo, algunos ejemplos del grupo que se corresponde con el color rojo en la gráfica. Como podemos ver, efectivamente su valor de efectividad (cuarta columna en el dataset), tiene valor bajo. Además, si miramos el valor en efectos secundarios, también es bajo (recordemos que hicimos la inversa a dicho valor, y que cuanto más bajo sea el valor de esa columna, más negativos son sus efectos).
-
-```{r}
-train_medicine = bind_cols(data_train_procesado,df_farmacos_train)
-ejemplo1 <- train_medicine[which(train_medicine$nombres_farmacos_train == "baciim"),]
-ejemplo2 <- train_medicine[which(train_medicine$nombres_farmacos_train == "boniva"),]
-ejemplo3 <- train_medicine[which(train_medicine$nombres_farmacos_train == "lodine"),]
-ejemplo4 <- train_medicine[which(train_medicine$nombres_farmacos_train == "mevacor"),]
-
-pruebas_rojo = bind_rows(ejemplo1,ejemplo2,ejemplo3,ejemplo4)
-
-pruebas_rojo
-
-```
-
-Hemos visto la tendencia. Ahora vamos a calcular, de forma media, el valor asociado a effectivenessNumber en todos los fármacos que forman parte de este primer cluster (el de color azul, el cuál se corresponde con la etiqueta 1). Como se puede ver, el valor obtenido no llega a 3. 
-```{r}
-# Para poder obtener las etiquetas y fármacos asociados del objeto clúster, pasamos a matriz
-m = as.matrix(res_clustering$cluster)
-x=as.matrix( m[,1] == 1)
-
-# nos quedamos con los nombres de los fármacos que estén en el cluster 1
-items_etiqueta1= x[,1]==1
-
-# nos quedamos con los fármacos del dataset que se correspondan con dicho cluster
-farmacos_etiqueta1 = data_train_procesado[items_etiqueta1,]
-
-# hacemos la media
-mean(farmacos_etiqueta1$effectivenessNumber)
-```
-
-Si ahora hacemos el mismo proceso para 4 fármacos del conjunto azul, podemos ver que efectivamente, el comportamiento es el esperado. Tenemos altos valores de efectividad, y pocos efectos secundarios. 
-```{r}
-
-ejemplo1 <- train_medicine[which(train_medicine$nombres_farmacos_train == "zyvox"),]
-ejemplo2 <- train_medicine[which(train_medicine$nombres_farmacos_train == "bisoprolol"),]
-ejemplo3 <- train_medicine[which(train_medicine$nombres_farmacos_train == "cefzil"),]
-ejemplo4 <- train_medicine[which(train_medicine$nombres_farmacos_train == "benicar"),]
-
-pruebas_azul = bind_rows(ejemplo1,ejemplo2,ejemplo3,ejemplo4)
-
-pruebas_azul
-
-```
- 
-De nuevo, vamos a consultar el valor medio de efectividad que se consigue si consultamos dicho atributo para todos los fármacos que se han agrupado en el cluster que se corresponde con el color rojo en el gráfico (grupo 2). Para ello, simplemente hacemos la media de todos aquellos fármacos no incluidos en el grupo 1, y, tal y como es de esperar, el resultado está entre 3 y 5, lo cuál nos **reafirma al pensar que el agrupamiento se ha hecho en función de fármaco con opinión positiva y fármaco con opinión negativa**.
-```{r}
-farmacos_etiqueta2 = data_train_procesado[-items_etiqueta1,]
-mean(farmacos_etiqueta2$effectivenessNumber)
-```
-
-Como aclaración, debido a la poca visibilidad del clúster, vamos a mostrar el mismo gráfico, pero esta vez sin etiquetas, de forma que podamos ver bien los agrupamientos que se llevan a cabo. Se puede observar este hecho en la siguiente imagen del documento. 
-```{r}
-fviz_cluster(object = res_clustering, data = data_train_procesado, show.clust.cent = TRUE,
-             ellipse.type = "euclid", star.plot = TRUE, repel = TRUE, labelsize=0) +
-  labs(title = "Resultados clustering K-means (sin etiquetas)") +
-  theme_bw() +
-  theme(legend.position = "none")
-
-```
-Sin embargo, tal y como ya se ha dicho, esto es una conclusión, intuitiva, que hemos obtenido nosotros gracias a la gran cantidad de información que nos ha dado el preprocesamiento y estudio exploratorio de los datos. 
-
-Sin embargo, para validar nuestro modelo, podemos utilizar también algún tipo de medida que nos permita saber cómo de bueno es el agrupamiento o asignación que se ha llevado a cabo con la técnica. Para llevar a cabo este procedimiento, vamos a utilizar una de las técnicas que hemos visto en la asignatura: el método *Average Siluette*. Para ello vamos a utilizar lo que se denomina *índice silueta*, el cuál es un coeficiente que compara la distancia de un item con el resto de items, ya sea del mismo cluster, o del resto de ellos. Se mueve en el rango [-1,1], de forma que, cuánto mayor sea el valor, mayor es su adecuación en el agrupamiento realizado. A su vez, valores negativos llevarán a pensar que se ha llevado a cabo una asignación incorrecta y poco fiable. Este método es muy potente, ya que nos permite evaluar el agrupamiento tanto a nivel de cada uno de los items, como a nivel de clúster concreto, o a clústeres totales en el agrupamiento. 
-
-Teniendo en cuenta dicho índice, el número de clústers  con el que se obtendrían mejores resultados para el agrupamiento sería aquel **cuya media del índice silueta fuese la mayor posible**. Podemos ver el resultado de esta *media*, para distintos tamaños de clúster en la siguiente imagen. En la siguiente imagen, podemos ver, cómo en este caso, el índice silueta indica que el número óptimo de clúster es 14. Pero sin embargo, tal y como ya sabemos, ese no tiene por qué ser el más adecuado a usar, puesto que, en la práctica, también debemos de tener en cuenta otras cuestiones que hemos visto en la asignatura, como el esfuerzo computacional o el sobreaprendizaje que añadimos a nuestro modelo cuando intentamos precisar demasiado. Al final, nos quedaremos con un número de cluster que, nos permita una mejora sustancial, y a partir del cuál no haya una mejora sustancial. 
-
-En dicha gráfica podemos ver que usar dos clusters tiene un valor alto de índice medio de silueta, lo que nos hace pensar que, es un valor que funciona bien y cuyo agrupamiento puede ser fiable (aspecto que ya intuíamos). 
-
-```{r}
-
-# datos ya lo tenemos previamente escalado (K-medias)
-datos <- scale(data_train_procesado)
-fviz_nbclust(x = datos, FUNcluster = kmeans, method = "silhouette", k.max = 15) +
-  labs(title = "Número óptimo de clusters")
-
-```
-
-
-A su vez, podemos realizar una validación interna del clúster haciendo uso del ya mencionado *índice silueta*. Se puede visualizar el resultado en la siguiente gráfica.
-
-```{r}
-
-datos <- scale(data_train_procesado)
-km_clusters <- eclust(x = datos, FUNcluster = "kmeans", k = 2, seed = 123,
-                      hc_metric = "euclidean", nstart = 50, graph = FALSE)
-fviz_silhouette(sil.obj = km_clusters, print.summary = TRUE, palette = "jco",
-                ggtheme = theme_classic()) 
-
-```
-A su vez, podemos ver la media del índice silueta obtenida para cada uno de los clusters, tal y como se puede ver a continuación. Como podemos ver, la media obtenida para el primer cluster, es próxima a 0, lo que nos puede indicar que los items no están en el grupo correcto. De hecho, si observamos la gráfica anterior, podemos ver que algunos datos rozan el negativo, y que se corresponderán a aquellos más próximos al otro cluster. 
-```{r}
-# Media silhouette por cluster
-km_clusters$silinfo$clus.avg.widths
-```
-
-En realidad, esto es normal que ocurra, sobretodo en nuestro caso, puesto que:
-
-1. Es normal que algun valor concreto se escape, y no se agrupe bien, sobretodo cuando no hemos usado el valor óptimo de clusters.
-
-2. Hay muchos items cuyo valor de effectiveness es 3. Recordemos que este valor se mueve en el rango [1,3], por lo que, los items cuyo valor sea el valor medio, puede darse el caso de que sufran una mala clasificación. De hecho, podemos filtrar los índices silueta de nuestros items, tal y como se puede ver a continuación. De hecho, en la siguiente salida, podemos estos items, tienen un valor negativo muy muy muy cercano a 0, lo que hace más evidente dicha conclusión.
-```{r}
-km_clusters$silinfo$widths %>% filter(sil_width <= 0)
-```
-
-De hecho, muchas veces, estos valores negativos se corresponden con items que se encuentran en la frontera, pero sobretodo si los clusters se solapan. Tal y como podemos ver en el siguiente conjunto de imágenes, esta podría ser la justificación para lo que nos sucede, explicando así los valores silueta obtenidos. 
-```{r}
-
-km_clusters <- eclust(x = datos, FUNcluster = "kmeans", k = 2, seed = 123, 
-                      hc_metric = "euclidean", nstart = 50, graph = FALSE)
-p1 <- fviz_cluster(object = km_clusters, geom = "point", ellipse.type  = "norm",
-                   palette = "jco") +
-      theme_classic() + theme(legend.position = "none") 
-
-p2 <- fviz_silhouette(sil.obj = km_clusters, print.summary = FALSE,
-                      palette = "jco", ggtheme = theme_classic()) +
-      theme(legend.position = "none")
-
-ggarrange(p1, p2)
-
-```
-Por útimo para esta técnica, se ha observado que, muchos de los fármacos que estamos tratando en el conjunto de train, vuelven a aparecer en el conjunto de test. Entonces aquí nos surge la siguiente duda: si los agrupamos utilizando como centros los proporcionados con el conjunto de TRAIN, y les asignamos a cada uno de los items en TEST, el clúster al que tiene mínima distancia, ¿nos asignará al grupo correcto? 
-
-En base a esta idea, vamos a intentar simular una especie de predicción, para ver que tal agrupa el conjunto de test. 
-
-
-Como ya se ha comentado, mediante el clustering que nos ha generado train, buscamos clasificar cada item de test y comprobaremos el acierto de dicha predicción. Posteriormente, comprobaremos si ese mismo fármaco, ha sido asignado al mismo grupo. 
-
-
-#### Función de predicción
-
-En primer lugar, nos quedaremos con aquellos fármacos que aparecen tanto en Train como en Test (que son los que podremos comprobar). En segundo lugar, buscaremos el cluster que se le ha asociado a dicho fármaco, tanto en el caso de Train como en el de Test. Por último, realizaremos un recuento de en cuántos casos coincide el agrupamiento.
-
-```{r}
-
-test_preds <- predict(res_clustering, data_test_procesado)
-table(test_preds)
-datos_test_cluster = cbind(test_preds)
-rownames(datos_test_cluster) = rownames(data_test_procesado)
-test_result = res_clustering
-test_result$cluster = datos_test_cluster
-
-predicciones = function(cluster_train, cluster_test) {
-  count = 0
-  count_na = 0
-  x = intersect(datos_test$urlDrugName, datos_train$urlDrugName)
-  for(farmaco in x){
-    indice_train = match(farmaco,df_farmacos_train$nombres_farmacos_train)
-    indice_test = match(farmaco,df_farmacos_test$nombres_farmacos_test)
-    
-    # cluster que tiene en train dicho fármaco
-    c_train = res_clustering$cluster[indice_train]
+clustering.hierarchial <- function(centers=5){
+  # Calulamos el cluster
+  cluster <- hclust(dist.matrix, method = "ward.D2") 
   
-    # cluster que tiene en test dicho fármaco
-    c_test = test_result$cluster[indice_test]
-    
-    if ( !is.na(c_train) && !is.na(c_test) && c_train == c_test){
-      count = count +1
-    }
-  }  
-  count/nrow(df_farmacos_test)
-}
-
-```
-
-Tal y como se puede ver a continuación, con el cluster de K-means anterior, obtenemos un 55% de acierto acerca de si calificamos los fármacos como "positivos" o como "negativos", los fármacos de test ya agrupados en train (en función de todo lo que se ha comentado anteriormente).
-```{r}
-
-## Vamos a comprobar si las predicciones se realizan correctamente.
-
-# Primero buscamos los fármacos que estén en tanto en train como en test, porque 
-# son con los que podemos ver si funciona o no el clustering. Vamos a ver si coinciden. 
-x = intersect(datos_test$urlDrugName, datos_train$urlDrugName)
-
-# Lanzamos la función anterior
-res = predicciones(res_clustering, test_result)
-print(res)
-
-```
-
-**Acierto del 0.5527157.**
-
-
-*NOTA: esta técnica es no supervisada, puesto que realmente no está orientada a predecir un valor concreto, sino a extraer dependencias de los datos. Con este último experimento, simplemente hemos querido ver, si éramos capaces de utilizar dicha información y darle alguna interpretación con sentido.*
-
-### K - MEDIOIDES CLUSTERING
-
-
-Nuevo método en el que agrupamos las observaciones en K clusters, siendo este valor K preestablecido. En este caso, cada cluster está representado por una observación presente en el cluster, en lugar de un centroide (como hacíamos en *K-Means*. Dicho en otras palabras, en este caso, el "centroide" que utilizamos se corresponde con el item del cluster cuya distancia a todos los demás es mínima, en lugar de utilizar el promedio del cluster (que no tiene que corresponderse con un item del mismo). Para su resolución usaremos el algoritmo PAM (Partitioning Around Medoids). Este minimiza la suma de las diferencias de cada observación respecto al medioide. 
-
-Este método es más robusto que el anterior, entre otras cosas, porque está menos afectado por ruido. De hecho, se suele utilizar cuando se tiene la intuición de que puede haber outliers (hecho que, como hemos mostrado en la técnica anterior, es muy probable que esté ocurriendo en este problema).
-
-En primer lugar, y de igual forma que hemos hecho en el apartado anterior, tenemos que decidir el número de clusters con el que queremos trabajar. Para ello, podemos ver, en la siguiente gráfica, una correspondencia del estudio de la varianza con el número de cluster utilizado. En este caso, utilizaremos la distancia Manhattan, puesto que, como hemos visto en multitud de bibliografía, es la que se suele utilizar con PAM (sobretodo cuando se espera la existencia de puntos *outliers*).
-
-En la siguiente gráfica podemos ver la evaluación para hasta un máximo de 15 clusters. Como hemos visto en clase, llegará un punto desde el cuál no compense añadir más clusters (llegará un punto a partir del cuál la mejora es mínima, mientras que estamos añadiendo coste computacional a una técnica que ya es costosa de por sí. En otras palabras, a partir de un punto, no merece la pena añadir más esfuerzo computacional). En nuestro caso, y teniendo en cuenta la gráfica, hemos estimado que 6 es un número adecuado de agrupaciones.
-
-```{r}
-# Identificamos el número optimo de clusters
-fviz_nbclust(x = datos, FUNcluster = pam, method = "wss", k.max = 15, 
-             diss = dist(datos, method = "manhattan"))
-```
-Podemos volver a utilizar validación, tal y como hicimos en el apartado anterior, y recurrir de nuevo al índice silueta, para ver si con este método sigue siendo el tamaño 6 sigue siendo aceptable. En otras palabras, buscamos reafirmarnos con este número. Como se puede observar en la gráfica, el número óptimo de clusters es 10, pero siguiendo todas las indicaciones anteriores, 6 sigue siendo un valor decente.
-```{r}
-
-datos <- scale(data_train_procesado)
-fviz_nbclust(x = datos, FUNcluster = pam, method = "silhouette", k.max = 15,
-             diss = dist(datos, method = "manhattan") ) +labs(title = "Número óptimo de clusters")
-```
-De hecho, si obtenemos gráficamente una representación de los índices silueta para un número de clusters igual a 6, podemos ver que en general, parece funcionar bastante bien, quitando los pequeños valores negativos que tenemos. 
-```{r}
-
-fviz_silhouette(sil.obj = km_clusters, print.summary = TRUE, palette = "jco",
-                ggtheme = theme_classic()) 
-
-# Pintamos gráfica en busca del cluster óptimo
-km_clusters <- eclust(x = datos, FUNcluster = "pam", k = 6, seed = 123,
-                      hc_metric = "wss",  graph = FALSE)
-
-```
-Sin embargo, según hemos podido comprobar, no por aumentar el número de clusters hemos conseguido ponerle solución a este hecho, podemos verlo a continuación, donde se muestra gráficamente el resultado para 10 clusters (supuestamente el mejor valor). Por tanto, como vemos que, en la práctica no hay una mejora sustancial, y que los resultados se asemejan bastante (la media global del índice silueta no varía), **hemos decidido aplicar esta técnica con 6 clusteres, donde se obtiene en general, una agrupación más que aceptable.** De hecho, este número de cluster nos parece también adecuado, puesto que, al final, son muchos factores los que influyen en una opinión, y muchas veces para una persona, un rating 5 exige más efectividad (effectivenessNumber) que para otra. De nuevo, como podemos ver, la subjetividad intrínseca en nuestro dataset dificulta la interpretación y coherencia de los resultados.
-```{r}
-
-fviz_silhouette(sil.obj = km_clusters, print.summary = TRUE, palette = "jco",
-                ggtheme = theme_classic()) 
-
-# Pintamos gráfica en busca del cluster óptimo
-km_clusters <- eclust(x = datos, FUNcluster = "pam", k = 10, seed = 123,
-                      hc_metric = "wss",  graph = FALSE)
-
-```
-
-A continuación, podemos ver el agrupamiento resultante con los parámetros que se han justificado a lo largo de este apartado. De nuevo, vemos una gráfica en la cuál, de nuevo tenemos tanta información, que puede resultar difícil interpretarla. 
-```{r}
-
-pam_clusters <- pam(x = datos, k = 6, metric = "manhattan")
-fviz_cluster(object = pam_clusters, data = datos, ellipse.type = "t", repel = TRUE, labelsize = 9) +
-  theme_bw() +
-  labs(title = "Resultados clustering PAM (k=6)") +
-  theme(legend.position = "none")
-
-```
-
-Uno de los aspectos más relevantes, es, que tal y como hemos comentado antes, no hay centroides, sino que items del dataset son los que se utilizan como centros en cada uno de los clusters resultantes. 
-Como podemos observar, no hay centroides. De hecho, podemos contrastar este hecho en la siguiente gráfica, la cuál es exactamente la misma que la anterior con la diferencia de que se encuentra destacado en rojo el item que hace de "centroide del cluster".
-
-```{r}
-
-# Calculamos el PCA y extraemos las proyecciones almacenadas en el elemento x.
-medoids <- prcomp(datos)$x
-
-# Se seleccionan únicamente las proyecciones de las observaciones que son medoids
-medoids <- medoids[rownames(pam_clusters$medoids), c("PC1", "PC2")]
-medoids <- as.data.frame(medoids)
-
-# Se emplean los mismos nombres que en el objeto ggplot
-colnames(medoids) <- c("x", "y")
-
-# Creación del gráfico
-fviz_cluster(object = pam_clusters, data = datos, ellipse.type = "t",
-             repel = TRUE, labelsize = 9) +
-  theme_bw() +
-  # Se resaltan las observaciones que actúan como medoids
-  geom_point(data = medoids, color = "firebrick", size = 2) +
-  labs(title = "Resultados clustering PAM") +
-  theme(legend.position = "none")
-```
-Y por último, para ver cada cluster completamente definido, le hemos quitado las etiquetas para su mejor visualización (el agrupamiento no varía).
-```{r}
-# Creación del gráfico
-fviz_cluster(object = pam_clusters, data = datos, ellipse.type = "t",
-             repel = TRUE, labelsize = 0) +
-  theme_bw() +
-  # Se resaltan las observaciones que actúan como medoids
-  geom_point(data = medoids, color = "firebrick", size = 2) +
-  labs(title = "Resultados clustering PAM") +
-  theme(legend.position = "none")
-```
-Realmente, respecto a la técnica anterior, es difícil realizar una comparación, ya que ambas han obtenido la misma media total del índice de silueta, y parecen tener una buena distribución, cohesión y similitud en los agrupamientos. Pero sin embargo, con esta técnica, hemos podido ver, que aunque la media global del índice silueta no varía realmente, sí que **se obtienen mejores resultados a nivel de cluster**, lo que nos hace pensar que esta técnica es adecuada en nuestro problema. 
-
-### Clustering Difuso (FUZZY CLUSTERING)
-
-En todos los métodos anteriores, se parte de la hipótesis de que el agrupamiento es **exclusivo**. Esto es una buena opción cuando los grupos están muy separados, pero, como hemos podido ver gráficamente en los agrupamientos anteriores, no es nuestro caso, ya que los clusters se solapan, o incluso se podría decir que tienen puntos comunes. Por esta razón, hemos considerado que es una técnica que debe ser contemplada en nuestro trabajo, puesto que se adecua bastante bien a las condiciones de nuestro problema. 
-
-En primer lugar, vamos a definir un número de clusters que consideremos adecuado, tal y como hemos venido haciendo para las técnicas anteriores. Para ello, recurrimos a una gráfica donde veamos la relación entre el índice de silueta y el número de clusteres asociado. En este caso, hay una clarísima diferencia entre elegir dos clusteres o más de ellos (ya que el siguiente número de cluster tiene casi la mitad del índice medio de silueta conseguido por el primero mencionado). Por ello, para esta técnica, consideraremos que el valor óptimo de cluster es 2. De nuevo, el índice medio de silueta sigue entorno a 0.4, por lo que, respecto a este aspecto, se encuentra en sintonía con las técnicas de agrupamiento anteriores.
-
-```{r}
-# datos ya lo tenemos previamente escalado 
-datos <- scale(data_train_procesado)
-fviz_nbclust(x = datos, FUNcluster = fanny, method = "silhouette", k.max = 15,
-             diss = dist(datos, method = "euclidean") ) +labs(title = "Número óptimo de clusters")
-```
-
-
-
-```{r}
-# 
-# fuzzy_cluster <- fanny(x = datos, k = 6, metric = "euclidean", stand = FALSE, maxit = 5000)
-# # head(fuzzy_cluster$membership)
-# # fuzzy_cluster$coeff
-# # head(fuzzy_cluster$clustering)
-# fviz_cluster(object = fuzzy_cluster, repel = TRUE, ellipse.type = "norm", pallete = "jco", labelsize = 9) + theme_bw() + labs(title = "Fuzzy Cluster plot")
-
-```
-A continuación, podemos ver los resultados obtenidos para los parámetros establecidos. 
-
-Como dato, podemos ver que en cuanto a resultados, es muy similar al resultado obtenido con Kmeans para el mismo número de clusters, con la pequeña diferencia, de que en este caso, la división del espacio se muestra mucho más clara. Estos resultados, nos siguen pareciendo coherentes, ya que al final, las opiniones derivarán hacia buenas opiniones o malas opiniones de cada fármaco, lo cuál es una división totalmente lógica, tanto desde el punto de vista humano, como de la propia relación que existe entre los atributos que estamos utilizando. También influirán otros valores, no dependientes del fármaco, como puede ser la puntuación que considere cada paciente (que variará en función de cada uno). En este punto del documento, podemos afirmar, que **la subjetividad existente en nuestro dataset está siendo determinante a la hora de definir el agrupamiento. **
-```{r}
-
-fuzzy_cluster <- fanny(x = datos, k = 2, metric = "euclidean", stand = FALSE, maxit = 5000)
-# head(fuzzy_cluster$membership)
-# fuzzy_cluster$coeff
-# head(fuzzy_cluster$clustering)
-fviz_cluster(object = fuzzy_cluster, repel = TRUE, ellipse.type = "norm", 
-             pallete = "jco", labelsize = 9) + theme_bw() + labs(title = "Fuzzy Cluster plot")
-
-```
-
-### clustering Jerárquico
-
-El *clustering jerárquico* es una alternativa a los métodos de clustering particional, que no requiere que se pre-especifique el número de clusters al algoritmo. Tal y como hemos visto en la asignatura, se pueden seguir dos estrategias, aglomerativa o divisiva, en este caso vamos a usar la primera, la cuál es la más común. 
-
-Como ya sabemos, en el método aglomerativo el agrupamiento se inicia en la base del árbol, siendo cada observación un cluster individual. Entonces los cluster se van combinando conforme la estructura crece hasta unirse en única rama central. De forma análoga a como hemos estado llevando a cabo la aplicación de las demás técnicas, en primer lugar, vamos a determinar el número de clusters óptimo. Como podemos ver en la gráfica, el valor óptimo es 12, a partir del cuál comienza a descender. Sin embargo, la diferencia con un tamaño 10 de clusters es mínima, y computacionalmente nos mejora bastante, por lo que, desde un punto de vista práctico, hemos considerado que es el valor más adecuado en nuestra situación. 
-
-De igual forma, como hemos visto en la asignatura, cuando estamos utilizando la distancia de mínimos cuadrados tenemos que tener especial cuidado, debido a que se minimiza la distancia entre los elementos del cluster, por lo que es un valor también a tener en cuenta en este tipo de técnicas.
-
-```{r}
-# datos ya lo tenemos previamente escalado 
-datos <- scale(data_train_procesado)
-fviz_nbclust(x = datos, FUNcluster = hcut, method = "silhouette", k.max = 15,
-             diss = dist(datos, method = "euclidean") ) +labs(title = "Número óptimo de clusters")
-```
-
-Ahora vamos a mostrar gráficamente, la media del índice de silueta para el valor de cluster elegido. Como podemos ver, la mayor parte de los grupos supera el valor de 0.50, (lo cual es muy muy positivo, y nos da muy buenas indicaciones de los agrupamientos realizados). Además, de igual forma, vemos cómo muchos de ellos están muy definidos y sin ningún valor negativo (y no como en casos anteriores), lo cuál nos lleva a pensar, que **esta técnica es muy apropiada para nuestro problema**, ya que hace una división de los items que aparentemente funciona muy bien. 
-```{r}
-km_clusters <- eclust(x = datos, FUNcluster = "hclust", k = 10, seed = 123,
-                      hc_metric = "euclidean",  graph = FALSE)
-fviz_silhouette(sil.obj = km_clusters, print.summary = TRUE, palette = "jco",
-                ggtheme = theme_classic()) 
-```
-Una vez que tenemos el dendrograma, debemos buscar una forma de consultar hasta qué punto la estructura refleja las distancias originales entre observaciones, y por tanto, cómo se comporta el modelo en cuanto a la hora de agrupar los distintos datos del dataset. Para ello usamos el coeficiente de correlación entre las distancias cophenetic de la altura de los nodos y la matriz de distancias original. Tal y como se puede consultar en la documentación, un valor superior al 75%, se considera buenp. En nuestro caso, nos acercamos con uno de los dos valores, pero con el segundo de los consultados lo superamos, lo que nos lleva a pensar que nuestro método funciona de forma aceptable. 
-```{r}
-
-# Cuanto más cercano al 1 mejor. Valores superiores al 0.75 se consideran buenos.
-# Matriz de distancias euclídeas
-mat_dist <- dist(x = datos, method = "euclidean")
-# Dendrogramas con linkage complete y average
-hc_euclidea_complete <- hclust(d = mat_dist, method = "complete")
-hc_euclidea_average  <- hclust(d = mat_dist, method = "average")
-
-cor(x = mat_dist, cophenetic(hc_euclidea_complete)) # 0.7864
-cor(x = mat_dist, cophenetic(hc_euclidea_average)) # 0.9374272
-
-```
-
-
-
-
-```{r}
-
-fviz_dend(x = hc_euclidea_completo,
-          k = 10,
-          color_labels_by_k = TRUE,
-          cex = 0.8,
-          type = "phylogenic",
-          repel = TRUE, labelsize=0)
-
-```
-
-Otra forma de representar sería combinando con una reducción de dimensionalidad por PCA. Primero, se calculan los componentes principales y después se representan empleando las dos primeras componentes. Finalmente, se colorean los clusters mediante elipses.
-
-```{r}
-
-fviz_cluster(object = list(data=datos, cluster=cutree(hc_euclidea_completo, k=10)),
-             ellipse.type = "convex", repel = TRUE, show.clust.cent = FALSE,
-             labelsize = 0)  +
-  labs(title = "Hierarchical clustering + Proyección PCA",
-       subtitle = "Distancia euclídea, Lincage complete, K=6") +
-  theme_bw() +
-  theme(legend.position = "bottom")
-
-```
-
-
-```{r}
-
-# jerarquico con la media
-hkmeans_cluster <- hkmeans(x = datos, hc.metric = "euclidean",
-                           hc.method = "complete", k = 10)
-
-fviz_cluster(object = hkmeans_cluster, pallete = "jco", repel = TRUE,labelsize = 0) +
-  theme_bw() + labs(title = "Hierarchical k-means Clustering")
-```
-
-
-
-Además, debemos de poder identificar el número de clusters creados y que observaciones forman parte de cada uno. Si realizamos un corte horizontal en el dendrograma, el número de ramas que lo sobrepasan se corresponden con el número de clusters.
-
-Usamos como altura de corte el valor K de K-means. K=10
-
-
-
-
-
-```{r}
-
-# Cortar el árbol para generar los clusters
-
-hc_euclidea_completo <- hclust(d = dist(x = datos, method = "euclidean"), method = "complete")
-
-fviz_dend(x = hc_euclidea_completo, k = 10, cex = 0.6) +
-  geom_hline(yintercept = 5.5, linetype = "dashed") +
-  labs(title = "Herarchical clustering",
-       subtitle = "Distancia euclídea, Lincage complete, K=10")
-
-```
-## Density based clustering (DBSCAN)
-
-```{r}
-
-datos_ <- data_train_procesado
-km_clusters <- kmeans(x = datos_, centers = 6, nstart = 50)
-
-# Ellipse FALSE??
-# geom = "point"
-fviz_cluster(object = km_clusters, data = datos_, repel = TRUE, ellipse = FALSE,
-             show.clust.cent = FALSE, pallete = "jco") +
-  theme_bw() +
-  theme(legend.position = "none")
-
-```
-
-
-
-
-
-## RANDOM FOREST
-
-A ver, aquí hay que repasar un poquito esto, porque, con el modelo de RandomForest sale que el errorn
-
-```{r}
-
-output.forest <- randomForest(as.factor(effectivenessNumber) ~ . , data = data_train_procesado, replace = T,ntree=400)
-
-output.forest
-
-plot(output.forest)
-
-# Predicciones
-mod_rf = predict(output.forest, newdata = data_test_procesado[-3], type="response")
-
-# Fallo
-y.falladas = sum(mod_rf!=data_test_procesado$effectivenessNumber)/length(data_test_procesado$effectivenessNumber)
-
-print("Error en test:")
-print(y.falladas)
-
-```
-
-Segun esto, nos podemos hcer una funcion que te diga en qué rango encontramos el mejor resultado, y con 150 árboles tenemos más que suficiente para alcanzar un 35% de error. Este error en nuestro caso es muy bueno porque tenemos muchisima subjetividad. Para unas personas, poca efectividad tendrá asociado rating 1 y para otras puede ser rating 3. Esto nos afecta mucho los resultados, y por tanto, aumenta el error. 
-
-```{r}
-
-valores_arboles_150 = seq(from=1, to=150, by=1)
-valores_arboles_35 = seq(from=1, to=35, by=1)
-valores_arboles_15 = seq(from=1, to=15, by=1)
-valores_arboles_20 = seq(from=1, to=20, by=1)
-valores_arboles_400 = seq(from=1, to=400, by=1)
-valores_arboles_500 = seq(from=1, to=500, by=1)
-
-obtener_arboles_optimo = function(x){
-  #error_min = 100.0
-  arboles_optimo = 1;
+  # Para el de 100
+  cluster100 <- hclust(dist.matrix100, method = "ward.D2")
   
-  for(i in x){
-    error_min = 100.0
-    set.seed(3)
-    
-    output.forest <- randomForest(as.factor(effectivenessNumber) ~ . , data = data_train_procesado, replace = T,ntree=i)
-
-    
-    # Predicciones
-    mod_rf = predict(output.forest, newdata = data_test_procesado[-3], type="response")
-    
-    # Fallo
-    y.falladas = sum(mod_rf!=data_test_procesado$effectivenessNumber)/length(data_test_procesado$effectivenessNumber)
-    
-    
-    if(y.falladas < error_min){
-      error_min = y.falladas
-      arboles_optimo = i
-    }
-  }
+  # Pintamos la nube de puntos de cada uno de ellos (Cada color representa un cluster distinto)
+  points <- cmdscale(dist.matrix, k = 2) 
+  palette <- colorspace::diverge_hcl(centers) # Creating a color palette 
+  previous.par <- par(mfrow=c(1,2), mar = rep(1.5, 4))
   
-  cat("Numero de árboles óptimo",arboles_optimo, "\n")
+  plot(points, main = 'Hierarchical clustering', col = as.factor(cutree(cluster, k = centers)), 
+       mai = c(0, 0, 0, 0), mar = c(0, 0, 0, 0),  
+       xaxt = 'n', yaxt = 'n', xlab = '', ylab = '') 
   
-  cat("Error minimo conseguido",error_min, "\n")
+  # Para el de 100
+  plot(cluster100, cex=0.9, hang=-1)
+  rect.hclust(cluster100, centers, border=rainbow(centers))
   
 }
 
+#------------------------------------------------------------------------------------------------#
 
-cat("El error minimo con 150 árboles:\n")
-## El error minimo con 150 árboles:
-obtener_arboles_optimo(x = valores_arboles_150)
-
-
-cat("El error minimo con 20 árboles:\n")
-## El error minimo con 20 árboles:
-obtener_arboles_optimo(x = valores_arboles_20)
-
-cat("El error minimo con 15 árboles:\n")
-## El error minimo con 15 árboles:
-obtener_arboles_optimo(x = valores_arboles_15)
-
-cat("El error minimo con 400 árboles:\n")
-## El error minimo con 400 árboles:
-obtener_arboles_optimo(x = valores_arboles_400)
-
-
-cat("El error minimo con 500 árboles:\n")
-## El error minimo con 500 árboles:
-obtener_arboles_optimo(x = valores_arboles_500)
+clustering.dbscan <- function(centers=5){
+  # Calulamos el cluster
+  cluster <- dbscan::hdbscan(dist.matrix, minPts = 10)
+  
+  # Pintamos la nube de puntos de cada uno de ellos (Cada color representa un cluster distinto)
+  points <- cmdscale(dist.matrix, k = 2) 
+  palette <- colorspace::diverge_hcl(centers) # Creating a color palette 
+  
+  plot(points, main = 'Density-based clustering', col = as.factor(cluster$cluster), 
+       mai = c(0, 0, 0, 0), mar = c(0, 0, 0, 0), 
+       xaxt = 'n', yaxt = 'n', xlab = '', ylab = '') 
+}
+#------------------------------------------------------------------------------------------------#
 
 ```
 
+Cada función utilizará por defecto 5 centroides en los que clasificar los diferentes términos. Si se desea cambiar este hecho es posible simplemente especificando el número de centros por medio de un argumento al llamar la función. Vamos a comentar el proceso de cada uno de ellos y los datos obtenidos.
 
+```{r, warning=FALSE}
+# Primera técnica
+clustering.kmeans()
 
+```
 
+```{r, warning=FALSE}
+#Segunda técnica
+clustering.hierarchial()
+
+```
+
+```{r, warning=FALSE}
+# Tercera técnica
+clustering.dbscan()
+
+```
+
+Como podemos ver en las diferentes técnicas, tenemos la misma nube de puntos en la que cada punto representa una palabra. Su color indica el cluster al que pertenece. Consideramos que los resultados más llamativos se encuentran en la segunda técnica, en la que se puede apreciar los clústers más diferenciados en el espacio.
+
+Por ello, probamos a hacer más cosas en el mismo y obtuvimos adicionalmente el dendograma de las 100 palabras con mayor peso entre todos los documentos. Los recuadros de colores indican cada uno de los cluesters y en esta podemos ver de una forma más clara las agrupaciones realizadas durante el proceso (se se amplía el dendograma se pueden ver mejor las palabras). Hace una clasificación que consideramos lógica y con correlación a los comentarios que pueden hacer las personas sobre los beneficios de los medicamentos. 
+
+Intentamos también realizar un word cloud en función de estos clústers, aunque de momento no hemos tenido éxito en ese aspecto.
 
 
 

@@ -1,3 +1,9 @@
+---
+output:
+  pdf_document: default
+  word_document: default
+  html_document: default
+---
 
 # Lectura de datos
 
@@ -161,7 +167,7 @@ rpart <- rpart(sideEffectsNumber ~ rating, data=datos_train,
 
 print(rpart)
 
-fancyRpartPlot(rpart, main="Decision Tree sideEffectsNumberr $ ratingLabel")
+fancyRpartPlot(rpart, main="Decision Tree sideEffectsNumberr $ rating")
 
 ```
 
@@ -252,73 +258,6 @@ sum(diag(tabla))/nrow(datos_test)
 
 La precisión de este modelo es del **53,57%** aproximadamente.
 
-### Predicción de sideEffectsNumber en función del weightedRating
-
-Siguiendo el mismo proceso que se ha seguido para la obtención del árbol generado anteriormente, se va a predecir el valor de efectos secundarios del medicamento en función del rating ponderado que se ha generado durante el procesamiento ( 70% efectos secundarios, 30% efectividad).
-
-
-Generamos el modelo
-```{r}
-
-library("rattle")
-library("rpart")
-library("rpart.plot")
-
-seed <- 42
-
-set.seed(seed)
-
-rpart <- rpart(sideEffectsNumber ~ weightedRating, data=datos_train,
-                method="class",
-                parms=list(split="information"),
-                control=rpart.control(minsplit=30,
-                minbucket=10,
-                cp=0.061,
-                usesurrogate=0,
-                maxsurrogate=0)
-              )
-
-
-print(rpart)
-
-fancyRpartPlot(rpart, main="Decision Tree sideEffectsNumberr $ weightedRatingl")
-
-```
-
-
-
-Mostramos la gráfica del error de la validación cruzada.
-
-```{r}
-
-plotcp(rpart)
-
-```
-
-
-
-Generamos la predicción
-
-```{r}
-
-pred <- predict(rpart, newdata=datos_test, type="class")
-
-# Matriz de confusión
-tabla <-table(datos_test$sideEffectsNumber, pred, useNA="ifany",
-dnn=c("Real", "Predicho" ))
-
-tabla
-
-```
-
-Obtenemos el resultado
-
-```{r}
-sum(diag(tabla))/nrow(datos_test)
-
-```
-
-La precisión de este modelo es del **73,21%** aproximadamente.
 
 ### Conclusión
 
@@ -337,6 +276,10 @@ Como se puede observar, el porcentaje de acierto de la efectividad teniendo en c
 En esta sección se va a realizar una predicción de la efectividad en base a los comentarios aportados por los usuarios (benefitsReview).
 
 ```{r}
+library(dplyr)
+library(tm) 
+library(SnowballC)
+
 datos_train = read.csv("datos_train_preprocesado.csv", stringsAsFactors = F)
 datos_test = read.csv("datos_test_preprocesado.csv", stringsAsFactors = F)
 datos_total <- bind_rows(datos_train,datos_test)
@@ -347,7 +290,6 @@ tdm.tfidf <- tm::weightTfIdf(tdm)
 reviews = as.data.frame(cbind(datos_total$effectivenessNumber, as.matrix(tdm.tfidf)))
 preparado_train <- reviews[1:1500,]
 preparado_test <- reviews[-(1:1000),]
-# reviews = as.data.frame(cbind(mis_mini_datos_jeje$benefits_preprocesado, as.matrix(tdm.tfidf)))
 ```
 
 A continuación se va a generar el modelo utilizando como variable a predecir el effectivenessNumber con el resto de palabras que se ha almacenado en preparado_train.

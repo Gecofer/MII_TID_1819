@@ -1955,10 +1955,11 @@ write.csv(datos_test_preprocesado, file = "datos/datos_test_preprocesado.csv", r
 
 ```{r}
 # Cargamos los tados
-datos_train <- read.table("datos/datos_train_preprocesado.csv", sep=",", comment.char="",quote = "\"", header=TRUE)
+datos_train <- read.table("datos/datos_train_preprocesado.csv", sep=",", 
+                          comment.char="",quote = "\"", header=TRUE)
 
-datos_test <- read.table("datos/datos_test_preprocesado.csv", sep=",", comment.char="",quote = "\"", header=TRUE)
-# Establecemos la semilla
+datos_test <- read.table("datos/datos_test_preprocesado.csv", sep=",", 
+                         comment.char="",quote = "\"", header=TRUE)
 ```
 
 
@@ -1983,9 +1984,7 @@ A continuación se va a realizar un análisis de la información más relevante 
 
 ## Valoraciones de los medicamentos por parte de los usuarios.
 
-En primer lugar vamos a analizar si el *rating* aportado por los usuarios sobre los medicamentos son buenos o no.
-
-Empezamos obteniendo las frecuencias y porcentaje total de las valoraciones aportadas por los usuarios. Para ello se va a calcular la frecuencia de dicho atributo y su porcentaje respecto del total.
+En primer lugar vamos a analizar si el *rating* aportado por los usuarios sobre los medicamentos son buenos o no. Para ello empezamos obteniendo las frecuencias y porcentaje total de las valoraciones aportadas por los usuarios. Por tanto, se va a calcular la frecuencia de dicho atributo y su porcentaje respecto del total.
 
 ```{r}
 
@@ -2018,9 +2017,7 @@ calcularModa(datos_train$rating)
 ```
 
 
-Como resumen en general del rating, se va a calcular la media y la mediana para calcular la tendencia central para dicha variable.
-
-La media es la siguiente:
+Como resumen en general del rating, se va a calcular la media y la mediana para calcular la tendencia central para dicha variable. La media es la siguiente:
 
 ```{r}
 # Media
@@ -2037,12 +2034,12 @@ median(datos_train$rating)
 
 ```
 
-El valor obtenido es medio obtenido es 7 y la mediana es 8. Podemos concluir con dicha información, que en general las valoraciones sobre los medicamentos son bastante positivas, situándose el 50% de dichas valoraciones en el valor 8.
+El valor medio obtenido es 7 y la mediana es 8. Podemos concluir con dicha información, que en general las valoraciones sobre los medicamentos son bastante positivas, situándose el 50% de dichas valoraciones en el valor 8.
 
 A continuación, se va a visualizar dicha información gráficamente:
 
 
-```{r}
+```{r Warning=FALSE}
 
 # Histograma de la valoración dada por los usuarios sobre los medicamentos
 
@@ -2056,10 +2053,7 @@ hist(ratingExploration,
      xlim=c(0,10),
      ylim=c(0,800),
      col= "cornsilk",
-     breaks=10,
-     
-     
-    )
+     breaks=10,)
 
 ```
 
@@ -2099,16 +2093,16 @@ sd(datos_train$rating)
 
 ```
 
-Como se puede observar, la desviación típica nos da un valor de 2.93. Esto quiere decir que los valores no están concentrados en un único valor, sino que la mayoría se sitúan en el un intervalo con distancia 3 despecto de la media.
+Como se puede observar, la desviación típica nos da un valor de 2.93. Esto quiere decir que los valores no están concentrados en un único valor, sino que la mayoría se sitúan en un intervalo con distancia 3 respecto de la media.
 
 Este valor concuerda, puesto que si observamos el histograma anterior, vemos que la mayoría de las puntuaciones se sitúan entre 5 y 10.
 
-Esto también nos da como **conclusión** que en general las **opiniones** sobre los medicamentos **son buenas**, puesto que la mayor cantidad se sitúan en el intervalo [5.10].
+Esto también nos da como **conclusión** que en general las **opiniones** sobre los medicamentos **son buenas**, puesto que la mayor cantidad se sitúan en el intervalo [5,10].
 
 ## Efectividad del medicamento
 
 
-En esta sección, se va a analizar si se consideran que los medicamentos son efectivos o no. Para ello se va a analizar el atributo **effectivenessNumber** (que mide la efectividad del medicamento, siendo 1 menos efectivo y 5 más afectivo) 
+En esta sección, se va a analizar si se consideran que los medicamentos son efectivos o no. Para ello se va a analizar el atributo **effectivenessNumber** (que mide la efectividad del medicamento, siendo 1 menos efectivo y 5 más efectivo).
 
 Empezamos obteniendo las frecuencias y porcentaje total de las anotaciones de efectividad. Para ello se va a calcular la frecuencia de dicho atributo y su porcentaje respecto del total.
 
@@ -2120,15 +2114,13 @@ table(datos_train$effectivenessNumber)
 # Calculamos el número de documentos
 numDocuments <- dim(datos_train)[1]
 
-# Calculamos el porcentaje de cada valor de efectividad respecto del total.
+# Calculamos el porcentaje de cada valor de efectividad respecto del total
 table(datos_train$effectivenessNumber)/numDocuments
 
 ```
 
 
-Como podemos observar, la mayoría de los medicamentos se consideran que son efectivos. De hecho, la mayoría de los medicamentos se consideran altamente efectivos (con un 42%)
-
-Podemos comprobar ésto mediante el uso de la moda.
+Como podemos observar, la mayoría de los medicamentos se consideran que son efectivos. De hecho, la mayoría de los medicamentos se consideran altamente efectivos (con un 42%). Podemos ahora comprobar ésto mediante el uso de la moda.
 
 ```{r}
 
@@ -2138,9 +2130,7 @@ calcularModa(datos_train$effectivenessNumber)
 ```
 
 
-Como resumen en general de la efectividad, se va a calcular la media y la mediana para calcular la tendencia central para dicha variable.
-
-La media es la siguiente:
+Como resumen en general de la efectividad, se va a calcular la media y la mediana para obtener la tendencia central de dicha variable. La media es la siguiente:
 
 ```{r}
 # Media
@@ -2219,13 +2209,13 @@ Como se puede observar, la desviación típica nos da un valor de 1.23. Esto qui
 
 Este valor concuerda, puesto que si observamos el histograma anterior, vemos que la mayoría de las puntuaciones se sitúan entre 3 y 5.
 
-Esto también nos da como **conclusión** que en general los medicamentos tienen una tasa bastante **buena de efectividad** puesto que su tasa se sitúa entre [3.5].
+Esto también nos da como **conclusión** que en general los medicamentos tienen una tasa bastante **buena de efectividad** puesto que su tasa se sitúa entre [3,5].
 
 
 ## Efectos secundarios del medicamento
 
 
-En esta sección, se va a analizar si se consideran que los medicamentos tienen efectos secundarios o no. Para ello se va a analizar el atributo **sideEffectsNumber** (que mide la tasa de efectos secundarios del medicamento, siendo 1 el mínimo de efectos secundarios y 5 el máximo de efectos secundarios) 
+En esta sección, se va a analizar si se consideran que los medicamentos tienen efectos secundarios o no. Para ello se va a analizar el atributo **sideEffectsNumber** (que mide la tasa de efectos secundarios del medicamento, siendo 1 el mínimo de efectos secundarios y 5 el máximo de efectos secundarios). 
 
 Empezamos obteniendo las frecuencias y porcentaje total de las anotaciones de efectos secundarios. Para ello se va a calcular la frecuencia de dicho atributo y su porcentaje respecto del total.
 
@@ -2255,9 +2245,7 @@ calcularModa(datos_train$sideEffectsNumber)
 ```
 
 
-Como resumen en general de sobre la tasa de efectos secundarios, se va a calcular la media y la mediana para calcular la tendencia central para dicha variable.
-
-La media es la siguiente:
+Como resumen en general, sobre la tasa de efectos secundarios, se va a calcular la media y la mediana para calcular la tendencia central para dicha variable. La media es la siguiente:
 
 ```{r}
 # Media
@@ -2331,7 +2319,7 @@ sd(datos_train$sideEffectsNumber)
 
 ```
 
-Como se puede observar, la desviación típica nos da un valor de 1.17. Esto quiere decir que la mayor parte de los valores se sitúan en un intervalo con una distancia de uno de la media.
+Como se puede observar, la desviación típica nos da un valor de 1.17. Esto quiere decir que la mayor parte de los valores se sitúan en un intervalo con una distancia de uno respecto la media.
 
 Este valor concuerda, puesto que si observamos el histograma anterior, vemos que la mayoría de las puntuaciones se sitúan entre 1 y 2.
 
@@ -2360,9 +2348,7 @@ table(datos_train$weightedRating)/numDocuments
 ```
 
 
-Como podemos observar, la mayoría de los medicamentos se consideran que son generalmente beneficiosos. De hecho, la mayoría de los medicamentos se sitúan con una valoración de 8 sobre 10 teniendo en cuenta la relación beneficio/perjuicio.
-
-Podemos comprobar ésto mediante el uso de la moda.
+Como podemos observar, la mayoría de los medicamentos se consideran que son generalmente beneficiosos. De hecho, la mayoría de los medicamentos se sitúan con una valoración de 8 sobre 10 teniendo en cuenta la relación beneficio/perjuicio. Podemos comprobar ésto mediante el uso de la moda.
 
 ```{r}
 
@@ -2372,9 +2358,7 @@ calcularModa(datos_train$weightedRating)
 ```
 
 
-Como resumen en general de sobre la tasa de efectos secundarios, se va a calcular la media y la mediana para calcular la tendencia central para dicha variable.
-
-La media es la siguiente:
+Como resumen en general de sobre la tasa de efectos secundarios, se va a calcular la media y la mediana para calcular la tendencia central para dicha variable. La media es la siguiente:
 
 ```{r}
 # Media
@@ -2449,7 +2433,7 @@ sd(datos_train$weightedRating)
 
 ```
 
-Como se puede observar, la desviación típica nos da un valor de 2.07. Esto quiere decir que la mayor parte de los valores se sitúan en un intervalo con una distancia de dos de la media.
+Como se puede observar, la desviación típica nos da un valor de 2.07. Esto quiere decir que la mayor parte de los valores se sitúan en un intervalo con una distancia de dos sobre la media.
 
 Este valor concuerda, puesto que si observamos el histograma anterior, vemos que la mayoría de las puntuaciones se sitúan entre 6 y 10.
 
@@ -2481,7 +2465,7 @@ cor(datos_train[,9:10])
 
 ```
 
-Como se puede observar, cuando el medicamento es más efectivo, la valoración ponderada del medicamento acumenta (como es obvio), y si ahora calculamos la valoración ponderada del medicamento teniendo en cuenta los efectos secundarios
+Como se puede observar, cuando el medicamento es más efectivo, la valoración ponderada del medicamento acumenta (como es obvio), y si ahora calculamos la valoración ponderada del medicamento teniendo en cuenta los efectos secundarios.
 
 ```{r}
 
@@ -2502,7 +2486,7 @@ cor(datos_train[,c(2,8)])
 
 ```
 
-Podemos comprobar como si el medicamento tiene una mayor tasa de efectos secundarios, la valoración dada por el usuario disminuye
+Podemos comprobar como si el medicamento tiene una mayor tasa de efectos secundarios, la valoración dada por el usuario disminuye.
 
 ```{r}
 
@@ -2532,7 +2516,7 @@ Por ejemplo, podemos destacar como si el número de efectos secundarios es 1 (no
 
 # Análisis de sentimientos
 
-En este apartado vamos a realizar un análisis descriptivo de los datos. En esta ocasión, vamos a visualizar cuáles son los sentimientos que expresa las personas en los comentarios que escriben sobre los distintos medicamentos que se encuentran en nuestro dataset. Lo haremos de los comentarios relacionados con los beneficios y efectos de los medicamentos.
+En este apartado vamos a realizar un análisis descriptivo de los datos. En esta ocasión, vamos a visualizar cuáles son los sentimientos que expresan las personas en los comentarios que escriben sobre los distintos medicamentos que se encuentran en nuestro dataset. Lo haremos de los comentarios relacionados con los beneficios y efectos de los medicamentos.
 
 ```{r eval=FALSE}
 library(syuzhet)

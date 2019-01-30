@@ -2602,7 +2602,7 @@ for(cadena in medicamentos){
                         paste("Comentarios_efectos_de_medicamento_",cadena))
 }
 ```
-
+Comentarios_beneficio_de_medicamento_propecia_positivismo.png
 \begin{figure}[h]
     \centering
     \includegraphics[width=1\textwidth]{figuras/elegidas/Comentarios_beneficio_de_medicamento_propecia.png}
@@ -2617,28 +2617,20 @@ for(cadena in medicamentos){
     \label{fig:sentimientos:propeciaSentimiento}
 \end{figure}
 
-Hemos visualizado las imágenes resultantes y llegamos a la conclusión de que, en general, hace una buena descripción de los datos. Por ejemplo, para la **propecia** tenemos un altísimo contenido de sentimientos tales como miedo, tristeza y rabia. Mientras que otros sentimientos pasan más desapercibidos. Sin embargo, parece ser que las personas están contentas de forma genérica para el conjunto de medicamentos que la tratan, ya que los comentarios sobre los beneficios de los medicamentos son más positivos que negativos. En cambio, Cuando hablamos de los efectos secundarios de este medicamento, el negativismo vence al positivismo, se ve que los efectos secundarios que pueden acarrear este tipo de medicinas no son muy agradables. Los sentimientos de los efectos son muy similares a los que hablan de los beneficios; vemos que hay una concordancia de los comentarios de las personas.
+Hemos visualizado las imágenes resultantes y llegamos a la conclusión de que, en general, hace una buena descripción de los datos. Por ejemplo, para la **propecia** tenemos un altísimo contenido de sentimientos tales como miedo, tristeza y rabia. Mientras que otros sentimientos pasan más desapercibidos. Sin embargo, parece ser que las personas están contentas de forma genérica para el conjunto de medicamentos que la tratan, ya que los comentarios sobre los beneficios de los medicamentos son más positivos que negativos. En cambio, cuando hablamos de los efectos secundarios de este medicamento, el negativismo vence al positivismo, se ve que los efectos secundarios que pueden acarrear este tipo de medicinas no son muy agradables. Los sentimientos de los efectos son muy similares a los que hablan de los beneficios, vemos que hay una concordancia de los comentarios de las personas.
 
-Otro dato curioso es que, de forma genérica, hay una mayor presencia de negativismo que positivismo. Hay que darse cuenta de que las personas están escribiendo sobre problemas de salud que tienen, por lo que el único positivismo que podemos extraer es cuando una persona muestra su felicidad al ver que un cierto medicamento está surtiendo efecto (y aún así es posible que se queje igualmente por los efectos secundarios, por ejemplo).
+Otro dato curioso es que, de forma genérica, hay una mayor presencia de negativismo que positivismo. Hay que darse cuenta de que las personas están escribiendo sobre problemas de salud que tienen, por lo que el único punto positivo que podemos extraer es cuando una persona muestra su felicidad al ver que un cierto medicamento está surtiendo efecto (y aún así es posible que se queje igualmente por los efectos secundarios, por ejemplo).
 
-Hay que destacar que los sentimientos están muy entremezclados en los comentarios pesentes de nuestro dataset. Los valores del rating vendrán especificados implicitamente dependiendo del peso que le de cada persona a esos sentimientos. En definitiva, nos damos cuenta de que nuestro dataset es bastante subjetivo. Por ejemplo, las personas suelen mostrarse más dispuestas a expresar comentarios para quejarse que para informar de que un medicamento le está funcionando.
+Hay que destacar que los sentimientos están muy entremezclados en los comentarios presentes de nuestro dataset. Los valores del rating vendrán especificados implicitamente dependiendo del peso que le de cada persona a esos sentimientos. En definitiva, nos damos cuenta de que nuestro dataset es bastante subjetivo. Por ejemplo, las personas suelen mostrarse más dispuestas a expresar comentarios para quejarse que para informar de que un medicamento le está funcionando.
 
 Todas estas gráficas pueden apreciarse en el anexo de esta práctica por si se quiere ver el resto de condiciones y medicamentos analizados con esta técnica.
 
 
 \newpage
 
-```{r, eval=FALSE}
-library("tm")
-library("arules")
-library("robustbase")
-library("plotly")
-library("arulesViz")
-```
-
 # Reglas de Asociación
 
-En esta técnica haremos un análisis descriptivo de los datos de texto. Buscaremos la relación que existe entre las palabras expuestas en los distintos comentarios sobre los medicamentos y tratatemos a asociarlos a distintos conceptos para tener una mejor idea de nuestro dataset y saber de antemano que palabras a priori pueden tener que ver algo con distintos efectos de los medicamentos.
+En esta técnica haremos un análisis descriptivo de los datos de texto. Buscaremos la relación que existe entre las palabras expuestas en los distintos comentarios sobre los medicamentos y tratatemos de asociarlos a distintos conceptos para tener una mejor idea de nuestro dataset. Esto nos permitirá saber de antemano que palabras a priori pueden tener que ver algo con distintos efectos de los medicamentos.
 
 ```{r, eval=FALSE}
 datos_train <- read.table("datos/datos_train_preprocesado.csv", sep=",",
@@ -2648,12 +2640,11 @@ datos_train <- read.table("datos/datos_train_preprocesado.csv", sep=",",
 Vamos a crearnos un corpus por cada uno de los tipos de comentarios que tenemos en cada item. Recordar que estos textos ya se encuentran preprocesados como se puede consultar en secciones anteriores de esta documentación.
 
 ```{r, eval=FALSE}
-#benefits_review_data = as.vector(datos_train$benefitsReview)
 benefits_corpus = Corpus(VectorSource(datos_train$benefits_preprocesado))
 effects_corpus = Corpus(VectorSource(datos_train$effects_preprocesado))
 ```
 
-Ahora mismo el dataset es de tipo categórico pero nosotros los necesitamos verlo como una cadena de caracteres para pasos posteriores. Por tanto, todos los datos que se encuentran en estas columnas van a ser transformados. Serán entendidas como palabras diferenciadas.
+Ahora mismo el dataset es de tipo categórico pero nosotros los necesitamos como una cadena de caracteres para pasos posteriores. Por tanto, todos los datos que se encuentran en estas columnas van a ser transformados. Serán entendidas como palabras diferenciadas.
 
 Una vez que obtenemos las palabras en string, algunas de estas se quedan como palabras vacías, para ello utilizamos la función. Finalmente, ya podemos obtener una base de datos de tipo transaccional.
 
@@ -2671,31 +2662,26 @@ transactions_effects <- as(items_effects,"transactions")
 
 ```
 
-Ya tenemos los datos de textos estructurados en una base de datos transaccional, podemos aplicar la técnica para obtener las reglas de asociación. Vamos a utilizar el algoritmo "a priori" visto en clase. De lo contrario, el coste computacional y de tiempo no sería viable para obtener este conocimineto a partir de los comentarios.
+Ya tenemos los datos de textos estructurados en una base de datos transaccional, ahora podemos aplicar la técnica para obtener las reglas de asociación. Vamos a utilizar el algoritmo "a priori" visto en clase. De lo contrario, el coste computacional y de tiempo no sería viable para obtener este conocimineto a partir de los comentarios.
 
 El primer parámetro que encontramos en la función se corresponde con los datos que le proporcionamos y el segundo, un listado de parámetros específicos. En cuanto a estos, el primero es el umbral para el soporte, el segundo el umbral de la confianza, el tercero el target para indicar que buscamos reglas de asociación y en el cuarto indicamos que como mínimo empecemos con itemset de tamaño 2. De esta forma estamos selecciondo un conjunto más reducido de reglas, que es lo que nos interesa desde el principio para ahorrar costes de procesamiento de los datos, al mismo tiempo que perdemos la mínima calidad posible en las reglas.
 
-Ordenamos por "confidence" a vista de mostrar posteriormente los resultados más importantes. Entonces mostraremos las reglas que tienen más confianza (Sino no podemos realizar una buena visualización de los datos) y mostraremos gráficamente el resultado obtenido.
+Ordenamos por "confidence" a vista de mostrar posteriormente los resultados más importantes. Entonces mostraremos las reglas que tienen más confianza (sino no podemos realizar una buena visualización de los datos), y finalmente mostraremos gráficamente el resultado obtenido.
 
 ```{r, eval=FALSE}
 rules_benefits <- apriori(transactions_benefits, parameter = 
                     list(sup = 0.001, conf = 0.7, target="rules", minlen=2))
 rules_effects <- apriori(transactions_effects, parameter =
                     list(sup = 0.001, conf = 0.7, target="rules", minlen=2))
-#rules <- sort(rules, by="support")
+
 rules_benefits <- sort(rules_benefits, decreasing = TRUE, na.last = NA,
                        by = "confidence")
 rules_effects <- sort(rules_effects, decreasing = TRUE, na.last = NA,
                       by = "confidence")
 
-# Si no funciona inspect
-# https://stackoverflow.com/questions/18934098/r-error-with-inspect-function
 detach(package:tm, unload=TRUE) 
 inspect(head(rules_benefits,100))
 inspect(head(rules_effects,100))
-library(tm)
-# Cuando tenemos una regla con una única palabra en el antecedente y en el consecuente
-# deben de ir unidas en el texto
 ```
 
 \begin{figure}[h]
@@ -2724,7 +2710,7 @@ title("Reglas de asociación sobre comentarios de beneficios")
     \label{fig:asociacion:benefits}
 \end{figure}
 
-Al pintar las reglas de asociación, nos dimos cuenta de que plot no puede con tantas reglas al mismo tiempo, por lo que se queda con las 100 primeras. Como las tenemos ordenadas por confianza, no nos resulta un problema, ya que siempre que ocurra esto cogerá las 100 que más nos interesan.
+Al intentar pintar las reglas de asociación, nos dimos cuenta de que plot no puede con tantas reglas al mismo tiempo, por lo que se queda con las 100 primeras. Como las tenemos ordenadas por confianza, no nos resulta un problema, ya que siempre que ocurra esto cogerá las 100 que más nos interesan.
 
 Tal y como se aprecia en el mapa de asociaciones realizado, vemos que a simple vista las asociaciones obtenidas tienen mucho sentido. Por ejemplo, tenemos *attack* junto con *panic* que están relacionados con un lift considerable a *anxieti*. Cuanto más oscuros sean los puntos quieren decir que el lift es más alto. Por tanto, la aparición de una de las plabaras favorece la aparición de otra.
 
@@ -2748,19 +2734,19 @@ title("Reglas de asociación sobre comentarios de efectos secundarios")
     \label{fig:asociacion:effects}
 \end{figure}
 
-En este caso, vemos que no hay demasiadas asociaciones con un valor de lift por encima significativamente del resto. Creemos que se debe a que aquí la gente escribe una diversidad de tipos de comentarios mucho más grande. Es decir, quizás los comentarios sobre efectos secundarios pueda tener una mayor cantidad de variedad sobre lo que se habla que en los comentarios sobre los beneficios.
+En este caso, vemos que no hay demasiadas asociaciones con un valor de lift por encima significativamente del resto. Creemos que se debe a que en este punto la gente escribe una diversidad de tipos de comentarios mucho más grande. Es decir, quizás los comentarios sobre efectos secundarios pueda tener una mayor cantidad de variedad sobre lo que se habla que en los comentarios sobre los beneficios.
 
-No obstante, volvemos a tener los mismos consecuentes más frecuentes. OCupando una vez más el núcleo del mapa de las reglas de asociación; *side* y *effect*. Tiene sentido ya que en los efectos secundarios vuelven a hablar de este tema de forma general, sólo que desde un punto de vista diferente (por eso la estructura principal del mapa y las reglas de asociación son diferentes).
+No obstante, volvemos a tener los mismos consecuentes más frecuentes. Ocupando una vez más el núcleo del mapa de las reglas de asociación: *side* y *effect*. Tiene sentido ya que en los efectos secundarios vuelven a hablar de este tema de forma general, sólo que desde un punto de vista diferente (por eso la estructura principal del mapa y las reglas de asociación son diferentes).
 
 Hay conceptos interesantes como *nausea*, *headach*, *pain*... Conceptos que están estrechamente relacionados con efectos secundarios.
 
 ##Reglas de asociación específicas.
 
-Llegados a este punto, quisimos darle un nuevo enfoque a la extracción de reglas de asociación a parir de estos comentarios. En los mapas anteriores, veíamos que había demasiadas reglas enfocadas a una misma cosa, incluso llegando a ser difícil de visualizar en algunos sitios concretos.
+Llegados a este punto, quisimos darle un nuevo enfoque a la extracción de reglas de asociación a partir de estos comentarios. En los mapas anteriores, veíamos que había demasiadas reglas enfocadas a una misma cosa, incluso llegando a ser difícil de visualizar en algunos sitios concretos.
 
-Por otro lado, temíamos estar cogiendo solo las reglas de asociación relacionadas con *effects* y *side* por ser las reglas con una mayor confianza y despreciando otras que podían ser interesantes y que tuvieran consecuentes en otros conceptos.
+Por otro lado, temíamos estar tomando solo las reglas de asociación relacionadas con *effects* y *side* por ser las reglas con una mayor confianza y despreciando otras que podían ser interesantes y que tuvieran consecuentes en otros conceptos.
 
-Entonces, se nos ocurrió la siguiente idea: ¿Y si enfocamos la selección de reglas en la que el consecuente sea un término concreto que consideremos interesantes? En otras palabras, quremos realizar un filtrado de reglas interesantes directamente guiadas por el usuario, tal y como se ha visto en teoría.
+Entonces, se nos ocurrió la siguiente idea: ¿Y si enfocamos la selección de reglas en la que el consecuente sea un término concreto que consideremos interesante? En otras palabras, queremos realizar un filtrado de reglas interesantes directamente guiadas por el usuario, tal y como se ha visto en teoría.
 
 Queremos obtener las reglas en la que los consecuentes sean los valores de efectividad de nuestro dataset. Aquí realizamos un "mini-preprocesamiento", ya que está realizado en apartado anteriores, pero en esta técnica especificamente vimos conveniente realizar estos pequeños cambios y añadirlos en una nueva columna del dataset.
 
@@ -2794,7 +2780,7 @@ datos_train$benefits_effectiveness <- gsub("[.]", " ", datos_train$benefits_effe
 
 # Hacemos lo mismo pero para los comentatios de efectos secundarios
 datos_train$effects_effectiveness <- with(datos_train, interaction
-                                          (effects_preprocesado,effectivenessGuion), sep=" ")
+                               (effects_preprocesado,effectivenessGuion), sep=" ")
 datos_train$effects_effectiveness <- gsub("[.]", " ", datos_train$benefits_effectiveness)
 
 datos_train$effects_effectiveness[1:10]
@@ -2982,7 +2968,7 @@ title("Comentarios beneficios sobre casi inefectivo")
 dev.off()
 ```
 
-Podemos ver que los mapas de reglas salen bastante saturadas igualmente, ya que saca bastantes.Podríamos reducir el número de reglas manipulando los umbrales de soporte y confianza si lo deseamos, aunque llevaría tiempo de computación realizar esas pruebas.
+Podemos ver que los mapas de reglas salen bastante saturadas igualmente, ya que saca bastantes. Podríamos reducir el número de reglas manipulando los umbrales de soporte y confianza si lo deseamos, aunque llevaría tiempo de computación realizar esas pruebas.
 
 Vamos a comentar por ejemplo la inefectividad, que ha salido más simple y fácil de visualizar:
 
@@ -2996,7 +2982,8 @@ Vamos a comentar por ejemplo la inefectividad, que ha salido más simple y fáci
 Como se puede ver en la imagen, los términos que giran en torno de a la inefectividad tienen bastante sentido. Por ejemplo, la palabra *none*. Lo normal es que, cuando un medicamente es inefectivo, las personas realicen comentarios del estilo "no me ha hecho nada" o "no sirve de nada". Otros como *pain* o *problem* tienen sentido ya que si un medicamento es inefectivo es normal que aparezcan palabras "negativas". 
 
 ```{r, eval=FALSE}
-#Obtenemos las imágenes relacionadas con los comentarios sobre efectos secundarios de los medicamentos
+# Obtenemos las imágenes relacionadas con los comentarios 
+# sobre efectos secundarios de los medicamentos
 png("figuras/asociacion/effects_Innefective.png",width=1800,height=1700,units="px",
     pointsize=10,bg="white",res=300)
 plot(effects_rulesInnefective, method="graph")
@@ -3046,7 +3033,7 @@ Como podemos apreciar en la imagen, el mapa de por sí es poco visualizable debi
 
 # KNN
 
-En esta sección vamos a realizar técnicas de clasificación basada en instancias. Concretamente el de vecinos más cercanos (KNN). Esta técnica es puramente predictiva, por lo que nos proporciona ninguna información acerca de dependecia de variables. Dado un texto, busca en el conjunto de entrenamiento los items que tienen un mayor parentesco del que estamos tratando de deducir y copia su clase. La clase que vamos a intentar reducir es **ratingLabel** que es la columna preprocesada de **rating**. Nos hubiera gustado probar y comentar esta técnica tratando de clasificar otras clases, pero no tenemos tiempo suficiente como para ello.
+En esta sección vamos a realizar técnicas de clasificación basada en instancias. Concretamente el de vecinos más cercanos (KNN). Esta técnica es puramente predictiva, por lo que no proporciona ninguna información acerca de la dependecia de variables. Dado un texto, busca en el conjunto de entrenamiento los items que tienen un mayor parentesco del que estamos tratando de deducir y copia su clase. La clase que vamos a intentar reducir es **ratingLabel** que es la columna preprocesada de **rating**. Nos hubiera gustado probar y comentar esta técnica tratando de clasificar otras clases, pero no tenemos tiempo suficiente como para ello.
 
 Esta técnica es buena cuando el conjunto de items se encuentran disjuntos entre sí debido a sus clases. Aunque el clustering es una técnica no supervisada en la que de antemano no teníamos etiquetas concretas que clasificar, nos dimos cuenta de que no era una opción que nos aportara mucho debido a este hecho (la nube de puntos no se encontraba disjuntas en grupos claros). Por lo que de antemano pensamos que no va a devolvernos unas predicciones muy prometedoras.
 
@@ -3060,10 +3047,6 @@ Dicho esto, vamos a comenzar. Primero cargamos los datos.
 
 ```{r, eval=FALSE}
 datos_preprocesados <- read.csv(file="datos/datos_train_preprocesado.csv")
-View(datos_preprocesados)
-
-library(class)
-library("tm")
 ```
 
 El siguiente paso consiste en obtener el Corpus como hemos hecho en técnicas anteriores. Primero vamos a hacerlo sobre los comentarios acerca de los beneficios de los medicamentos. Acto seguido, obtenemos la matriz de términos correspondiente con sus vectores de pesos.
@@ -3075,7 +3058,7 @@ Como ya hemos mencionado anteriormente, KNN selecciona los **k** items del conju
 Por consiguiente, el valor de **k** es muy importante a la hora de realizar el clasificador. Un valor muy alto puede producir sobreaprendizaje y un valor muy bajo puede producir un aumento significativo en la tasa de error, por lo que probaremos con distintos valores. 
 
 ```{r, eval=FALSE}
-# PAra train KNN
+# Para train KNN
 corpus = tm::Corpus(tm::VectorSource(datos_preprocesados$benefits_preprocesado))
 tdm <- tm::DocumentTermMatrix(corpus)
 
@@ -3118,7 +3101,7 @@ conf.mat
 
 Para K=1 vemos que obtenemos de por sí una tasa de precisión razonable a sabiendas de que no iba a funcionar muy bien. Es decir, clasifica bien el ratingLabel en más de la mitad de las ocasiones.
 
-Como podemos observar en la matriz de confusión, tiene un error alrededor del 40% para el conjunto del test. Como nos temíamos, la técnica no es muy apropiada para nuestro problema debido a la disposición del los textos. Sin embargo, vamos a probar con valores distintos de k para intentar mejorar hasta cierto punto el desempeño del algoritmo. 
+Como podemos observar en la matriz de confusión, tiene un error alrededor del 40% para el conjunto del test. Tal y como nos temíamos, la técnica no es muy apropiada para nuestro problema debido a la disposición del los textos. Sin embargo, vamos a probar con valores distintos de k para intentar mejorar hasta cierto punto el desempeño del algoritmo. 
 
 Para **k=3**:
 
@@ -3139,9 +3122,7 @@ conf.mat
     \label{fig:KNN:benefitsK3}
 \end{figure}
 
-Para k=3 el cambio no es significativo, incluso empeora un poco.
-
-Para **k=5**:
+Para k=3 el cambio no es significativo, incluso empeora un poco. Probamos con **k=5**:
 
 ```{r, eval=FALSE}
 knn.pred <- knn(modeldata[train,], modeldata[test,], cl[train], k=5) 
@@ -3242,7 +3223,8 @@ Como podemos observar, el modelo mantiene una precisión estable. Sin embargo a 
 valores_k <- c(1,3,5,10,15,30,50)
 precision <- c(60.79484,60.47261,60.90226,54.24275,47.79807,34.80129,29.32331)
 
-plot(x=valores_k,y=precision, xlab = "Valores de K", ylab="Precisión(%)", ylim = c(0,100), type="o", col="green")
+plot(x=valores_k,y=precision, xlab = "Valores de K", ylab="Precisión(%)", 
+     ylim = c(0,100), type="o", col="green")
 title("Precisión del modelo KNN en función del número de vecinos(K)")
 
 
@@ -3358,7 +3340,7 @@ conf.mat
     \label{fig:KNN:effectsK15}
 \end{figure}
 
-Es curiosos que en este último caso solo tiene falsos positivos, no negativos. 
+Es curioso que en este último caso solo tiene falsos positivos, no negativos. 
 
 Vemos que ocurre algo similar que con los comentarios de beneficios, solo que con una tasa de precisión más alta (solo se equivocaría 1 de cada 5 predicciones aproximadamente). Por algún motivo, es capaz de predecir mejor este tipo de comentarios sobre efectos secundarios. Suponemos que porque la nube de puntos es más apropiada en esta ocasión para esta técnica. 
 
@@ -3383,7 +3365,7 @@ En este apartado se va hacer uso de la técnica de **regresión**, con el objeti
 
 - **ratingLabel**: etiqueta de 0 ó 1, que contempla la opinión del paciente sobre el medicamento si es favorable (1) o no es favorable (0).
 - **effectivenessNumber**: clasificación de la efectividad del medicamento según el paciente (5 posibles valores), en donde el 1 significa que es ineficaz y el 5 que es altamente eficaz.
-- **sideEffectsInverse**: clasificación de los efectos secundarios del medicamento según el paciente (5 posibles valores), en donde el 1 significa que teine efectos secundarios extremadamente graves y el 5 que es sin efectos secundarios.
+- **sideEffectsInverse**: clasificación de los efectos secundarios del medicamento según el paciente (5 posibles valores), en donde el 1 significa que tiene efectos secundarios extremadamente graves y el 5 que es sin efectos secundarios.
 
 \begin{figure}[h]
     \centering
@@ -3392,7 +3374,7 @@ En este apartado se va hacer uso de la técnica de **regresión**, con el objeti
     \label{1}
 \end{figure}
 
-Como se observa en la gráfica \ref{1}, se va hacer uso de variables discretas. El objetivo de aplicar regresión, es obtener la curva ROC, la matriz de confusión y el error en el conjunto test, para obtener así la precisión de nuestro modelo y saber según el paciente qué medicamentos favorables o no, tienen efectos secundarios o son efectivos. 
+Como se observa en la gráfica \ref{1}, se va hacer uso de variables discretas. El objetivo de aplicar regresión, es obtener la curva ROC, la matriz de confusión y el error en el conjunto test, para obtener así la precisión de nuestro modelo y saber según el paciente qué medicamentos son favorables o no, tienen efectos secundarios o son efectivos. 
 
 Como se ha comentado, se va hacer uso de la matriz de confusión, la cual es una herramienta que permite la visualización del desempeño de un algoritmo, en donde cada columna de la matriz representa el número de predicciones de cada clase, mientras que cada fila representa a las instancias en la clase real. Una de sus ventajas es que permite ver si la predicción falla o no. 
 
@@ -3403,9 +3385,9 @@ Como se ha comentado, se va hacer uso de la matriz de confusión, la cual es una
     \label{2}
 \end{figure}
 
-De esta forma, se observa como en la figura \ref{2}, la diagonal principal contiene la suma de todas las predicciones correctas (el modelo dice “S” y acierta, tiene efectos secundarios, o dice “N” y acierta también, no tiene efectos secundarios). La otra diagonal refleja los errores del clasificador: los falsos positivos o “true positives” (dice que es tiene efectos secundarios “S”, pero en realidad no tiene “n”), o los falsos negativos o “false negatives” (dice que es no tiene efectos secundarios “N”, pero en realidad los tiene “p”). Además, otra de las medidas a usar, será la curva ROC, para caracterizar el comportamiento de la predicción.
+De esta forma, se observa como en la figura \ref{2}, la diagonal principal contiene la suma de todas las predicciones correctas (el modelo dice “S” y acierta, tiene efectos secundarios, o dice “N” y acierta también, no tiene efectos secundarios). La otra diagonal refleja los errores del clasificador: los falsos positivos o “true positives” (dice que tiene efectos secundarios “S”, pero en realidad no tiene “n”), o los falsos negativos o “false negatives” (dice que no tiene efectos secundarios “N”, pero en realidad los tiene “p”). Además, otra de las medidas a usar, será la curva ROC, para caracterizar el comportamiento de la predicción.
 
-Pero previo a la realización de las técnicas, se ha optado por eliminar los fármacos repetidos, para así obtener una predicción más acertada. Para dicha eliminación, se han cogido todos los medicamentos duplicados y eliminados los necesarios. Así que si tenemos 5 filas de un mismo medicamentos, se eliminan las 4 consecutivas al primero.
+Pero previo a la realización de las técnicas, se ha optado por eliminar los fármacos repetidos, para así obtener una predicción más acertada. Para dicha eliminación, se han cogido todos los medicamentos duplicados y eliminados los innecesarios. Así que si tenemos 5 filas de un mismo medicamento, se eliminan las 4 consecutivas al primero.
 
 ```{r, include=FALSE}
 # https://stackoverflow.com/questions/40003028/extracting-unique-values-from-data-frame-using-r
@@ -3471,7 +3453,7 @@ La regresión lineal simple consiste en generar un modelo de regresión (ecuaci�
  
 `lm(formula, data, subset, weights)`
 
-- _formula_: definimos el modelo como: $Y \sim X$.
+- _fórmula_: definimos el modelo como: $Y \sim X$.
     - Regresion Múltiple: $y \sim X_1+X_2+...X_n$.
     - Regresión Polinómica: $y \sim poly(x = X, degree = k)$
     - Interacción de variables: $y \sim X_1 \cdot X_2$. Si sólo queremos el término de interacción: $X1:X2$
@@ -3509,12 +3491,12 @@ errorres_regresion_lineal <- function(m){
   Etrain = mean(predTr != data_train_procesado$ratingLabel) 
   Etest = mean(predTst != data_test_procesado$ratingLabel) 
   
-  # Devolvemos el eror para el conjunto train y test
+  # Devolvemos el error para el conjunto train y test
   list(Etrain=Etrain*100, Etest=Etest*100)
 }
 ```
 
-Primero vamos a obtener un modelo en donde la variable respuesta es ratingLabel y el predictor sideEffectsInverse. Con el fin de obtener, que medicamentos favorables tienen efectos secundarios. Por lo que tendremos que hacer caso a la otra dioganal de la matriz de confusión.
+Primero vamos a obtener un modelo en donde la variable respuesta es ratingLabel y el predictor sideEffectsInverse. Con el fin de obtener, que medicamentos favorables tienen efectos secundarios. Por lo que tendremos que hacer caso a la otra diaganal de la matriz de confusión.
 
 ```{r}
 # Creamos el modelo para ratingLabel ~ sideEffectsInverse
@@ -3526,7 +3508,7 @@ errorres_regresion_lineal(lm_effects)
 
 Para el modelo generado, tanto la ordenada en el origen como la pendiente son significativas (p-values < 0.05). El valor de R^2 indica que el modelo calculado explica el 26.91% de la variabilidad presente en la variable respuesta (ratingLabel) mediante la variable independiente (sideEffectsInverse). Como se observa se obtiene que hay 11 falsos positivos, es decir, medicamentos que se dicen que tienen efectos secundarios pero no los tienen. Y existen 27 falsos negativos, es decir, medicamentos que se dicen que no tienen efectos secundarios pero que los tienen. Dichos resultados son los obtenidos según los comentarios de los pacientes. Como podemos apreciar, el error del test nos devuelve un valor de 12.14058, un error aceptable teniendo en cuenta los resultados obtenidos en la matriz de confusión. Pero posiblemente dicho error se pueda reducir aplicando sobre los datos otros modelos que veremos más adelante.
 
-A continuación, vamos a crear el modelo para la variable respuesta ratingLabel y el predictor effectivenessNumber. Con el fin de obtener, que medicamentos favorables son efectivos. Por lo que tendremos que hacer caso a la otra dioganal de la matriz de confusión.
+A continuación, vamos a crear el modelo para la variable respuesta ratingLabel y el predictor effectivenessNumber. Con el fin de obtener, que medicamentos favorables son efectivos. Por lo que tendremos que hacer caso a la otra diaganal de la matriz de confusión.
 
 ```{r}
 # Creamos el modelo para ratingLabel ~ effectivenessNumber
@@ -3536,7 +3518,7 @@ summary(lm_effectiveness)
 errorres_regresion_lineal(lm_effectiveness)
 ```
 
-Para el modelo generado, tanto la ordenada en el origen como la pendiente son significativas (p-values < 0.05). El valor de R^2 indica que el modelo calculado explica el 36.98% de la variabilidad presente en la variable respuesta (ratingLabel) mediante la variable independiente (effectivenessNumber). Como se observa se obtiene que hay 3 falsos positivos, es decir, medicamentos que se dicen que son efectivos pero que no lo son. Y existen 35 falsos negativos, es decir, medicamentos que se dicen que no son efectivos pero los son Dichos resultados, según los comentarios de los pacientes. Como podemos apreciar, el error del test nos devuelve un valor de 12.14058, un error aceptable teniendo en cuenta los resultados obtenidos en la matriz de confusión. Pero posiblemente dicho error se pueda reducir aplicando sobre los datos otros modelos que veremos más adelante.
+Para el modelo generado, tanto la ordenada en el origen como la pendiente son significativas (p-values < 0.05). El valor de R^2 indica que el modelo calculado explica el 36.98% de la variabilidad presente en la variable respuesta (ratingLabel) mediante la variable independiente (effectivenessNumber). Como se observa se obtiene que hay 3 falsos positivos, es decir, medicamentos que se dicen que son efectivos pero que no lo son. Y existen 35 falsos negativos, es decir, medicamentos que se dicen que no son efectivos pero los son. Como podemos apreciar, el error del test nos devuelve un valor de 12.14058, un error aceptable teniendo en cuenta los resultados obtenidos en la matriz de confusión. Pero posiblemente dicho error se pueda reducir aplicando sobre los datos otros modelos que veremos más adelante.
 
 Una vez que hemos obtenidos las prediciones para nuestro modelo, vamos a obtener las probabilidades para el mismo con el fin de obtener la curva ROC.
 
@@ -3593,29 +3575,33 @@ Para dicho modelo, los medicamentos _propecia_, _claritin_, _depakote_, _anafran
 
 Una alternativa para controlar los casos atípicos es ajustar un modelo lineal robusto. El modelo lineal robusto utiliza criterios diferentes al de los mínimos cuadrados y pondera la influencia de los casos atípicos, por lo que producen coeficientes y sobre todo errores estándar más confiables. El paquete `MASS` incluye la función `rlm()`, de sintaxis similar a `lm()` que implementa el método para el ajuste de los coeficientes y cálculo de los errores estándar.
 
-Primero, calcularemos el modelo en donde la variable respuesta es ratingLabel y el predictor sideEffectsInverse. Con el fin de obtener, que medicamentos favorables tienen efectos secundarios. Por lo que tendremos que hacer caso a la otra dioganal de la matriz de confusión.
+Primero, calcularemos el modelo en donde la variable respuesta es ratingLabel y el predictor sideEffectsInverse. Con el fin de obtener, que medicamentos favorables tienen efectos secundarios. Por lo que tendremos que hacer caso a la otra diaganal de la matriz de confusión.
 
 ```{r}
 # Creamos el modelo para ratingLabel ~ sideEffectsInverse
 rlm_effects = MASS::rlm(ratingLabel ~ sideEffectsInverse, data = data_train_procesado)
-stargazer(lm_effects, rlm_effects, type = "text", model.numbers = FALSE, title="Comparación de modelo OLS y Robusto")
+stargazer(lm_effects, rlm_effects, type = "text", model.numbers = FALSE, 
+          title="Comparación de modelo OLS y Robusto")
 ```
 
 ```{r}
 # Creamos el modelo para ratingLabel ~ effectivenessNumber
-rlm_effectiveness = MASS::rlm(ratingLabel ~ effectivenessNumber, data = data_train_procesado)
-stargazer(lm_effectiveness, rlm_effectiveness, type = "text", model.numbers = FALSE, title="Comparación de modelo OLS y Robusto")
+rlm_effectiveness = MASS::rlm(ratingLabel ~ effectivenessNumber, 
+                              data = data_train_procesado)
+stargazer(lm_effectiveness, rlm_effectiveness, type = "text", model.numbers = FALSE, 
+          title="Comparación de modelo OLS y Robusto")
 ```
 
 El modelo robusto aumenta los coeficientes y reduce los errores estándar, aunque no en gran cuantía. En este caso interpretamos que los casos atípicos no son un problema grave.
 
 ### 5.1.2. Regresión Lineal Múltiple
 
-Una vez que hemos la regresión lineal simple, vamos a intentar predecir el valor del ratingLabel en función de la puntuación de los medicamentos y de los efectos secundarios del mismo. Para ello se va a emplear la misma (`lm()`), la cual genera un modelo de regresión lineal por mínimos cuadrados en el que la variable respuesta es ratingLabel y los predictores son sideEffectsInverse y effectivenessNumber. Previamenete a la realización del modelo, vamos a comprobar que que las variables a usar pueden ser aplicadas juntas con la función `step()`, para así determinar la calidad del modelo.
+Una vez que hemos la regresión lineal simple, vamos a intentar predecir el valor del ratingLabel en función de la puntuación de los medicamentos y de los efectos secundarios del mismo. Para ello se va a emplear la misma (`lm()`), la cual genera un modelo de regresión lineal por mínimos cuadrados en el que la variable respuesta es ratingLabel y los predictores son sideEffectsInverse y effectivenessNumber. Previamente a la realización del modelo, vamos a comprobar que las variables a usar pueden ser aplicadas juntas con la función `step()`, para así determinar la calidad del modelo.
 
 ```{r}
 # Creamos el modelo para ratingLabel ~ effectivenessNumber + sideEffectsInverse 
-lm_multiple <- lm(ratingLabel ~ sideEffectsInverse + effectivenessNumber, data = data_train_procesado)
+lm_multiple <- lm(ratingLabel ~ sideEffectsInverse + effectivenessNumber, 
+                  data = data_train_procesado)
 
 # https://rpubs.com/Cristina_Gil/Regresion_Lineal_Multiple
 # Nos dice si existe alguna variable que estamos usando que no nos hace falta
@@ -3627,12 +3613,12 @@ errorres_regresion_lineal(lm_multiple)
 
 Como se aprecia en salida de la función `step(lm_multiple, direction = "both", trace = 1)`, las dos variables deben ser incluidas en el proceso de selección. 
 
-Por tanto, se observa se obtiene que hay 5 falsos positivos, es decir, medicamentos que se dicen que son favorables pero que no lo son. Y existen 24 falsos negativos, es decir, medicamentos que se dicen que no favorables pero los son. Se debe tener en cuenta que dichos resultados obtenidos han sido según los comentarios de los pacientes. Como podemos apreciar, el error del test nos devuelve un valor de 9.265176, un buen error si tenemos en cuenta, los obtenidos con la regresión simple.
+Por tanto, se observa que se obtiene que hay 5 falsos positivos, es decir, medicamentos que se dicen que son favorables pero que no lo son. Y existen 24 falsos negativos, es decir, medicamentos que se dicen que no son favorables pero los son. Se debe tener en cuenta que dichos resultados obtenidos han sido según los comentarios de los pacientes. Como podemos apreciar, el error del test nos devuelve un valor de 9.265176, un buen error si tenemos en cuenta, los obtenidos con la regresión simple.
 
 
 ## 5.2. Regresión Logística
 
-A continuación, vamos a ajustar un modelo con Regresión Logística binario sin regularización. De este modo vamos a comprobar, si se puede intentar encontrar un buen modelo lineal para nuestro problema. Además, discutiremos las necesidades de regularización, para ver si de esta forma conseguimos mejorarlo en cuanto a resultados. 
+A continuación, vamos a ajustar un modelo con regresión logística binario sin regularización. De este modo vamos a comprobar, si se puede intentar encontrar un buen modelo lineal para nuestro problema. Además, discutiremos las necesidades de regularización, para ver si de esta forma conseguimos mejorarlo en cuanto a resultados. 
 
 Para la obtención de la regresión, vamos hacer uso del comando `glm()`.
 
@@ -3667,23 +3653,25 @@ Primero vamos a obtener el modelo, que predice la variable sideEffectsInverse a 
 
 ```{r}
 # Creamos el modelo para ratingLabel ~ sideEffectsInverse
-gml_effects = glm(ratingLabel ~ sideEffectsInverse, family = binomial(logit), data = data_train_procesado)
+gml_effects = glm(ratingLabel ~ sideEffectsInverse, family = binomial(logit), 
+                  data = data_train_procesado)
 # Evaluamos el modelo
 errorres_regresion_logistica(gml_effects)
 ```
 
 Como se observa se obtiene que hay 11 falsos positivos, es decir, medicamentos que se dicen que tienen efectos secundarios pero no los tienen. Y existen 27 falsos negativos, es decir, medicamentos que se dicen que no tienen efectos secundarios pero que los tienen. Dichos resultados son los obtenidos según los comentarios de los pacientes. Como podemos apreciar, el error del test nos devuelve un valor de 12.14058, un error aceptable teniendo en cuenta los resultados obtenidos en la matriz de confusión. Pero se ha comprobado, que se obtiene un mejor error con la regresión lineal múltiple.
 
-A continuación, vamos a crear el modelo para la variable respuesta ratingLabel y el predictor effectivenessNumber. Con el fin de obtener, que medicamentos favorables son efectivos. Por lo que tendremos que hacer caso a la otra diagonal de la matriz de confusión.
+A continuación, vamos a crear el modelo para la variable de respuesta ratingLabel y el predictor effectivenessNumber. Con el fin de obtener, que medicamentos favorables son efectivos. Por lo que tendremos que hacer caso a la otra diagonal de la matriz de confusión.
 
 ```{r}
 # Creamos el modelo para ratingLabel ~ effectivenessNumber
-gml_effectiveness = glm(ratingLabel ~ effectivenessNumber, family = binomial(logit), data = data_train_procesado)
+gml_effectiveness = glm(ratingLabel ~ effectivenessNumber, family = binomial(logit), 
+                        data = data_train_procesado)
 # Evaluamos el modelo
 errorres_regresion_logistica(gml_effectiveness)
 ```
 
-Como se observa se obtiene que hay 3 falsos positivos, es decir, medicamentos que se dicen que son efectivos pero que no lo son. Y existen 35 falsos negativos, es decir, medicamentos que se dicen que no son efectivos pero los son Dichos resultados, según los comentarios de los pacientes. Como podemos apreciar, el error del test nos devuelve un valor de 12.14058, un error aceptable teniendo en cuenta los resultados obtenidos en la matriz de confusión. Pero posiblemente dicho error se pueda reducir aplicando sobre los datos otros modelos que veremos más adelante.
+Como se observa se obtiene que hay 3 falsos positivos, es decir, medicamentos que se dicen que son efectivos pero que no lo son. Y existen 35 falsos negativos, es decir, medicamentos que se dicen que no son efectivos pero los son. Como podemos apreciar, el error del test nos devuelve un valor de 12.14058, un error aceptable teniendo en cuenta los resultados obtenidos en la matriz de confusión. Pero posiblemente dicho error se pueda reducir aplicando sobre los datos otros modelos que veremos más adelante.
 
 Una vez que hemos obtenidos las prediciones para nuestro modelo, vamos a obtener la curva ROC.
 
@@ -3753,18 +3741,22 @@ Para ajustar este modelo hemos utilizado la función `glmnet(..)`. Como primer a
 # Conjunto Train
 
 # Primero generamos una matriz con el conjunto de train separando las etiquetas de los datos
-x = model.matrix(ratingLabel~sideEffectsInverse + effectivenessNumber, data_train_procesado)[,-ncol(data_train_procesado)]
+x = model.matrix(ratingLabel~sideEffectsInverse + effectivenessNumber, 
+                 data_train_procesado)[,-ncol(data_train_procesado)]
 y = data_train_procesado$ratingLabel
 
 # Conjunto Test
-x.test = model.matrix(ratingLabel~sideEffectsInverse + effectivenessNumber, data_test_procesado)[,-ncol(data_test_procesado)]
+x.test = model.matrix(ratingLabel~sideEffectsInverse + effectivenessNumber, 
+                      data_test_procesado)[,-ncol(data_test_procesado)]
 y.test = data_test_procesado$ratingLabel
 
 # Reproducimos el modelo ajustado con el mejor lambda y el mejor alpha
-ridge.mod = glmnet(x=x, y=y, family="binomial", alpha=modelbest$bestTune$alpha,lambda=modelbest$bestTune$lambda,thresh=1e-12)
+ridge.mod = glmnet(x=x, y=y, family="binomial", alpha=modelbest$bestTune$alpha,
+                   lambda=modelbest$bestTune$lambda,thresh=1e-12)
 
 # Calculamos la predicción
-predicciones.ridge = predict(ridge.mod, s=ridge.mod$lambda, newx=x.test, type="response")
+predicciones.ridge = predict(ridge.mod, s=ridge.mod$lambda, 
+                             newx=x.test, type="response")
 
 # Error de regresión con penalización Ridge
 error.ridge = mean (( predicciones.ridge - y.test)^2)
@@ -3787,7 +3779,8 @@ $$Y_i = \beta_0 + \beta_1 x_i + \beta_2 x^2_i + \beta_3 x^3_i + ... + \beta_d x^
 
 ```{r}
 # Hacemos uso del poly para 2
-lm_poly = lm(data = data_train_procesado, formula = ratingLabel ~ poly(sideEffectsInverse, 2) + effectivenessNumber)
+lm_poly = lm(data = data_train_procesado, 
+    formula = ratingLabel ~ poly(sideEffectsInverse, 2) + effectivenessNumber)
 summary(lm_poly)
 errorres_regresion_lineal(lm_poly)
 ```

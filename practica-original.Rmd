@@ -3654,6 +3654,7 @@ tfidf.matrix <- as.matrix(tdm.tfidf)
 
 Para poder trabajar con técnicas de agrupamiento necesitamos trabajar con valores numéricos continuos. Es por ello que hemos utilizado de nuevo TFIDF (esta vez hemos usado una función de más alto nivel, sin entrar en detalles). Necesitamos tener estos datos como matriz para poder continuar con los siguientes pasos.
 
+\newpage
 
 ```{r, eval=FALSE}
 tfidf.matrix[1:20,1:20]
@@ -3800,6 +3801,8 @@ En esta ocasión no hemos realizado validación por silueta de los grupos obteni
 
 Entonces, decidimos probar con un agrupamiento no particional, como es el jerárquico.
 
+\newpage
+
 
 ```{r, eval=FALSE}
 #Segunda técnica
@@ -3819,6 +3822,8 @@ En este caso, vemos que teniendo la misma nube de puntos, los resultados son má
 Como esta es la mejor técnica que sacamos, quisimos mostrar más información del proceso. Obtuvimos los 100 términos más frecuentes como se mencionó anteriormente y obtuvimos un dendograma como los vistos en clase de teoría. Podemos ver que los grupos alcanzados tienen coherencia. Por ejemplo, en el primero agrupa sangre, presión, más bajo, alto, nivel...
 
 Dependiendo del número de cluster que fijemos, especifica los grupos en niveles más altos o bajos de las llaves que vemos en la imagen. Por lo que podemos decir que siempre sigue la misma técnica de agrupamiento y lo que cambia es el momento en el que separa los cluster cuando especificamos el número de grupos que queremos tener, lo cual nos pareció curioso destacar.
+
+\newpage
 
 ```{r, eval=FALSE}
 # Tercera técnica

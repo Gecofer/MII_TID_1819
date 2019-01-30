@@ -387,7 +387,7 @@ print(res)
 ### K - MEDIOIDES CLUSTERING
 
 
-Nuevo método en el que agrupamos las observaciones en K clusters, siendo este valor K preestablecido. En este caso, cada cluster está representado por una observación presente en el cluster, en lugar de un centroide (como hacíamos en *K-Means*. Dicho en otras palabras, en este caso, el "centroide" que utilizamos se corresponde con el item del cluster cuya distancia a todos los demás es mínima, en lugar de utilizar el promedio del cluster (que no tiene que corresponderse con un item del mismo). Para su resolución usaremos el algoritmo PAM (Partitioning Around Medoids). Este minimiza la suma de las diferencias de cada observación respecto al medioide. 
+A continuación se va a aplicar una nueva técnica en el que agrupamos las observaciones en K clusters, siendo este valor K preestablecido. En este caso, cada cluster está representado por una observación presente en el cluster, en lugar de un centroide (como hacíamos en *K-Means*. Dicho en otras palabras, en este caso, el "centroide" que utilizamos se corresponde con el item del cluster cuya distancia a todos los demás es mínima, en lugar de utilizar el promedio del cluster (que no tiene que corresponderse con un item del mismo). Para su resolución usaremos el algoritmo PAM (Partitioning Around Medoids). Éste minimiza la suma de las diferencias de cada observación respecto al medioide. 
 
 Este método es más robusto que el anterior, entre otras cosas, porque está menos afectado por ruido. De hecho, se suele utilizar cuando se tiene la intuición de que puede haber outliers (hecho que, como hemos mostrado en la técnica anterior, es muy probable que esté ocurriendo en este problema).
 
@@ -397,7 +397,7 @@ En la siguiente gráfica podemos ver la evaluación para hasta un máximo de 15 
 
 ```{r}
 # Identificamos el número optimo de clusters
-fviz_nbclust(x = datos, FUNcluster = pam, method = "wss", k.max = 15, 
+fviz_nbclust(x = datos, FUNcluster = pam, method = "wss", k.max = 15,
              diss = dist(datos, method = "manhattan"))
 ```
 Podemos volver a utilizar validación, tal y como hicimos en el apartado anterior, y recurrir de nuevo al índice silueta, para ver si con este método sigue siendo el tamaño 6 sigue siendo aceptable. En otras palabras, buscamos reafirmarnos con este número. Como se puede observar en la gráfica, el número óptimo de clusters es 10, pero siguiendo todas las indicaciones anteriores, 6 sigue siendo un valor decente.
@@ -434,7 +434,8 @@ A continuación, podemos ver el agrupamiento resultante con los parámetros que 
 ```{r}
 
 pam_clusters <- pam(x = datos, k = 6, metric = "manhattan")
-fviz_cluster(object = pam_clusters, data = datos, ellipse.type = "t", repel = TRUE, labelsize = 9) +
+fviz_cluster(object = pam_clusters, data = datos, ellipse.type = "t", repel = TRUE,
+             labelsize = 9) +
   theme_bw() +
   labs(title = "Resultados clustering PAM (k=6)") +
   theme(legend.position = "none")
@@ -520,18 +521,47 @@ fviz_cluster(object = fuzzy_cluster, repel = TRUE, ellipse.type = "norm",
 
 El *clustering jerárquico* es una alternativa a los métodos de clustering particional, que no requiere que se pre-especifique el número de clusters al algoritmo. Tal y como hemos visto en la asignatura, se pueden seguir dos estrategias, aglomerativa o divisiva, en este caso vamos a usar la primera, la cuál es la más común. 
 
-Como ya sabemos, en el método aglomerativo el agrupamiento se inicia en la base del árbol, siendo cada observación un cluster individual. Entonces los cluster se van combinando conforme la estructura crece hasta unirse en única rama central. De forma análoga a como hemos estado llevando a cabo la aplicación de las demás técnicas, en primer lugar, vamos a determinar el número de clusters óptimo. Como podemos ver en la gráfica, el valor óptimo es 12, a partir del cuál comienza a descender. Sin embargo, la diferencia con un tamaño 10 de clusters es mínima, y computacionalmente nos mejora bastante, por lo que, desde un punto de vista práctico, hemos considerado que es el valor más adecuado en nuestra situación. 
+Como ya sabemos, en el método aglomerativo el agrupamiento se inicia en la base del árbol, siendo cada observación un cluster individual. Entonces, los cluster se van combinando conforme la estructura crece hasta unirse en única rama central. De forma análoga a como hemos estado llevando a cabo la aplicación de las demás técnicas, en primer lugar, vamos a determinar el número de clusters óptimo. Como podemos ver en la gráfica, el valor óptimo es 12, a partir del cuál comienza a descender. Sin embargo, la diferencia con un tamaño 10 de clusters es mínima, y computacionalmente nos mejora bastante, por lo que, desde un punto de vista práctico, hemos considerado que es el valor más adecuado en nuestra situación. 
 
 De igual forma, como hemos visto en la asignatura, cuando estamos utilizando la distancia de mínimos cuadrados tenemos que tener especial cuidado, debido a que se minimiza la distancia entre los elementos del cluster, por lo que es un valor también a tener en cuenta en este tipo de técnicas.
+
+
+
+#### Aplicación de la técnica
+
+En primer lugar, vamos comenzar por ejecutar el algoritmo, y obtener así el dendrograma que se corresponde con nuestro problema. Para ello, simplemente realizamos una llamada a la función `hclust`, especificando el valor de distancia (hemos establecido la distancia euclídea).
+```{r}
+# Cortar el árbol para generar los clusters
+hc_euclidea_completo <- hclust(d = dist(x = datos, method = "euclidean"), method = "complete")
+```
+
+
+#### Elección del número óptimo de clusters
+
+Una de las ventajas que nos da este algoritmo, es que nos permite visualizar, a través del dendrograma, una posible división en clusters, de forma que podemos, "a priori", intentar dar con un valor de cluster adecuado. De esta forma, podemos hacer uso de las facilidades que nos da visualizar el dendrograma para ver qué cifra es la más adecuada para K. 
+
+
+Para ello, tal y como podemos consultar en la bibliografía, a pesar de ser una estrategia puramente intuitiva, un buen método sería localizar las ramas que se dividen (o unen, según miremos el dendrograma de abajo a arriba o viceversa) más o menos al mismo nivel. En nuestro caso, siguiendo este criterio, hemos decidido que el número más adecuado es 10, puesto que, tal y como se puede ver en la línea mostrada en la gráfica, esta división se corresponde con el corte que deja la unión de las ramas más o menos al mismo nivel.
+
+```{r}
+fviz_dend(x = hc_euclidea_completo, k = 10, cex = 0.6) +
+  geom_hline(yintercept = 2.85, linetype = "dashed") +
+  labs(title = "Herarchical clustering",
+       subtitle = "Distancia euclídea, Lincage complete, K=10")
+
+```
+
+Para ver si estamos en lo cierto, podemos obtener, para este tipo de agrupamiento, la gráfica que refleja la relación entre el número de clusteres a utilizar y la media del índice silueta asociada. A continuación, se muestran los resultados para un total de agrupaciones de hasta tamaño 15. Como podemos ver, los resultados obtenidos para un valor de K igual a 10 son muy positivos.
 
 ```{r}
 # datos ya lo tenemos previamente escalado 
 datos <- scale(data_train_procesado)
 fviz_nbclust(x = datos, FUNcluster = hcut, method = "silhouette", k.max = 15,
              diss = dist(datos, method = "euclidean") ) +labs(title = "Número óptimo de clusters")
+
 ```
 
-Ahora vamos a mostrar gráficamente, la media del índice de silueta para el valor de cluster elegido. Como podemos ver, la mayor parte de los grupos supera el valor de 0.50, (lo cual es muy muy positivo, y nos da muy buenas indicaciones de los agrupamientos realizados). Además, de igual forma, vemos cómo muchos de ellos están muy definidos y sin ningún valor negativo (y no como en casos anteriores), lo cuál nos lleva a pensar, que **esta técnica es muy apropiada para nuestro problema**, ya que hace una división de los items que aparentemente funciona muy bien. 
+Ahora vamos a mostrar gráficamente, la media del índice de silueta para el valor de cluster elegido. Como podemos ver, la mayor parte de los grupos supera el valor de 0.50, (lo cual es muy muy positivo, y nos da muy buenas indicaciones de los agrupamientos realizados). Además, de igual forma, vemos cómo muchos de ellos están muy definidos y sin ningún valor negativo (y no como en casos anteriores), lo cuál nos lleva a pensar, que **esta técnica es muy apropiada para nuestro problema**, ya que hace una división de los items que aparentemente funciona muy bien, y con la que estamos obteniendo muy buenos resultados.
 ```{r}
 km_clusters <- eclust(x = datos, FUNcluster = "hclust", k = 10, seed = 123,
                       hc_metric = "euclidean",  graph = FALSE)
@@ -548,26 +578,25 @@ mat_dist <- dist(x = datos, method = "euclidean")
 hc_euclidea_complete <- hclust(d = mat_dist, method = "complete")
 hc_euclidea_average  <- hclust(d = mat_dist, method = "average")
 
-cor(x = mat_dist, cophenetic(hc_euclidea_complete)) # 0.7864
-cor(x = mat_dist, cophenetic(hc_euclidea_average)) # 0.9374272
+cor(x = mat_dist, cophenetic(hc_euclidea_complete)) 
+cor(x = mat_dist, cophenetic(hc_euclidea_average)) 
 
 ```
 
 
+Como conclusión, nos decantamos, con esta técnica, por un número de clusters igual a 10 en base a todo lo anterior comentado, que se puede resumir en los siguientes puntos:
+
+- Teniendo en cuenta el dendrograma, este valor nos permite obtener una división lo más igualada posible en cuanto a nivel del árbol resultante en el dendrograma. 
+- La media global del índice silueta obtenida, es alta (de hecho, es la más alta alcanzada hasta ahora).
+- Realizando una comparación del índice medio de silueta que se puede alcanzar con distintos valores de k, obtenemos muy buenos resultados.
+- Los índices silueta obtenidos para el K elegido (que como hemos dicho, es 10), dan lugar a un resultado muy optimista, puesto que se puede observar una división bastante nítida.
 
 
-```{r}
 
-fviz_dend(x = hc_euclidea_completo,
-          k = 10,
-          color_labels_by_k = TRUE,
-          cex = 0.8,
-          type = "phylogenic",
-          repel = TRUE, labelsize=0)
 
-```
+Por último, podemos ver una forma (poco frecuente) de representar los clusters, que consiste en combinar los anterior con una reducción de dimensionalidad por PCA. Con ello, podemos conseguir visualizarlo de la misma forma que hemos llevado esta parte a cabo en el resto de técnicas. Primero, se calculan los componentes principales y después se representan empleando las dos primeras componentes. Finalmente, se colorean los clusters mediante elipses.
 
-Otra forma de representar sería combinando con una reducción de dimensionalidad por PCA. Primero, se calculan los componentes principales y después se representan empleando las dos primeras componentes. Finalmente, se colorean los clusters mediante elipses.
+A continuación, podemos ver los resultados obtenidos (se han eliminado las etiquetas para visualizar mejor los distintos clusteres que hemos obtenido). Como hecho destacable, podemos puntualizar que el bajo acoplamiento que se parecia entre los distintos grupos que se han originado. 
 
 ```{r}
 
@@ -581,7 +610,41 @@ fviz_cluster(object = list(data=datos, cluster=cutree(hc_euclidea_completo, k=10
 
 ```
 
+#### Otras representaciones
 
+Sin embargo, a pesar de que nos hemos remitido a visualizar los resultados de esta técnica mediante dendrogramas y una versión parecida a los agrupamientos particionales, hay muchas más representaciones que se tienen que utilizar. Recordemos, que estamos tratando con técnicas descriptivas, y que al final, para obtener información de los datos y poder estudiarlos de una forma adecuada, es muy útil tener distintas formas de representación. 
+
+En esta sección, vamos a visualizar los resultados de otras dos formas, las cuáles son especialmente utilizadas cuando tenemos demasiados datos, puesto que permiten focalizar la información y centrarnos en distintas áreas de manera específica. A continuación, mostramos una forma de representación cuya finalidad principal cumple con este aspecto. Esta forma de visualización de dendrogramas se conoce como **árbol filogenético**.
+
+```{r}
+
+fviz_dend(x = hc_euclidea_completo,
+          k = 10,
+          color_labels_by_k = TRUE,
+          cex = 0.8,
+          type = "phylogenic",
+          repel = TRUE, labelsize=0)
+
+```
+
+
+También podemos usar representaciones que sigan estructuras circulares, como es el caso de la siguiente visualización, la cuál se corresponde con un **dendrograma circular**.
+```{r}
+set.seed(5665)
+fviz_dend(x = hc_euclidea_completo,
+          k = 10,
+          color_labels_by_k = TRUE,
+          cex = 0.5,
+          type = "circular")
+```
+
+### Agrupamiento jerárquico y K-means
+
+Como se puede ver en el apartado anterior (Clustering Jerárquico), hemos obtenido muy buenos resultados, utilizando para ello medidas de validación como puede ser el *coeficiente de silueta*. Pero podemos utilizar estos resultados para intentar obtener un agrupamiento aún mejor. **La idea que se plantea en este apartado, es aplicar la técnica K-means, con la particularidad de que utilizaremos como centroides iniciales los centros calculados con la técnica anterior.** 
+
+De esta forma, al fin y al cabo, lo que estamos haciendo es proporcionar unos valores iniciales de centroide que ya son buenos de por sí, por lo que con K-means únicamente nos dedicaremos a reajustar dichos valores con el fin de afianzar mejor en cuanto a resultados.
+
+A continuación, podemos ver los resultados obtenidos con dicha técnica. **Como aspecto destacable, podemos ver el bajo solapamiento existente en los clusters** (a diferencia de otras técnicas ya comentadas anteriormente). 
 ```{r}
 
 # jerarquico con la media
@@ -592,45 +655,43 @@ fviz_cluster(object = hkmeans_cluster, pallete = "jco", repel = TRUE,labelsize =
   theme_bw() + labs(title = "Hierarchical k-means Clustering")
 ```
 
+Además, podemos destacar otro aspecto, y es que, **con esta última representación, hemos conseguido algo no logrado hasta este momento, y es que no quedan puntos representados fuera de los grupos, sino que los puntos quedan correctamente ubicados dentro de ellos, lo cuál, unido al bajo acoplamiento existente en los grupos, nos da un indicativo de buenos resultados**. 
 
 
-Además, debemos de poder identificar el número de clusters creados y que observaciones forman parte de cada uno. Si realizamos un corte horizontal en el dendrograma, el número de ramas que lo sobrepasan se corresponden con el número de clusters.
-
-Usamos como altura de corte el valor K de K-means. K=10
-
-
-
-
-
-```{r}
-
-# Cortar el árbol para generar los clusters
-
-hc_euclidea_completo <- hclust(d = dist(x = datos, method = "euclidean"), method = "complete")
-
-fviz_dend(x = hc_euclidea_completo, k = 10, cex = 0.6) +
-  geom_hline(yintercept = 5.5, linetype = "dashed") +
-  labs(title = "Herarchical clustering",
-       subtitle = "Distancia euclídea, Lincage complete, K=10")
-
-```
 ## Density based clustering (DBSCAN)
 
+Por último, vamos a aplicar una técnica más, la cuál se corresponde con una técnica de agrupamiento particional. Se correponde con la técnica *Density-based spatial clustering of applications* y consiste en 
+
+
+Recordemos que, tal y como hemos visto en la asignatura, puede darse el caso de tener zonas del espacio que sean muy densas,y otras con una densidad baja (dando lugar a grupos de baja densidad). Si tenemos en cuenta, los mismos parámetros para los dos tipos de zonas planteadas, al final estaríamos perdiendo mucha información, lo cuál no es deseable en una técnica de este tipo. 
+
+A continuación se muestra los resultados que hemos obtenido estableciendo *esp*=0.15 y *MinPt*=5. Como se aprecia en la siguiente gráfica, disponemos tanto de zonas de baja densidad como de alta densidad. Sin embargo, es muy notable la cantidad de puntos ruido que existen en nuestro conjunto, lo cual nos indica que disponemos de muchos puntos que no forman parte de ningún grupo. Este hecho nos lleva a pensar que este algoritmo no obtiene un resultado apropiado, en comparación a los métodos anteriores, y que **no se está ajustando bien a nuestro problema**.
+
 ```{r}
-
-datos_ <- data_train_procesado
-km_clusters <- kmeans(x = datos_, centers = 6, nstart = 50)
-
-# Ellipse FALSE??
-# geom = "point"
-fviz_cluster(object = km_clusters, data = datos_, repel = TRUE, ellipse = FALSE,
-             show.clust.cent = FALSE, pallete = "jco") +
+datos_ <- scale(data_train_procesado)
+dbscan_cluster <- fpc::dbscan(data = datos_, eps = 0.15, MinPts = 5)
+# Visualización de los clusters
+fviz_cluster(object = dbscan_cluster, data = datos_, stand = FALSE,
+             geom = "point", ellipse = FALSE, show.clust.cent = FALSE,
+             pallete = "jco") +
   theme_bw() +
-  theme(legend.position = "none")
-
+  theme(legend.position = "bottom")
+```
+Podemos intenta ponerle solución, esableciendo radios de mayor amplitud, para así permitir que más puntos formen parte de los núcleos que se obtengan con la técnica. A continuación podemos ver el resultado obtenido. De nuevo, aunque podemos ver que abarcamos mayor cantidad de items, una gran cantidad de los datos siguen siendo considerados ruido. Además, se puede apreciar claramente como grandes zonas del espacio no son capaces de agruparse. **Por ello, pensamos que, por las características de nuestro problema, esta técnica no es apropiada.** 
+```{r}
+datos_ <- scale(data_train_procesado)
+dbscan_cluster <- fpc::dbscan(data = datos_, eps = 0.4, MinPts = 5)
+# Visualización de los clusters
+fviz_cluster(object = dbscan_cluster, data = datos_, stand = FALSE,
+             geom = "point", ellipse = FALSE, show.clust.cent = FALSE,
+             pallete = "jco") +
+  theme_bw() +
+  theme(legend.position = "bottom")
 ```
 
 
+
+# HASTA AQUI JEJE
 
 
 
@@ -657,7 +718,7 @@ print(y.falladas)
 
 ```
 
-Segun esto, nos podemos hcer una funcion que te diga en qué rango encontramos el mejor resultado, y con 150 árboles tenemos más que suficiente para alcanzar un 35% de error. Este error en nuestro caso es muy bueno porque tenemos muchisima subjetividad. Para unas personas, poca efectividad tendrá asociado rating 1 y para otras puede ser rating 3. Esto nos afecta mucho los resultados, y por tanto, aumenta el error. 
+Segun esto, nos podemos hacer una función que te diga en qué rango encontramos el mejor resultado, y con 150 árboles tenemos más que suficiente para alcanzar un 35% de error. Este error en nuestro caso es muy bueno porque tenemos muchisima subjetividad. Para unas personas, poca efectividad tendrá asociado rating 1 y para otras puede ser rating 3. Esto nos afecta mucho los resultados, y por tanto, aumenta el error. 
 
 ```{r}
 
@@ -722,8 +783,6 @@ cat("El error minimo con 500 árboles:\n")
 obtener_arboles_optimo(x = valores_arboles_500)
 
 ```
-
-
 
 
 

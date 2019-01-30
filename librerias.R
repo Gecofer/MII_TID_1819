@@ -40,6 +40,7 @@ library(rword2vec) #install_github("mukul13/rword2vec")
 library(RTextTools)
 library(SnowballC) # Paquete para minería de datos, agrupa aquellos términos que contienen la misma raíz
 library(stargazer)
+library(syuzhet)
 library(tidytext)
 library(tm)
 library(tseries)

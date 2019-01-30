@@ -2967,7 +2967,6 @@ Como podemos apreciar en la imagen, el mapa de por sí es poco visualizable debi
 
 <!------->
 
-<!------->
 
 # 6. Agrupamiento y Clustering
 
@@ -3623,7 +3622,7 @@ Además, podemos destacar otro aspecto, y es que, **con esta última representac
 
 
 
-## 6.3. Clustering sobre datos de texto
+## 6.3. Agrupamiento de los fármacos en base a las opiniones de los usuarios
 
 
 Vamos a ver cómo podemos aplicar técnicas de clustering a las distintas columnas de texto de nuestro dataset. Para ello vamos a explicar en mayor detalle el proceso seguido en la columna Benefits Review preprocesada y luego mostraremos los resultados con los otros textos de una forma más directa.
@@ -4200,319 +4199,6 @@ Vemos que ocurre algo similar que con los comentarios referentes a los beneficio
 Llegamos a la conclusión en ambos tipo de comentarios que los valores apropiados para k deben ser bajos (valor de 5), por los datos mostrados anteriormente.
 
 
-## 6.6. Árboles de decisión
-
-```{r, include=FALSE}
-datos_train = read.csv("datos/datos_train_preprocesado.csv", stringsAsFactors = F)
-datos_test = read.csv("datos/datos_test_preprocesado.csv", stringsAsFactors = F)
-datos_total <- union(datos_train,datos_test)
-```
-
-
-El árbol de decisión es una técnica clásica de clasificación en la que se realizan particiones binarias
-de los datos de forma recursiva. El resultado se puede representar con un árbol.
-
-Para la construcción del árbol también se puede utilizar la función **rpart**.El principal parámetro de esta función es la complejidad, **cp**. Éste permite
-simplificar los modelos ajustados mediante la poda de las divisiones que no merecen la pena. Otros
-parámetros importantes son **minsplit**, número mínimo de observaciones que debe haber en un nodo
-para que se intente una partición, y **minbucket**, número mínimo de observaciones de un nodo terminal.
-Por defecto minsplit= 20, minbucket=round(minsplit/3) y cp= 0,01.
-
-A la hora de determinar los parámetros, el procedimiento habitual para determinar los parámetros del modelo consiste en dejar que el árbol crezca hasta que cada nodo terminal tenga menos de un número mínimo de observaciones, ya que
-en algunas divisiones puede que apenas mejore y en las siguientes sí lo haga. Para determinar *cp* se
-considera como 0, para que el árbol crezca lo máximo posible.
-
-A continuación se va aplicar dicha técnica para realizar las siguientes predicciones:
-
-### 6.6.1. Predicción de efectivenessNumber en función del rating
-
-En esta sección se va a predecir la efectividad (de 1 a 5, siendo 1 menos efectiva y 5 más efectiva) en función del rating. Para ello se va a seguir con el procedimiento que se ha descrito en la introdución.
-
-A continuación se va a mostrar el árbol de decisión que se ha generado utilizando **rpart**.
-
-```{r}
-
-library("rattle")
-library("rpart")
-library("rpart.plot")
-
-seed <- 42
-
-set.seed(seed)
-
-rpart <- rpart(effectivenessNumber ~ rating, data=datos_train,
-                method="class",
-                parms=list(split="information"),
-                control=rpart.control(minsplit=30,
-                minbucket=10,
-                cp=0.00,
-                usesurrogate=0,
-                maxsurrogate=0)
-              )
-
-fancyRpartPlot(rpart, main="Decision Tree effectivenessNumber $ ratingLabel")
-
-```
-
-Como el árbol que se obtiene es muy grande, se podaría considerando una función de coste basada
-en la complejidad. Para esto, se calcula el error de la validación cruzada y se elige el menor.
-
-```{r}
-plotcp(rpart)
-
-```
-
-Mostramos la tabla de resultados
-
-```{r}
-printcp(rpart)
-```
-
-
-Tal y como se puede ver en la tabla anterior, el mínimo error se alcanza en el nodo 6.
-
-    6 0.000000      6   0.67362 0.67644 0.015294
-
-Típicamente se considera que hasta la línea discontinua de la figura anterior no hay diferencias significativas. Esta línea es la suma del mínimo error y la desviación típica, es decir:
-
-    0.67644 + 0.015294 = 0.691734
-
-Observamos en el gráfico anterior que dicho error tiene un cp de 0.023, por lo que se va a volver a generar el árbol con rpart utilizando ahora como valor de cp 0,023.
-
-```{r}
-set.seed(seed)
-rpart <- rpart(effectivenessNumber ~ rating, data=datos_train,
-                method="class",
-                parms=list(split="information"),
-                control=rpart.control(minsplit=30,
-                minbucket=10,
-                cp=0.023,
-                usesurrogate=0,
-                maxsurrogate=0)
-              )
-# Vista textual del modelo árbol de decisión:
-print(rpart)
-
-fancyRpartPlot(rpart, main="Árbol de decisión effectivenessNumber $ rating")
-
-```
-
-A continuación se lleva a cabo la predicción del conjunto de prueba y se calcula la matriz de confusión.
-
-Para cada uno de los datos del conjunto de prueba se sigue el árbol según el valor de sus variables
-hasta llegar a los nodos terminales, allí, se clasifica con la categoría más probable de ese nodo terminal,
-como se vio en el árbol anterior.
-
-La denominada matriz de confusión permite la visualización de los resultados del clasificador. Las
-filas muestran los valores reales y las columnas las predicciones del modelo. A partir de esta tabla se
-calcula la precisión del modelo.
-
-```{r}
-
-pred <- predict(rpart, newdata=datos_test, type="class")
-
-# Matriz de confusión
-tabla <-table(datos_test$effectivenessNumber, pred, useNA="ifany",
-dnn=c("Real", "Predicho" ))
-
-tabla
-
-```
-
-Esta tabla es la denominada matriz de confusión, que permite la visualización de los resultados del
-clasificador. Las filas muestran los valores reales y las columnas las predicciones del modelo. A partir
-de esta tabla se calcula la precisión del modelo.
-
-```{r}
-sum(diag(tabla))/nrow(datos_test)
-
-```
-
-La precisión de este modelo es del **57,44%** aproximadamente.
-
-El poder de predicción de los árboles de decisión no suele ser muy bueno, pero el algoritmo es
-sencillo y los modelos resultantes tienen una fácil interpretación.
-
-
-### 6.6.2. Predicción de sideEffectsNumber en función del rating
-
-Siguiendo el mismo proceso que se ha seguido para la obtención del árbol generado anteriormente, se va a predecir el valor de efectos secundarios en función del rating del medicamento.
-
-```{r}
-
-seed <- 42
-
-set.seed(seed)
-
-rpart <- rpart(sideEffectsNumber ~ rating, data=datos_train,
-                method="class",
-                parms=list(split="information"),
-                control=rpart.control(minsplit=30,
-                minbucket=10,
-                cp=0.01,
-                usesurrogate=0,
-                maxsurrogate=0)
-              )
-
-
-print(rpart)
-
-fancyRpartPlot(rpart, main="Decision Tree sideEffectsNumberr $ rating")
-
-```
-
-Mostramos la gráfica del error de la validación cruzada.
-
-```{r}
-
-plotcp(rpart)
-
-```
-
- Generamos la predicción
-
-```{r}
-pred <- predict(rpart, newdata=datos_test, type="class")
-
-# Matriz de confusión
-tabla <-table(datos_test$sideEffectsNumber, pred, useNA="ifany",
-dnn=c("Real", "Predicho" ))
-
-tabla
-```
-
-Obtenemos el resultado
-
-```{r}
-
-sum(diag(tabla))/nrow(datos_test)
-
-```
-
-La precisión de este modelo es del **50,58%** aproximadamente.
-
-
-### 6.6.3. Predicción de effectivenessNumber en función del weightedRating
-
-Siguiendo el mismo proceso que se ha seguido para la obtención del árbol generado anteriormente, se va a predecir el valor de la efectividad del medicamento en función del rating ponderado que se ha generado durante el procesamiento ( 70% efectos secundarios, 30% efectividad).
-
-```{r}
-seed <- 42
-
-set.seed(seed)
-
-rpart <- rpart(effectivenessNumber ~ weightedRating, data=datos_train,
-                method="class",
-                parms=list(split="information"),
-                control=rpart.control(minsplit=30,
-                minbucket=10,
-                cp=0.03,
-                usesurrogate=0,
-                maxsurrogate=0)
-              )
-
-
-print(rpart)
-
-fancyRpartPlot(rpart, main="Decision Tree effectivenessNumber $ weightedRating")
-
-```
-
-Mostramos la gráfica del error de la validación cruzada.
-
-```{r}
-
-plotcp(rpart)
-
-```
-
-Generamos la predicción
-
-```{r}
-
-pred <- predict(rpart, newdata=datos_test, type="class")
-
-# Matriz de confusión
-tabla <-table(datos_test$effectivenessNumber, pred, useNA="ifany",
-dnn=c("Real", "Predicho" ))
-
-tabla
-```
-
-Obtenemos el resultado
-
-```{r}
-sum(diag(tabla))/nrow(datos_test)
-
-```
-
-La precisión de este modelo es del **53,57%** aproximadamente.
-
-
-### 6.6.4. Conclusión
-
-Haciendo un breve resumen de lo obtenido, tenemos lo siguiente:
-
-  - Porcentaje de acierto en la predicción de la efectividad en función del rating: **57,44%**
-  - Porcentaje de acierto en la predicción de los efectos secundarios en función del rating: **50,58%**
-  - Porcentaje de acierto en la predicción de la efectividad en función del rating ponderado: **53,57%**
-  - Porcentaje de acierto en la predicción de los efectos secundarios en función del rating ponderado: **73,21%**
-
-Como se puede observar, el porcentaje de acierto de la efectividad teniendo en cuenta el rating (dado por los usuarios) y el rating ponderado es muy similar, sin embargo la predicción para los efectos secundarios difiere en un 23% a favor del rating ponderado. Esto es debido a que en el rating ponderado se ha tenido más en cuenta el impacto de los efectos secundarios y esto hace que la predicción de dichos efectos secundarios sea más precisa.
-
-
-### 6.6.5. Predicción del rating en función del comentario de beneficios
-
-En esta sección se va a realizar una predicción de la efectividad en base a los comentarios aportados por los usuarios (benefitsReview).
-
-```{r}
-library(dplyr)
-library(tm) 
-library(SnowballC)
-
-datos_train = read.csv("datos/datos_train_preprocesado.csv", stringsAsFactors = F)
-datos_test = read.csv("datos/datos_test_preprocesado.csv", stringsAsFactors = F)
-datos_total <- bind_rows(datos_train,datos_test)
-corpus = Corpus(VectorSource(datos_total$benefits_preprocesado))
-# Creamos matriz de términos con las palabras de los comentarios. Entonces cada fila, va a estar formada por los comentarios, donde cada palabra es una columna
-tdm <- tm::DocumentTermMatrix(corpus)
-tdm.tfidf <- tm::weightTfIdf(tdm)
-reviews = as.data.frame(cbind(datos_total$effectivenessNumber, as.matrix(tdm.tfidf)))
-preparado_train <- reviews[1:1500,]
-preparado_test <- reviews[-(1:1000),]
-```
-
-A continuación se va a generar el modelo utilizando como variable a predecir el effectivenessNumber con el resto de palabras que se ha almacenado en preparado_train.
-
-```{r}
-reviews.tree = rpart(V1~ .,  method = "class", data = preparado_train );  
-prp(reviews.tree)
-```
-
-En realidad, es lógico que si utilizamos un conjunto de datos mayor, sobretodo en el caso de los textos, que haga predicciones muy muy restringidas, ya que al haber tanta cantidad de palabras tiene que generalizar un montón y al final, esa generalización se reduce a utilizar pocas palabras para clasificar en las distintas etiquetas. Por ello, hemos ido probando distintos tamaños hasta dar con uno que visualmente nos compense. Pero obviamente, la importancia no está en que visualmente nos parezca un árbol representativo y que de buenos resultados, sino en que a la hora de predecir el conjunto de test, nos de resultado realmente representativos.
-
-Por ello vamos a hacer predict con el árbol que hemos generado anteriormente. Simplemente le pasamos a la función predict de la librería `rattle` el árbol que hemos entrenado.  
-
-```{r}
-library(rattle)
-pred <- predict(reviews.tree, newdata=preparado_test, type="class")
-table(pred)
-table(preparado_test$V1)
-# Matriz de confusión
-tabla <-table(preparado_test$V1, pred, useNA="ifany",
-dnn=c("Real", "Predicho" ))
-tabla
-```
-
-Obtenemos el resultado
-
-```{r}
-sum(diag(tabla))/nrow(datos_test)
-```
-
-Con el fin de mejorar esta predicción, se puede seguir la idea del bagging de combinar muchos métodos sencillos, como se verá en el método
-de bosques aleatorios.
-
 
 <!------->
 
@@ -4752,6 +4438,396 @@ Como podemos ver, el clasificador no funciona bien. Etiqueta todo a 0. Creemos q
 Por otro lado, SVM no funciona bien con texto a no ser que tengas las mismas palabras tanto en el test como en el train, cosa que no ocurre en nuestro caso. Esto hace que SVM no tenga todo lo necesario para generar una buena función, ya que nos impide predecir para futuros casos (puesto que tendrían una alta probabilidad de contener palabras no contempladas en el entrenamiento). Cosa que sí ocurre, por ejemplo, en este tutorial \url{https://www.svm-tutorial.com/2014/11/svm-classify-text-r/}.
 
 En definitiva, decidimos no perder más tiempo con esta técnica, ya que parece no ser adecuada para nuestro dataset y seguir avanzando en el resto que proponemos con esta práctica.
+
+
+## 7.3. Árboles de decisión
+
+```{r, include=FALSE}
+datos_train = read.csv("datos/datos_train_preprocesado.csv", stringsAsFactors = F)
+datos_test = read.csv("datos/datos_test_preprocesado.csv", stringsAsFactors = F)
+datos_total <- union(datos_train,datos_test)
+```
+
+
+El árbol de decisión es una técnica clásica de clasificación en la que se realizan particiones binarias
+de los datos de forma recursiva. El resultado se puede representar con un árbol.
+
+Para la construcción del árbol también se puede utilizar la función **rpart**.El principal parámetro de esta función es la complejidad, **cp**. Éste permite
+simplificar los modelos ajustados mediante la poda de las divisiones que no merecen la pena. Otros
+parámetros importantes son **minsplit**, número mínimo de observaciones que debe haber en un nodo
+para que se intente una partición, y **minbucket**, número mínimo de observaciones de un nodo terminal.
+Por defecto minsplit= 20, minbucket=round(minsplit/3) y cp= 0,01.
+
+A la hora de determinar los parámetros, el procedimiento habitual para determinar los parámetros del modelo consiste en dejar que el árbol crezca hasta que cada nodo terminal tenga menos de un número mínimo de observaciones, ya que
+en algunas divisiones puede que apenas mejore y en las siguientes sí lo haga. Para determinar *cp* se
+considera como 0, para que el árbol crezca lo máximo posible.
+
+A continuación se va aplicar dicha técnica para realizar las siguientes predicciones:
+
+### 7.3.1. Predicción de efectivenessNumber en función del rating
+
+En esta sección se va a predecir la efectividad (de 1 a 5, siendo 1 menos efectiva y 5 más efectiva) en función del rating. Para ello se va a seguir con el procedimiento que se ha descrito en la introdución.
+
+A continuación se va a mostrar el árbol de decisión que se ha generado utilizando **rpart**.
+
+```{r}
+
+library("rattle")
+library("rpart")
+library("rpart.plot")
+
+seed <- 42
+
+set.seed(seed)
+
+rpart <- rpart(effectivenessNumber ~ rating, data=datos_train,
+                method="class",
+                parms=list(split="information"),
+                control=rpart.control(minsplit=30,
+                minbucket=10,
+                cp=0.00,
+                usesurrogate=0,
+                maxsurrogate=0)
+              )
+
+fancyRpartPlot(rpart, main="Decision Tree effectivenessNumber $ ratingLabel")
+
+```
+
+Como el árbol que se obtiene es muy grande, se podaría considerando una función de coste basada
+en la complejidad. Para esto, se calcula el error de la validación cruzada y se elige el menor.
+
+```{r}
+plotcp(rpart)
+
+```
+
+Mostramos la tabla de resultados
+
+```{r}
+printcp(rpart)
+```
+
+
+Tal y como se puede ver en la tabla anterior, el mínimo error se alcanza en el nodo 6.
+
+    6 0.000000      6   0.67362 0.67644 0.015294
+
+Típicamente se considera que hasta la línea discontinua de la figura anterior no hay diferencias significativas. Esta línea es la suma del mínimo error y la desviación típica, es decir:
+
+    0.67644 + 0.015294 = 0.691734
+
+Observamos en el gráfico anterior que dicho error tiene un cp de 0.023, por lo que se va a volver a generar el árbol con rpart utilizando ahora como valor de cp 0,023.
+
+```{r}
+set.seed(seed)
+rpart <- rpart(effectivenessNumber ~ rating, data=datos_train,
+                method="class",
+                parms=list(split="information"),
+                control=rpart.control(minsplit=30,
+                minbucket=10,
+                cp=0.023,
+                usesurrogate=0,
+                maxsurrogate=0)
+              )
+# Vista textual del modelo árbol de decisión:
+print(rpart)
+
+fancyRpartPlot(rpart, main="Árbol de decisión effectivenessNumber $ rating")
+
+```
+
+A continuación se lleva a cabo la predicción del conjunto de prueba y se calcula la matriz de confusión.
+
+Para cada uno de los datos del conjunto de prueba se sigue el árbol según el valor de sus variables
+hasta llegar a los nodos terminales, allí, se clasifica con la categoría más probable de ese nodo terminal,
+como se vio en el árbol anterior.
+
+La denominada matriz de confusión permite la visualización de los resultados del clasificador. Las
+filas muestran los valores reales y las columnas las predicciones del modelo. A partir de esta tabla se
+calcula la precisión del modelo.
+
+```{r}
+
+pred <- predict(rpart, newdata=datos_test, type="class")
+
+# Matriz de confusión
+tabla <-table(datos_test$effectivenessNumber, pred, useNA="ifany",
+dnn=c("Real", "Predicho" ))
+
+tabla
+
+```
+
+Esta tabla es la denominada matriz de confusión, que permite la visualización de los resultados del
+clasificador. Las filas muestran los valores reales y las columnas las predicciones del modelo. A partir
+de esta tabla se calcula la precisión del modelo.
+
+```{r}
+sum(diag(tabla))/nrow(datos_test)
+
+```
+
+La precisión de este modelo es del **57,44%** aproximadamente.
+
+El poder de predicción de los árboles de decisión no suele ser muy bueno, pero el algoritmo es
+sencillo y los modelos resultantes tienen una fácil interpretación.
+
+
+### 7.3.2. Predicción de sideEffectsNumber en función del rating
+
+Siguiendo el mismo proceso que se ha seguido para la obtención del árbol generado anteriormente, se va a predecir el valor de efectos secundarios en función del rating del medicamento.
+
+```{r}
+
+seed <- 42
+
+set.seed(seed)
+
+rpart <- rpart(sideEffectsNumber ~ rating, data=datos_train,
+                method="class",
+                parms=list(split="information"),
+                control=rpart.control(minsplit=30,
+                minbucket=10,
+                cp=0.01,
+                usesurrogate=0,
+                maxsurrogate=0)
+              )
+
+
+print(rpart)
+
+fancyRpartPlot(rpart, main="Decision Tree sideEffectsNumberr $ rating")
+
+```
+
+Mostramos la gráfica del error de la validación cruzada.
+
+```{r}
+
+plotcp(rpart)
+
+```
+
+ Generamos la predicción
+
+```{r}
+pred <- predict(rpart, newdata=datos_test, type="class")
+
+# Matriz de confusión
+tabla <-table(datos_test$sideEffectsNumber, pred, useNA="ifany",
+dnn=c("Real", "Predicho" ))
+
+tabla
+```
+
+Obtenemos el resultado
+
+```{r}
+
+sum(diag(tabla))/nrow(datos_test)
+
+```
+
+La precisión de este modelo es del **50,58%** aproximadamente.
+
+
+### 7.3.3. Predicción de effectivenessNumber en función del weightedRating
+
+Siguiendo el mismo proceso que se ha seguido para la obtención del árbol generado anteriormente, se va a predecir el valor de la efectividad del medicamento en función del rating ponderado que se ha generado durante el procesamiento ( 70% efectos secundarios, 30% efectividad).
+
+```{r}
+seed <- 42
+
+set.seed(seed)
+
+rpart <- rpart(effectivenessNumber ~ weightedRating, data=datos_train,
+                method="class",
+                parms=list(split="information"),
+                control=rpart.control(minsplit=30,
+                minbucket=10,
+                cp=0.03,
+                usesurrogate=0,
+                maxsurrogate=0)
+              )
+
+
+print(rpart)
+
+fancyRpartPlot(rpart, main="Decision Tree effectivenessNumber $ weightedRating")
+
+```
+
+Mostramos la gráfica del error de la validación cruzada.
+
+```{r}
+
+plotcp(rpart)
+
+```
+
+Generamos la predicción
+
+```{r}
+
+pred <- predict(rpart, newdata=datos_test, type="class")
+
+# Matriz de confusión
+tabla <-table(datos_test$effectivenessNumber, pred, useNA="ifany",
+dnn=c("Real", "Predicho" ))
+
+tabla
+```
+
+Obtenemos el resultado
+
+```{r}
+sum(diag(tabla))/nrow(datos_test)
+
+```
+
+La precisión de este modelo es del **53,57%** aproximadamente.
+
+
+### 7.3.4. Predicción de sideEffectsNumber en función del weightedRating
+
+Siguiendo el mismo proceso que se ha seguido para la obtención del árbol generado anteriormente, se va a predecir el valor de efectos secundarios del medicamento en función del rating ponderado que se ha generado durante el procesamiento (70% efectos secundarios, 30% efectividad).
+
+Generamos el modelo
+
+```{r}
+
+library("rattle")
+library("rpart")
+library("rpart.plot")
+
+seed <- 42
+
+set.seed(seed)
+
+rpart <- rpart(sideEffectsNumber ~ weightedRating, data=datos_train,
+                method="class",
+                parms=list(split="information"),
+                control=rpart.control(minsplit=30,
+                minbucket=10,
+                cp=0.01,
+                usesurrogate=0,
+                maxsurrogate=0)
+              )
+
+
+print(rpart)
+
+fancyRpartPlot(rpart, main="Decision Tree sideEffectsNumberr $ weightedRating")
+
+```
+
+Mostramos la gráfica del error de la validación cruzada.
+
+```{r}
+plotcp(rpart)
+```
+
+Generamos la predicción
+
+```{r}
+
+pred <- predict(rpart, newdata=datos_test, type="class")
+
+# Matriz de confusión
+tabla <-table(datos_test$sideEffectsNumber, pred, useNA="ifany",
+dnn=c("Real", "Predicho" ))
+
+tabla
+
+```
+
+Obtenemos el resultado
+
+```{r}
+sum(diag(tabla))/nrow(datos_test)
+
+```
+
+La precisión de este modelo es del **77,07%** aproximadamente.
+
+
+
+
+### 7.3.5. Conclusión
+
+Haciendo un breve resumen de lo obtenido, tenemos lo siguiente:
+
+  - Porcentaje de acierto en la predicción de la efectividad en función del rating: **57,44%**
+  - Porcentaje de acierto en la predicción de los efectos secundarios en función del rating: **50,58%**
+  - Porcentaje de acierto en la predicción de la efectividad en función del rating ponderado: **53,57%**
+  - Porcentaje de acierto en la predicción de los efectos secundarios en función del rating ponderado: **73,21%**
+
+Como se puede observar, el porcentaje de acierto de la efectividad teniendo en cuenta el rating (dado por los usuarios) y el rating ponderado es muy similar, sin embargo la predicción para los efectos secundarios difiere en un 23% a favor del rating ponderado. Esto es debido a que en el rating ponderado se ha tenido más en cuenta el impacto de los efectos secundarios y esto hace que la predicción de dichos efectos secundarios sea más precisa.
+
+
+### 7.3.6. Predicción del rating en función del comentario de beneficios
+
+En esta sección se va a realizar una predicción de la efectividad en base a los comentarios aportados por los usuarios (benefitsReview). Para ello, lo primero es realizar todos aquellos cambios que necesitemos acerca del conjunto de datos ya preprocesado, de forma que obtengamos los datos de la forma adecuada que requiere la técnica. En este caso, pasa igual que con otras técnicas ya comentadas (como Naive Bayes), donde se utilizan las palabras obtenidas en el conjunto de datos, y, a la hora de predecir, todas esas palabras deben existir en el modelo con el que se ha realizado dicha predicción. Esto se debe a que se deben conocer la frecuencia de todas las palabras existentes en nuestro problema para poder llevar a cabo las predicciones, lo que nos ha obligado a fusionar ambos conjuntos, calcular la matriz de frecuencias, y posteriormente separarlos, para poder entrenar y testear el modelo de manera adecuada.
+
+
+Además, debemos puntualizar una cosa, y es que tal y como aparece en el código, estamos cogiendo un conjunto de datos train inferior al tamaño original. Esto se debe a que, en las pruebas que hemos hecho cogiendo todo el conjunto de TRAIN, obteníamos un árbol de mala calidad. Esto se debe a que no obteníamos tantos nodos hoja  como etiquetas, y por tanto, había clases a las que nunca etiquetaba y daba malos resultados. Tras darle muchas vueltas, llegamos a la conclusión de que le estábamos dando demasiada información, dando lugar a dos aspectos:
+
+1. El sesgo en el conjunto se ve retratado de forma directa en el árbol.
+2. Se le está pasando excesiva información al algoritmo, y al final, generaliza de la forma que mejor puede (que tal y como se comenta, no es la adecuada). 
+
+Por estas razones, nos hemos decantado por coger un árbol de un tamaño inferior, ya que al menos, conseguimos mejorar en cuanto a predicciones. 
+
+```{r}
+library(dplyr)
+library(tm) 
+library(SnowballC)
+
+datos_train = read.csv("datos/datos_train_preprocesado.csv", stringsAsFactors = F)
+datos_test = read.csv("datos/datos_test_preprocesado.csv", stringsAsFactors = F)
+datos_total <- bind_rows(datos_train,datos_test)
+corpus = Corpus(VectorSource(datos_total$benefits_preprocesado))
+# Creamos matriz de términos con las palabras de los comentarios. Entonces cada fila, va a estar formada por los comentarios, donde cada palabra es una columna
+tdm <- tm::DocumentTermMatrix(corpus)
+tdm.tfidf <- tm::weightTfIdf(tdm)
+reviews = as.data.frame(cbind(datos_total$effectivenessNumber, as.matrix(tdm.tfidf)))
+preparado_train <- reviews[1:1500,]
+preparado_test <- reviews[-(1:1500),]
+```
+
+A continuación se va a generar el modelo utilizando como variable a predecir el *effectivenessNumber* con el resto de palabras que se ha almacenado en preparado_train.
+
+```{r}
+reviews.tree = rpart(V1~ .,  method = "class", data = preparado_train );  
+prp(reviews.tree)
+```
+
+En realidad, es lógico que si utilizamos un conjunto de datos mayor, sobretodo en el caso de los textos, que haga predicciones muy muy restringidas, ya que al haber tanta cantidad de palabras tiene que generalizar un montón y al final, esa generalización se reduce a utilizar pocas palabras para clasificar en las distintas etiquetas. Por ello (como se ha comentado en el párrafo anterior), hemos ido probando distintos tamaños hasta dar con uno que visualmente nos compense. Pero obviamente, la importancia no está en que visualmente nos parezca un árbol representativo y que de buenos resultados, sino en que a la hora de predecir el conjunto de test, nos de resultado realmente representativos.
+
+Por ello vamos a hacer predict con el árbol que hemos generado anteriormente. Simplemente le pasamos a la función predict de la librería `rattle` el árbol que hemos entrenado.  
+
+```{r}
+library(rattle)
+pred <- predict(reviews.tree, newdata=preparado_test, type="class")
+table(pred)
+table(preparado_test$V1)
+# Matriz de confusión
+tabla <-table(preparado_test$V1, pred, useNA="ifany",
+dnn=c("Real", "Predicho" ))
+tabla
+```
+
+Obtenemos el resultado
+
+```{r}
+sum(diag(tabla))/nrow(datos_test)
+```
+
+Con el fin de mejorar esta predicción, se puede seguir la idea del Bagging o Random Forest de combinar muchos métodos sencillos, como se verá en secciones posteriores.
+
+
+
+
 
 <!------->
 
@@ -5234,11 +5310,12 @@ Después de realizar las técnicas que acabamos de comentar, hemos comprendido l
 Por otro lado, se llevó a cabo un análisis de sentimientos sobre los sentimientos de las personas, mediante la opinión que tienen sobre los distintos medicamentos que se encuentran en nuestro dataset. Dicho análisis nos llevó a la conclusión, de que se tiene una opinión más negativa que positiva sobre la aplicación de los medicamentos. Sin embargo, esta conclusión tiene coherencia, ya que las personas tiende a extraer los contras de los medicamentos. Y a no ser que el medicamento cumpla su función eficazmente, el paciente no tenderá a ser positivo respecto al mismo.
 
 Con respecto a las técnicas, debemos destacar la componente subjetiva que tienen las reglas de asociación a la hora de su elección. Se observó, como los consecuentes más frecuentes fueron effect y side, lo que es lógico ya que estamos midiendo los efectos que tienen los medicamentos. 
+
 Por otro lado, se aplicó el método de regresión sobre las variables numéricas, dicho método obtuvo unas predicciones de etiquetas muy buenas, obteniendo con la regresión logística multivariable el mínimo error fuera de la muestra. Ya que dicho método, permite estimar de manera muy aceptable la probabilidad de una variable cualitativa binaria en función de una variable cuantitativa. 
 
 \newpage 
 
-## Apéndice
+# Apéndice
 
 Más análisis de sentimientos de comentarios por condición y medicamento:
 

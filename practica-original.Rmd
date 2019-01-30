@@ -2284,7 +2284,7 @@ Esto también nos da como **conclusión** que en general los medicamentos **no t
 ## 3.4. Valoración ponderada sobre el medicamento
 
 
-En esta sección, se va a analizar si se consideran que los medicamentos son buenos o no teniendo en cuenta la relación entre los beneficios que aporta (efectividad) y las inconvenientes que tiene (efectos secundarios). Para ello se va a analizar el atributo **weightedRating** (que mide dicha relación teniendo en cuenta una tasa de efectividad del 30% y una tasa de efectos secundarios del 70%), y siendo 1 peor valorado y 10 mejor valorado.
+En esta sección, se va a analizar si se consideran que los medicamentos son "buenos" o no, teniendo en cuenta la relación entre los beneficios que aporta (efectividad) y las inconvenientes que tiene (efectos secundarios). Para ello se va a analizar el atributo **weightedRating** (que mide dicha relación teniendo en cuenta una tasa de efectividad del 30% y una tasa de efectos secundarios del 70%), y siendo 1 peor valorado y 10 mejor valorado.
 
 Empezamos obteniendo las frecuencias y porcentaje total de las anotaciones sobre la puntuación ponderada. Para ello se va a calcular la frecuencia de dicho atributo y su porcentaje respecto del total.
 
@@ -2323,7 +2323,7 @@ La mediana es la siguiente:
 median(datos_train$weightedRating)
 ```
 
-El valor medio obtenido es 7.52 sobre 10 y la mediana es 2. Podemos concluir con dicha información que la puntuación general sobre los medicamentos es de **notable**.
+El valor medio obtenido es 7.52 sobre 10 y la mediana es 8. Podemos concluir con dicha información que la puntuación general sobre los medicamentos es de **notable**.
 
 A continuación, se va a visualizar dicha información gráficamente:
 
@@ -2376,7 +2376,7 @@ Como se puede observar, la desviación típica nos da un valor de 2.07. Esto qui
 
 Este valor concuerda, puesto que si observamos el histograma anterior, vemos que la mayoría de las puntuaciones se sitúan entre 6 y 10.
 
-Esto también nos da como **conclusión** que en general los medicamentos **son convenientes tomarlos**.
+Esto también nos da como **conclusión** que en general los medicamentos que forman parte de este dataset **son convenientes tomarlos**.
 
 
 
@@ -2418,7 +2418,7 @@ Ahora vamos a comprobar la relación que existe entre la valoración dada por el
 cor(datos_train[,c(2,8)])
 ```
 
-Podemos comprobar como si el medicamento tiene una mayor tasa de efectos secundarios, la valoración dada por el usuario disminuye.
+Podemos comprobar cómo si el medicamento tiene una mayor tasa de efectos secundarios, la valoración dada por el usuario disminuye.
 
 ```{r}
 # Correlación lineal entre rating y effectivenessNumber
@@ -2429,7 +2429,7 @@ Y si la efectividad del medicamento es alta, la valoración del usuario se incre
 
 Como observación general, se puede destacar que **la valoración del usuario está condicionada más por la efectividad del medicamento** (relación 1/0.74) que por los efectos secundarios (relación 1/-0.68).
 
-Por último, vamos a observar en el siguiente gráfico como se relacionan las variables entre sí en función se sus valores.
+Por último, vamos a observar en el siguiente gráfico cómo se relacionan las variables entre sí en función se sus valores.
 
 ```{r}
 # Gráfico de coordenadas paralelas
@@ -2437,7 +2437,7 @@ library(MASS)
 parcoord(datos_train[,c(8,9,2,10)], col=datos_train$rating,var.label=T)
 ```
 
-Por ejemplo, podemos destacar como si el número de efectos secundarios es 1 (no tiene efectos secundarios) y la efectividad del medicamento es 5 (muy efectivo), entonces la valoración del usuario será 10 y la valoración ponderada será también 10.
+Por ejemplo, podemos destacar que, si el número de efectos secundarios es 1 (no tiene efectos secundarios) y la efectividad del medicamento es 5 (muy efectivo), entonces la valoración del usuario será 10 y la valoración ponderada será también 10.
 
 
 \newpage
@@ -2454,7 +2454,7 @@ datos_train <- read.table("datos/datos_train_preprocesado.csv", sep=",", comment
                           ,quote = "\"", header=TRUE)
 ```
 
-La idea que se nos ocurrió consiste en saber cuales son los medicamentos y condiciones más frecuentes que ocurren, ya que mostrar toda la información puede saturar la visibilidad de los datos. 
+La idea que se nos ocurrió consiste en saber cuáles son los medicamentos y condiciones más frecuentes que ocurren, ya que mostrar toda la información puede saturar la visibilidad de los datos. 
 
 ```{r eval=FALSE}
 summary(datos_train)
@@ -2464,7 +2464,7 @@ condiciones = c("depression","acne","anxiety","insomnia","birth control","high b
 medicamentos = c ("lexapro","prozac","retin-a","zoloft","paxil","propecia")
 ```
 
-Gracias al resumen de nuestro dataset sabemos rápidamente cuales son las drogas y condiciones más comunes. Ahora vamos a hacer un análisis de sentimientos de los comentarios relacionados con estas drogas y condiciones.
+Gracias al resumen de nuestro dataset sabemos rápidamente cuáles son las drogas y condiciones más comunes. Ahora vamos a hacer un análisis de sentimientos de los comentarios relacionados con estas drogas y condiciones.
 
 ```{r eval=FALSE}
 analisis_sentimientos <- function(comentarios,titulo){
@@ -2494,9 +2494,9 @@ analisis_sentimientos <- function(comentarios,titulo){
 }
 ```
 
-Básicamente lo que llevamos a cabo en esta función es la generación del Corpus de los comentarios pasados como parámetros (ya preprocesados). El siguiente paso es generar la tabla de sentimientos traspuesta, sino hacemos esto no funciona debido a la disposición de los datos. Luego preparamos una fila en la que aparezcan el nombre de los sentimientos en el mismo orden que la tabla y borramos los nombres de las filas. Esto último se realiza para la correcta visualización de los datos.
+Básicamente lo que llevamos a cabo en esta función es la generación del Corpus de los comentarios pasados como parámetros (ya preprocesados). El siguiente paso es generar la tabla de sentimientos traspuesta (sino hacemos esto no funciona debido a la disposición de los datos). Luego preparamos una fila en la que aparezcan el nombre de los sentimientos en el mismo orden que la tabla y borramos los nombres de las filas. Esto último se realiza para la correcta visualización de los datos.
 
-Por último se lleva a cabo la representación en forma de gráficas de los comentarios de la gente. Recordemos, están acotadas a conjuntos de comentarios para las drogas y condiciones más comunes, por separado.
+Por último se lleva a cabo la representación en forma de gráficas de los comentarios de la gente. Recordemos, están acotadas a conjuntos de comentarios para los fármacos y condiciones más comunes, por separado.
 
 Obtenemos las gráficas mencionadas:
 
@@ -2546,14 +2546,15 @@ for(cadena in medicamentos){
     \label{fig:sentimientos:propeciaSentimiento}
 \end{figure}
 
-Hemos visualizado las imágenes resultantes y llegamos a la conclusión de que, en general, hace una buena descripción de los datos. Por ejemplo, para la **propecia** tenemos un altísimo contenido de sentimientos tales como miedo, tristeza y rabia. Mientras que otros sentimientos pasan más desapercibidos. Sin embargo, parece ser que las personas están contentas de forma genérica para el conjunto de medicamentos que la tratan, ya que los comentarios sobre los beneficios de los medicamentos son más positivos que negativos. En cambio, cuando hablamos de los efectos secundarios de este medicamento, el negativismo vence al positivismo, se ve que los efectos secundarios que pueden acarrear este tipo de medicinas no son muy agradables. Los sentimientos de los efectos son muy similares a los que hablan de los beneficios, vemos que hay una concordancia de los comentarios de las personas.
+Hemos visualizado las imágenes resultantes y llegamos a la conclusión de que, en general, hace una buena descripción de los datos. Por ejemplo, para la **propecia** tenemos un altísimo contenido de sentimientos tales como miedo, tristeza y rabia. Mientras que otros sentimientos pasan más desapercibidos. Sin embargo, parece ser que las personas están contentas de forma genérica para el conjunto de medicamentos que la tratan, ya que los comentarios sobre los beneficios de los medicamentos son más positivos que negativos. En cambio, cuando hablamos de los efectos secundarios de este medicamento, el negativismo vence al positivismo; se ve que los efectos secundarios que pueden acarrear este tipo de medicinas no son muy agradables. Los sentimientos de los efectos secundarios de los medicamentos son muy similares a los que hablan de los beneficios, vemos que hay una concordancia de los comentarios de las personas.
 
 Otro dato curioso es que, de forma genérica, hay una mayor presencia de negativismo que positivismo. Hay que darse cuenta de que las personas están escribiendo sobre problemas de salud que tienen, por lo que el único punto positivo que podemos extraer es cuando una persona muestra su felicidad al ver que un cierto medicamento está surtiendo efecto (y aún así es posible que se queje igualmente por los efectos secundarios, por ejemplo).
 
-Hay que destacar que los sentimientos están muy entremezclados en los comentarios presentes de nuestro dataset. Los valores del rating vendrán especificados implicitamente dependiendo del peso que le de cada persona a esos sentimientos. En definitiva, nos damos cuenta de que nuestro dataset es bastante subjetivo. Por ejemplo, las personas suelen mostrarse más dispuestas a expresar comentarios para quejarse que para informar de que un medicamento le está funcionando.
+Además, hay que destacar que los sentimientos están muy entremezclados en los comentarios presentes de nuestro dataset. Los valores del rating vendrán especificados implicitamente dependiendo del peso que le de cada persona a esos sentimientos. En definitiva, nos damos cuenta de que nuestro dataset es bastante subjetivo. Por ejemplo, las personas suelen mostrarse más dispuestas a expresar comentarios para quejarse que para informar de que un medicamento le está funcionando.
 
 Todas estas gráficas pueden apreciarse en el anexo de esta práctica por si se quiere ver el resto de condiciones y medicamentos analizados con esta técnica.
 
+Por último, mencionar que, gracias a estos resultados, hemos podido corroborar lo expuesto tanto en el análisis exploratorio de los datos como en el *word cloud* con sentimientos que mostramos en apartados anteriores. 
 
 \newpage
 

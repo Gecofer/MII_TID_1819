@@ -4337,6 +4337,8 @@ Vemos que las predicciones son parecidas, aunque con un poco más de error tanto
 
 Aun así, vemos que no suele tener muchos errores "graves" ya que hay valores más altos cerca de la diagonal principal de la matriz de confusión para el conjunto de test, de la misma forma que en el caso anterior.
 
+\newpage
+
 Ahora, vamos a deducir **el ratingLabel en función de los comentarios sobre los beneficios**.
 
 ```{r, eval=FALSE}

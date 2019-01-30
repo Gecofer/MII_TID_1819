@@ -1,0 +1,416 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+```{r, eval=FALSE}
+library("tm")
+library("arules")
+library("robustbase")
+library("plotly")
+library("arulesViz")
+```
+
+# Reglas de Asociación
+
+En esta técnica haremos un análisis descriptivo de los datos de texto. Buscaremos la relación que existe entre las palabras expuestas en los distintos comentarios sobre los medicamentos y tratatemos a asociarlos a distintos conceptos para tener una mejor idea de nuestro dataset y saber de antemano que palabras a priori pueden tener que ver algo con distintos efectos de los medicamentos.
+
+```{r, eval=FALSE}
+datos_train <- read.table("datos/datos_train_preprocesado.csv", sep=",",
+                          comment.char="",quote = "\"", header=TRUE)
+```
+
+Vamos a crearnos un corpus por cada uno de los tipos de comentarios que tenemos en cada item. Recordar que estos textos ya se encuentran preprocesados como se puede consultar en secciones anteriores de esta documentación.
+
+```{r, eval=FALSE}
+#benefits_review_data = as.vector(datos_train$benefitsReview)
+benefits_corpus = Corpus(VectorSource(datos_train$benefits_preprocesado))
+effects_corpus = Corpus(VectorSource(datos_train$effects_preprocesado))
+```
+
+Ahora mismo el dataset es de tipo categórico pero nosotros los necesitamos verlo como una cadena de caracteres para pasos posteriores. Por tanto, todos los datos que se encuentran en estas columnas van a ser transformados. Serán entendidas como palabras diferenciadas.
+
+Una vez que obtenemos las palabras en string, algunas de estas se quedan como palabras vacías, para ello utilizamos la función. Finalmente, ya podemos obtener una base de datos de tipo transaccional.
+
+```{r, eval=FALSE}
+items_benefits <- strsplit(as.character(benefits_corpus$content), " ")
+items_effects <- strsplit(as.character(effects_corpus$content), " ")
+
+# Para eliminar las cadenas vacías
+# https://stackoverflow.com/questions/24178854/remove-blanks-from-strsplit-in-r
+items_benefits <- lapply(items_benefits, function(x){x[!x ==""]})
+items_effects <- lapply(items_effects, function(x){x[!x ==""]})
+
+transactions_benefits <- as(items_benefits,"transactions")
+transactions_effects <- as(items_effects,"transactions")
+
+```
+
+Ya tenemos los datos de textos estructurados en una base de datos transaccional, podemos aplicar la técnica para obtener las reglas de asosiación. Vamos a utilizar el algoritmo "a priori" visto en clase. De lo contrario, el coste computacional y de tiempo no sería viable para obtener este conocimineto a partir de los comentarios.
+
+El primer parámetro que encontramos en la función se corresponde con los datos que le proporcionamos y el segundo, un listado de parámetros específicos. En cuanto a estos, el primero es el umbral para el soporte, el segundo el umbral de la confianza, el tercero el target para indicar que buscamos reglas de asociación y en el cuarto indicamos que como mínimo empecemos con itemset de tamaño 2. De esta forma estamos selecciondo un conjunto más reducido de reglas, que es lo que nos interesa desde el principio para ahorrar costes de procesamiento de los datos, al mismo tiempo que perdemos la mínima calidad posible en las reglas.
+
+Ordenamos por "confidence" a vista de mostrar posteriormente los resultados más importantes. Entonces mostraremos las reglas que tienen más confianza (Sino no podemos realizar una buena visualización de los datos) y mostraremos gráficamente el resultado obtenido.
+
+```{r, eval=FALSE}
+rules_benefits <- apriori(transactions_benefits, parameter = 
+                    list(sup = 0.001, conf = 0.7, target="rules", minlen=2))
+rules_effects <- apriori(transactions_effects, parameter =
+                    list(sup = 0.001, conf = 0.7, target="rules", minlen=2))
+#rules <- sort(rules, by="support")
+rules_benefits <- sort(rules_benefits, decreasing = TRUE, na.last = NA,
+                       by = "confidence")
+rules_effects <- sort(rules_effects, decreasing = TRUE, na.last = NA,
+                      by = "confidence")
+
+# Si no funciona inspect
+# https://stackoverflow.com/questions/18934098/r-error-with-inspect-function
+detach(package:tm, unload=TRUE) 
+inspect(head(rules_benefits,100))
+inspect(head(rules_effects,100))
+library(tm)
+# Cuando tenemos una regla con una única palabra en el antecedente y en el consecuente
+# deben de ir unidas en el texto
+```
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{figuras/asociacion/reglas_general_beneficios.png}
+    \caption{inspect(head(rules\_benefits),100) para visualizar reglas más importantes de los comentarios sobre beneficios.}
+    \label{fig:asociacion:reglasBenefits}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{figuras/asociacion/reglas_general_beneficios.png}
+    \caption{inspect(head(rules\_effects),100) para visualizar reglas más importantes de los comentarios sobre efectos secundarios.}
+    \label{fig:asociacion:reglasEffects}
+\end{figure}
+
+```{r, eval=FALSE}
+plot(rules_benefits, method="graph")
+title("Reglas de asociación sobre comentarios de beneficios")
+```
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{figuras/asociacion/asociacion_beneficios.png}
+    \caption{Mapa de reglas de asociación sobre los comentarios de beneficios.}
+    \label{fig:asociacion:benefits}
+\end{figure}
+
+Al pintar las reglas de asociación, nos dimos cuenta de que plot no puede con tantas reglas al mismo tiempo, por lo que se queda con las 100 primeras. Como las tenemos ordenadas por confianza, no nos resulta un problema, ya que siempre que ocurra esto cogerá las 100 que más nos interesan.
+
+Tal y como se aprecia en el mapa de asociaciones realizado, vemos que a simple vista las asociaciones obtenidas tienen mucho sentido. Por ejemplo, tenemos *attack* junto con *panic* que están relacionados con un lift considerable a *anxieti*. Cuanto más oscuros sean los puntos quieren decir que el lift es más alto. Por tanto, la aparición de una de las plabaras favorece la aparición de otra.
+
+Vemos que hay consecuentes en las reglas muy frecuentes, que ocupan el centro o núcleo de las reglas de asociación en el mapa. Estas palabras son principalmente *effect* y *side*. Esto también nos parece prometedor, ya que tiene todo el sentido del mundo que la gente haga comentarios siempre en torno a los efectos que tienen los medicamentos que están probando.
+
+Podríamos poner mil ejemplos más. La palabra *acid* favorece que aparezca la palabra *reflux*. La gente cuando habla de reflujo, se refiere al ácido del estómago que sube de forma accidental por el esófago y cauza quemazón.
+
+En definitiva, es una buena forma de tener una vista general sobre lo que hablan las personas en el conjunto de comentarios y tener una idea de que conceptos utilizan más y cómo para expresar los efectos que tienen los medicamentos.
+
+Hicimos lo mismo para los comentarios relacionados con los efectos secundarios.
+
+```{r, eval=FALSE}
+plot(rules_effects, method="graph")
+title("Reglas de asociación sobre comentarios de efectos secundarios")
+```
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{figuras/asociacion/asociacion_efectos.png}
+    \caption{Mapa de reglas de asociación sobre los comentarios de efectos secundarios.}
+    \label{fig:asociacion:effects}
+\end{figure}
+
+En este caso, vemos que no hay demasiadas asociaciones con un valor de lift por encima significativamente del resto. Creemos que se debe a que aquí la gente escribe una diversidad de tipos de comentarios mucho más grande. Es decir, quizás los comentarios sobre efectos secundarios pueda tener una mayor cantidad de variedad sobre lo que se habla que en los comentarios sobre los beneficios.
+
+No obstante, volvemos a tener los mismos consecuentes más frecuentes. OCupando una vez más el núcleo del mapa de las reglas de asociación; *side* y *effect*. Tiene sentido ya que en los efectos secundarios vuelven a hablar de este tema de forma general, sólo que desde un punto de vista diferente (por eso la estructura principal del mapa y las reglas de asociación son diferentes).
+
+Hay conceptos interesantes como *nausea*, *headach*, *pain*... Conceptos que están estrechamente relacionados con efectos secundarios.
+
+##Reglas de asociación específicas.
+
+Llegados a este punto, quisimos darle un nuevo enfoque a la extracción de reglas de asociación a parir de estos comentarios. En los mapas anteriores, veíamos que había demasiadas reglas enfocadas a una misma cosa, incluso llegando a ser difícil de visualizar en algunos sitios concretos.
+
+Por otro lado, temíamos estar cogiendo solo las reglas de asociación relacionadas con *effects* y *side* por ser las reglas con una mayor confianza y despreciando otras que podían ser interesantes y que tuvieran consecuentes en otros conceptos.
+
+Entonces, se nos ocurrió la siguiente idea: ¿Y si enfocamos la selección de reglas en la que el consecuente sea un término concreto que consideremos interesantes? En otras palabras, quremos realizar un filtrado de reglas interesantes directamente guiadas por el usuario, tal y como se ha visto en teoría.
+
+Queremos obtener las reglas en la que los consecuentes sean los valores de efectividad de nuestro dataset. Aquí realizamos un "mini-preprocesamiento", ya que está realizado en apartado anteriores, pero en esta técnica especificamente vimos conveniente realizar estos pequeños cambios y añadirlos en una nueva columna del dataset.
+
+Lo primero que debíamos de hacer es tener la efectividad unida en una sola cadena sin espacios, ya que de lo contrario no sería reconocida como un término a la hora de generar la estructura transaccional posterior.
+
+```{r, eval=FALSE}
+datos_train$effectivenessGuion[datos_train$effectiveness == 
+                                 "Highly Effective"] <- "Highly-Effective"
+datos_train$effectivenessGuion[datos_train$effectiveness == 
+                                 "Considerably Effective"] <- "Considerably-Effective"
+datos_train$effectivenessGuion[datos_train$effectiveness ==
+                                 "Moderately Effective"] <- "Moderately-Effective"
+datos_train$effectivenessGuion[datos_train$effectiveness ==
+                                 "Marginally Effective"] <- "Marginally-Effective"
+datos_train$effectivenessGuion[datos_train$effectiveness ==
+                                 "Ineffective"] <- "Ineffective"
+
+# Pasamos a factor el effectivenes unido por guiones para 
+# concatenarlo con los comentarios
+datos_train$effectivenessGuion = as.factor(datos_train$effectivenessGuion)
+```
+
+¿Cómo podemos hacer que estas efectividades sean cosas frecuentes en las reglas en función de los comentarios? Tuvimos una buena idea en este punto. Mientras discutiamos en cómo hacer que el algoritmo a priori pudiera generar estas reglas, pensamos en coger estas etiquetas de efectividad y ponerlas al final de cada comentario como un término más (fila por fila). De esta forma cada comentario tendría una palabra final en la que aparece el nivel de efectividad que el usuario reconoce en el medicamento y podemos pasarlo de esa forma directamente al algoritmo.
+
+```{r, eval=FALSE}
+# Juntamos las cadenas en una nueva columna del dataset que combina con los
+# comentarios con los beneficios
+datos_train$benefits_effectiveness <- with(datos_train, 
+                    interaction(benefits_preprocesado,effectivenessGuion), sep=" ")
+datos_train$benefits_effectiveness <- gsub("[.]", " ", datos_train$benefits_effectiveness)
+
+# Hacemos lo mismo pero para los comentatios de efectos secundarios
+datos_train$effects_effectiveness <- with(datos_train, interaction
+                                          (effects_preprocesado,effectivenessGuion), sep=" ")
+datos_train$effects_effectiveness <- gsub("[.]", " ", datos_train$benefits_effectiveness)
+
+datos_train$effects_effectiveness[1:10]
+
+```
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{figuras/asociacion/ejemplo_effects_effectiveness.png}
+    \caption{Ilustración de preprocesamiento específico para reglas de asociación acotada a efectividad.}
+    \label{fig:asociacion:preprocesamientoAsociacion}
+\end{figure}
+
+Los pasos siguientes ya son muy parecidos a los explicados anteriormente. Generamos los corpus.
+
+```{r, eval=FALSE}
+# Generamos los corpus con estas nuevas columnas en la que 
+# añadimos la efectividad como término en cada comentario
+benefits_corpus = Corpus(VectorSource(datos_train$benefits_effectiveness))
+effects_corpus = Corpus(VectorSource(datos_train$effects_effectiveness))
+```
+
+Separamos los términos y eliminamos términos vacíos.
+
+```{r, eval=FALSE}
+#Separamos todas las palabras entre sí
+benefits_items <- strsplit(as.character(benefits_corpus$content), " ")
+effects_items <- strsplit(as.character(effects_corpus$content), " ")
+# Para eliminar las cadenas vacías
+# https://stackoverflow.com/questions/24178854/remove-blanks-from-strsplit-in-r
+benefits_items <- lapply(benefits_items, function(x){x[!x ==""]})
+effects_items <- lapply(effects_items, function(x){x[!x ==""]})
+```
+
+Generamos las estructuras transaccionales.
+
+```{r, eval=FALSE}
+#Generamos la estructura de datos transaccional
+benefits_transactions <- as(benefits_items,"transactions")
+effects_transactions <- as(effects_items,"transactions")
+```
+
+Ahora tenemos que aplicar el algoritmo a priori. La estrategia consiste en hacer que los consecuentes frecuentes sean los tipos de efectividad que puede tener los medicamentos, es una forma más de filtrar reglas y no quedarnos con todas (ya que hemos visto en teoría que esto es computacionalmente muy costoso). Por ello, especificamos que los consecuentes de las reglas obtenidas sean cada una de las etiquetas posibles de este campo (con el guión puesto para las palabras compuestas como hicimos anteriormente). Los parámetros han sido fijados para que nos devuelva un conjunto de reglas razonable.
+
+Finalmente, ordenamos las reglas obtenidas por la confianza que tienen de mayor a menor.
+
+```{r, eval=FALSE}
+benefits_rulesInnefective <- apriori (data=benefits_transactions, 
+                             parameter=list (supp=0.0007,conf = 0.9, minlen=2), 
+                             appearance = list(default="lhs",rhs=c("Ineffective")), 
+                             control = list (verbose=F))
+
+benefits_rulesHighlyEffective <- apriori (data=benefits_transactions, 
+                             parameter=list (supp=0.0007,conf = 0.9, minlen=2), 
+                             appearance = list(default="lhs",rhs=c("Highly-Effective")), 
+                             control = list (verbose=F))
+
+benefits_rulesConsiderablyEffective <- apriori (data=benefits_transactions, 
+                              parameter=list (supp=0.0007,conf = 0.9, minlen=2), 
+                              appearance = list(default="lhs",rhs=c("Considerably-Effective")), 
+                              control = list (verbose=F))
+
+benefits_rulesModeratelyEffective <- apriori (data=benefits_transactions, 
+                              parameter=list (supp=0.0007,conf = 0.9, minlen=2), 
+                              appearance = list(default="lhs",rhs=c("Moderately-Effective")), 
+                              control = list (verbose=F))
+
+benefits_rulesMarginallyEffective <- apriori (data=benefits_transactions, 
+                             parameter=list (supp=0.0007,conf = 0.9, minlen=2), 
+                             appearance = list(default="lhs",rhs=c("Marginally-Effective")), 
+                             control = list (verbose=F))
+
+
+benefits_rulesInnefective <- 
+  sort(benefits_rulesInnefective, decreasing = TRUE, na.last = NA, by = "confidence")
+benefits_rulesHighlyEffective <- 
+  sort(benefits_rulesHighlyEffective, decreasing = TRUE, na.last = NA, by = "confidence")
+benefits_rulesConsiderablyEffective <- 
+  sort(benefits_rulesConsiderablyEffective, decreasing = TRUE, na.last = NA, by = "confidence")
+benefits_rulesModeratelyEffective <- 
+  sort(benefits_rulesModeratelyEffective, decreasing = TRUE, na.last = NA, by = "confidence")
+benefits_rulesMarginallyEffective <- 
+  sort(benefits_rulesMarginallyEffective, decreasing = TRUE, na.last = NA, by = "confidence")
+```
+
+Podemos mostrar las 10 reglas de mayor confianza relacionadas con cada uno de los consecuentes.
+
+```{r, eval=FALSE}
+detach(package:tm, unload=TRUE)
+inspect(head(benefits_rulesInnefective,10))
+inspect(head(benefits_rulesHighlyEffective,10))
+inspect(head(benefits_rulesConsiderablyEffective,10))
+inspect(head(benefits_rulesModeratelyEffective,10))
+inspect(head(benefits_rulesMarginallyEffective,10))
+library(tm)
+```
+
+Hacemos el mismo proceso pero con los comentatios de los efectos secundarios.
+
+```{r, eval=FALSE}
+effects_rulesInnefective <- apriori (data=effects_transactions, 
+                                 parameter=list (supp=0.0007,conf = 0.9, minlen=2), 
+                                 appearance = list(default="lhs",rhs=c("Ineffective")), 
+                                 control = list (verbose=F))
+
+effects_rulesHighlyEffective <- apriori (data=effects_transactions, 
+                             parameter=list (supp=0.0007,conf = 0.9, minlen=2), 
+                             appearance = list(default="lhs",rhs=c("Highly-Effective")), 
+                             control = list (verbose=F))
+
+effects_rulesConsiderablyEffective <- apriori (data=effects_transactions, 
+                                parameter=list (supp=0.0007,conf = 0.9, minlen=2), 
+                                appearance = list(default="lhs",rhs=c("Considerably-Effective")), 
+                                control = list (verbose=F))
+
+effects_rulesModeratelyEffective <- apriori (data=effects_transactions, 
+                                parameter=list (supp=0.0007,conf = 0.9, minlen=2), 
+                                appearance = list(default="lhs",rhs=c("Moderately-Effective")), 
+                                control = list (verbose=F))
+
+effects_rulesMarginallyEffective <- apriori (data=effects_transactions, 
+                                     parameter=list (supp=0.0007,conf = 0.9, minlen=2), 
+                                     appearance = list(default="lhs",rhs=c("Marginally-Effective")), 
+                                     control = list (verbose=F))
+
+
+effects_rulesInnefective <- sort(effects_rulesInnefective, 
+                                 decreasing = TRUE, na.last = NA, by = "confidence")
+effects_rulesHighlyEffective <- sort(effects_rulesHighlyEffective, 
+                                     decreasing = TRUE, na.last = NA, by = "confidence")
+effects_rulesConsiderablyEffective <- sort(effects_rulesConsiderablyEffective, 
+                                           decreasing = TRUE, na.last = NA, by = "confidence")
+effects_rulesModeratelyEffective <- sort(effects_rulesModeratelyEffective, 
+                                         decreasing = TRUE, na.last = NA, by = "confidence")
+effects_rulesMarginallyEffective <- sort(effects_rulesMarginallyEffective,
+                                         decreasing = TRUE, na.last = NA, by = "confidence")
+```
+
+Podríamos mostrar las 10 reglas con mayor confianza relacionadas con cada uno de los consecuentes si lo deseamos.
+
+```{r, eval=FALSE}
+detach(package:tm, unload=TRUE)
+inspect(head(effects_rulesInnefective,10))
+inspect(head(effects_rulesHighlyEffective,10))
+inspect(head(effects_rulesConsiderablyEffective,10))
+inspect(head(effects_rulesModeratelyEffective,10))
+inspect(head(effects_rulesMarginallyEffective,10))
+library(tm)
+```
+
+Finalmente podemos extraer todas los mapas de estas reglas de asociación.
+
+```{r, eval=FALSE}
+#Obtenemos las imágenes relacionadas con los comentarios sobre beneficios
+# de los medicamentos
+png("figuras/asociacion/benefits_Innefective.png",width=1800,height=1700,units="px",
+    pointsize=10,bg="white",res=300)
+plot(benefits_rulesInnefective, method="graph")
+title("Comentarios beneficios sobre inefectividad")
+dev.off()
+
+png("figuras/asociacion/benefits_HighlyEffective.png",width=1800,height=1700,units="px",
+    pointsize=10,bg="white",res=300)
+plot(benefits_rulesHighlyEffective, method="graph")
+title("Comentarios beneficios sobre altamente efectivos")
+dev.off()
+
+png("figuras/asociacion/benefits_ConsiderablyEffective.png",width=1800,height=1700,units="px",
+    pointsize=10,bg="white",res=300)
+plot(benefits_rulesConsiderablyEffective, method="graph")
+title("Comentarios beneficios sobre considerablemente efectivos")
+dev.off()
+
+png("figuras/asociacion/benefits_ModeratelyEffective.png",width=1800,height=1700,units="px",
+    pointsize=10,bg="white",res=300)
+plot(benefits_rulesModeratelyEffective, method="graph")
+title("Comentarios beneficios sobre moderadamente efectivos")
+dev.off()
+
+
+png("figuras/asociacion/benefits_MarginallyEffective.png",width=1800,height=1700,units="px",
+    pointsize=10,bg="white",res=300)
+plot(benefits_rulesMarginallyEffective, method="graph")
+title("Comentarios beneficios sobre casi inefectivo")
+dev.off()
+```
+
+Podemos ver que los mapas de reglas salen bastante saturadas igualmente, ya que saca bastantes.Podríamos reducir el número de reglas manipulando los umbrales de soporte y confianza si lo deseamos, aunque llevaría tiempo de computación realizar esas pruebas.
+
+Vamos a comentar por ejemplo la inefectividad, que ha salido más simple y fácil de visualizar:
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{figuras/asociacion/benefits_Innefective.png}
+    \caption{Mapa de reglas de asociación con Innefective en el consecuente en comentarios sobre beneficios.}
+    \label{fig:asociacion:innefectiveAsociacion}
+\end{figure}
+
+Como se puede ver en la imagen, los términos que giran en torno de a la inefectividad tienen bastante sentido. Por ejemplo, la palabra *none*. Lo normal es que, cuando un medicamente es inefectivo, las personas realicen comentarios del estilo "no me ha hecho nada" o "no sirve de nada". Otros como *pain* o *problem* tienen sentido ya que si un medicamento es inefectivo es normal que aparezcan palabras "negativas". 
+
+```{r, eval=FALSE}
+#Obtenemos las imágenes relacionadas con los comentarios sobre efectos secundarios de los medicamentos
+png("figuras/asociacion/effects_Innefective.png",width=1800,height=1700,units="px",
+    pointsize=10,bg="white",res=300)
+plot(effects_rulesInnefective, method="graph")
+title("Comentarios efectos secundarios sobre inefectividad")
+dev.off()
+
+png("figuras/asociacion/effects_HighlyEffective.png",width=1800,height=1700,units="px",
+    pointsize=10,bg="white",res=300)
+plot(effects_rulesHighlyEffective, method="graph")
+title("Comentarios efectos secundarios sobre altamente efectivos")
+dev.off()
+
+png("figuras/asociacion/effects_ConsiderablyEffective.png",width=1800,height=1700,units="px",
+    pointsize=10,bg="white",res=300)
+plot(effects_rulesConsiderablyEffective, method="graph")
+title("Comentarios efectos secundarios sobre considerablemente efectivos")
+dev.off()
+
+png("figuras/asociacion/effects_ModeratelyEffective.png",width=1800,height=1700,units="px",
+    pointsize=10,bg="white",res=300)
+plot(effects_rulesModeratelyEffective, method="graph")
+title("Comentarios efectos secundarios sobre moderadamente efectivos")
+dev.off()
+
+
+png("figuras/asociacion/effects_MarginallyEffective.png",width=1800,height=1700,units="px",
+    pointsize=10,bg="white",res=300)
+plot(effects_rulesMarginallyEffective, method="graph")
+title("Comentarios efectos secundarios sobre casi inefectivo")
+dev.off()
+```
+
+Sobre los comentarios de efectos secundarios podemos analizar, por ejemplo, el concepto de altamente efectivo:
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{figuras/asociacion/effects_HighlyEffective.png}
+    \caption{Mapa de reglas de asociación con Highly-Effective en el consecuente en comentarios sobre efectos secundarios.}
+    \label{fig:asociacion:innefectiveAsociacion}
+\end{figure}
+
+Como podemos apreciar en la imagen, el mapa de por sí es poco visualizable debido a la cantidad de reglas que aparecen en tan poco espacio. En definitiva, si nos fijamos bien podemos darnos cuenta de que tiene bastante sentido. 

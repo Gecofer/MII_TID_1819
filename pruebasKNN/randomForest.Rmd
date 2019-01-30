@@ -1,0 +1,250 @@
+
+# RANDOM FOREST
+
+```{r}
+
+# Establecemos una semilla para obtener siempre los mismos resultados
+set.seed(3)
+
+# Cargamos los datos
+datos_train <- read.table("datos_train_preprocesado.csv", sep=",", 
+                          comment.char="",quote = "\"", header=TRUE)
+
+datos_test <- read.table("datos_test_preprocesado.csv", sep=",", 
+                         comment.char="",quote = "\"", header=TRUE)
+
+# Nos quedamos con las columnas que nos interesan 
+# Las columnas que tenemos son: RATING, SIDE_EFFECTS_INVERSE, EFFECTIVENESS_NUMBER
+datos_train2 = datos_train[c(2,12,9)]
+datos_test2 = datos_test[c(2,12,9)]
+
+```
+
+
+```{r}
+
+# Arreglamos el conjunto de datos para poder trabajar con lo que nos interesa
+
+# Obtenemos en una variable todos los nombres de fármacos que existen en el conjunto de train
+nombres_farmacos_train <- unique(datos_train[,1])
+
+# Hacemos lo mismo para test
+nombres_farmacos_test <- unique(datos_test[,1])
+
+# Creamos una matriz (vacía) con tantas filas como fármacos haya, y tantas columnas como 
+#atributos queramos utilizar. En este caso son 3 columnas porque necesitamos guardar la 
+#info de "rating", "sideEffectsInverse" y "effectivenessNumber".
+datos_procesados_train <- matrix(ncol=3, nrow=length(nombres_farmacos_train))
+datos_procesados_test <- matrix(ncol=3, nrow=length(nombres_farmacos_test))
+
+
+# Primero procesamos TRAIN
+
+# Convertimos la estructura que tiene todos los nombres de los fármacos, en un data-frame, 
+# para poder trabajar con esta información de manera más cómoda
+df_farmacos_train = as.data.frame(nombres_farmacos_train)
+
+# Para cada uno de los fármacos existentes, vamos a guardar su información asociada en 
+# la matriz creada anteriormente
+for(i in 0:length(nombres_farmacos_train)){
+  
+  # Obtenemos todas las filas del dataset que se correspondan con el fármaco número i.
+  filas_farmaco_train <- datos_train2[which(datos_train$urlDrugName == nombres_farmacos_train[i]),]
+
+  # Como pueden ser más de una fila, resumimos dicha información.
+  mean_rating_train <- mean(filas_farmaco_train$rating)
+  mean_side_effect_train <- mean(filas_farmaco_train$sideEffectsInverse)
+  mean_effectiveness_train <- mean(filas_farmaco_train$effectivenessNumber)
+
+  # La información resumida es la que asociamos a dicho fármaco, montando la fila de la 
+  # manera adecuada. Nótese que redondeamos el número medio obtenido para sideEffects y
+  # effectivenessNumber. Esto es porque necesitamos que sea un número entero (recordemos
+  # que estos dos valores se corresponden con etiquetas).
+  datos_procesados_train[i,] <- c(mean_rating_train, round(mean_side_effect_train),
+                                  round(mean_effectiveness_train))
+}
+
+# Procesamos TEST de forma análoga a TRAIN.
+df_farmacos_test = as.data.frame(nombres_farmacos_test)
+
+for(i in 0:length(nombres_farmacos_test)){
+  
+  filas_farmaco_test <- datos_test2[which(datos_test$urlDrugName == nombres_farmacos_test[i]),]
+
+  mean_rating_test <- mean(filas_farmaco_test$rating)
+  mean_side_effect_test <- mean(filas_farmaco_test$sideEffectsInverse)
+  mean_effectiveness_test <- mean(filas_farmaco_test$effectivenessNumber)
+
+  datos_procesados_test[i,] <- c(mean_rating_test, round(mean_side_effect_test), round(mean_effectiveness_test))
+  
+}
+
+# Por último, convertimos las matrices procesadas anteriormente en data-frame
+data_train_procesado <- data.frame(datos_procesados_train)
+data_test_procesado <- data.frame(datos_procesados_test)
+
+# Una vez creados los data-frame, les asignamos nombres a las filas y columnas de 
+# los nuevos data-frames.
+rownames(data_train_procesado) <- nombres_farmacos_train
+rownames(data_test_procesado) <- nombres_farmacos_test
+colnames(data_train_procesado) <- c("rating", "sideEffectsInverse", "effectivenessNumber")
+colnames(data_test_procesado) <- c("rating", "sideEffectsInverse", "effectivenessNumber")
+```
+
+
+
+
+
+## Introducción
+
+El método de Random Forest es una modificación del método Bagging, utiliza una serie de árboles de decisión, con el fin de mejorar la tasa de clasificación. Se usa como clasificador de clases preestablecidas.
+
+La idea es descorrelacionar los diversos árboles que son generados por las diferentes muestras de los datos de entrenamiento, y luego simplemente reducimos la varianza en los árboles promediándolos.
+
+La idea es construir muchos árboles de tal manera que la correlación entre los árboles sea más pequeña.
+
+En nuestro caso, vamos a realizar la predicción de la efectividad del medicamento utilizando esta técnica.
+
+```{r}
+
+# Generamos 400 árboles para predecir la efectividad del medicamento 
+output.forest <- randomForest(as.factor(effectivenessNumber) ~ . , data = data_train_procesado, replace = T,ntree=400)
+
+# Mostramos la matriz de confusión
+output.forest
+
+# Generamos el gráfico donde se observa la evolución del error en función del número de árboles
+plot(output.forest)
+
+# Generamos las predicciones
+mod_rf = predict(output.forest, newdata = data_test_procesado[-3], type="response")
+
+# Calculamos la tasa de error
+y.falladas = sum(mod_rf!=data_test_procesado$effectivenessNumber)/length(data_test_procesado$effectivenessNumber)
+print("Error en test:")
+print(y.falladas)
+```
+
+
+Segun esto, nos podemos hcer una funcion que te diga en qué rango encontramos el mejor resultado, y con 150 árboles tenemos más que suficiente para alcanzar un 35% de error. Este error en nuestro caso es muy bueno porque tenemos muchisima subjetividad. Para unas personas, poca efectividad tendrá asociado rating 1 y para otras puede ser rating 3. Esto nos afecta mucho los resultados, y por tanto, aumenta el error. 
+
+A continuación se va a generar una función para calcular la tasa de error en la predicción de la efectividad, teniendo en cuenta el número de árboles.
+
+```{r}
+obtener_arboles_optimo = function(x){
+  #error_min = 100.0
+  arboles_optimo = 1;
+  
+  for(i in x){
+    error_min = 100.0
+    set.seed(3)
+    
+    output.forest <- randomForest(as.factor(effectivenessNumber) ~ . , data = data_train_procesado, replace = T,ntree=i)
+    
+    # Predicciones
+    mod_rf = predict(output.forest, newdata = data_test_procesado[-3], type="response")
+    
+    # Fallo
+    y.falladas = sum(mod_rf!=data_test_procesado$effectivenessNumber)/length(data_test_procesado$effectivenessNumber)
+    
+    
+    if(y.falladas < error_min){
+      error_min = y.falladas
+      arboles_optimo = i
+    }
+  }
+  
+  cat("Numero de árboles óptimo",arboles_optimo, "\n")
+  
+  cat("Error minimo conseguido",error_min, "\n")
+  
+}
+```
+
+Ahora vamos a calcular la tasa de error para un número de árboles de 15,20,35,150,400 y 500 y a mostrar los resultados.
+
+```{r}
+valores_arboles_15 = seq(from=1, to=15, by=1)
+valores_arboles_20 = seq(from=1, to=20, by=1)
+valores_arboles_35 = seq(from=1, to=35, by=1)
+valores_arboles_150 = seq(from=1, to=150, by=1)
+valores_arboles_400 = seq(from=1, to=400, by=1)
+valores_arboles_500 = seq(from=1, to=500, by=1)
+
+# Ahora se va a realizar las predicciones empleando una serie de tamaños
+
+## El error minimo con 15 árboles:
+obtener_arboles_optimo(x = valores_arboles_15)
+
+## El error minimo con 20 árboles:
+obtener_arboles_optimo(x = valores_arboles_20)
+
+## El error minimo con 150 árboles:
+obtener_arboles_optimo(x = valores_arboles_150)
+
+## El error minimo con 400 árboles:
+obtener_arboles_optimo(x = valores_arboles_400)
+
+## El error minimo con 500 árboles:
+obtener_arboles_optimo(x = valores_arboles_500)
+```
+
+Como se ha podido observar, a partir de 150 aŕboles empezamos a obtener el mejor resultado, que es un error en la predicción del 35%. Vemos que si aumentamos el número de árboles el resultado no mejora considerablemente.
+
+Podemos concluir que la **precisión del modelo es del 65%**, siendo un mejor resultado que el obtenido en los árboles de decisión (tal y como era de esperar).
+
+
+
+
+```{r}
+# Lectura de datos
+datos_train = read.csv("datos_train_preprocesado.csv", stringsAsFactors = F)
+datos_train <- datos_train[-c(17,2585),]
+datos_train$benefits_sin_numeros <-gsub("[0-9]+", "", datos_train$benefits_preprocesado)
+datos_train$benefits_sin_rombos <-gsub("\uFFFD", "", datos_train$benefits_sin_numeros)
+
+
+datos_test = read.csv("datos_test_preprocesado.csv", stringsAsFactors = F)
+datos_test <- datos_test[-c(17,2585),]
+datos_test$benefits_sin_numeros <-gsub("[0-9]+", "", datos_test$benefits_preprocesado)
+datos_test$benefits_sin_rombos <-gsub("\uFFFD", "", datos_test$benefits_sin_numeros)
+datos_test$benefits_sin_rombos <-gsub("alon", "", datos_test$benefits_sin_rombos)
+```
+
+
+```{r}
+datos_total <- bind_rows(datos_train,datos_test)
+
+# quitamos las columnas de texto que no queremos
+datos_total <- datos_total[-c(6,7)]
+corpus = Corpus(VectorSource(datos_total$benefits_sin_rombos))
+
+# Creamos matriz de términos con las palabras de los comentarios. Entonces cada fila, va a estar formada por los comentarios, donde cada palabra es una columna
+tdm <- tm::DocumentTermMatrix(corpus)
+tdm.tfidf <- tm::weightTfIdf(tdm)
+reviews = as.data.frame(cbind(datos_total$effectivenessNumber, as.matrix(tdm.tfidf)))
+preparado_train <- reviews[1:1500,]
+preparado_test <- reviews[-(1:1000),]
+```
+
+
+```{r}
+library("randomForest")
+data_x = preparado_train[1:15,]
+colnames(preparado_train) <- paste(colnames(preparado_train), "_c", sep = "")
+output.forest <- randomForest(as.factor(V1_c) ~ . , data = preparado_train, replace = T,ntree=100)
+output.forest
+plot(output.forest)
+```
+
+
+```{r}
+# Predicciones
+colnames(preparado_test) <- paste(colnames(preparado_test), "_c", sep = "")
+mod_rf = predict(output.forest, newdata = preparado_test[-1], type="response")
+# Fallo
+datos_test_usados = datos_total[-(1:1000),]
+y.falladas = sum(mod_rf!=datos_test_usados$effectivenessNumber)/length(datos_test_usados$effectivenessNumber)
+print("Error en test:")
+print(y.falladas)
+```

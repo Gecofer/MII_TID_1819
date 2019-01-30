@@ -4768,7 +4768,15 @@ Como se puede observar, el porcentaje de acierto de la efectividad teniendo en c
 
 ### 7.3.6. Predicción del rating en función del comentario de beneficios
 
-En esta sección se va a realizar una predicción de la efectividad en base a los comentarios aportados por los usuarios (benefitsReview).
+En esta sección se va a realizar una predicción de la efectividad en base a los comentarios aportados por los usuarios (benefitsReview). Para ello, lo primero es realizar todos aquellos cambios que necesitemos acerca del conjunto de datos ya preprocesado, de forma que obtengamos los datos de la forma adecuada que requiere la técnica. En este caso, pasa igual que con otras técnicas ya comentadas (como Naive Bayes), donde se utilizan las palabras obtenidas en el conjunto de datos, y, a la hora de predecir, todas esas palabras deben existir en el modelo con el que se ha realizado dicha predicción. Esto se debe a que se deben conocer la frecuencia de todas las palabras existentes en nuestro problema para poder llevar a cabo las predicciones, lo que nos ha obligado a fusionar ambos conjuntos, calcular la matriz de frecuencias, y posteriormente separarlos, para poder entrenar y testear el modelo de manera adecuada.
+
+
+Además, debemos puntualizar una cosa, y es que tal y como aparece en el código, estamos cogiendo un conjunto de datos train inferior al tamaño original. Esto se debe a que, en las pruebas que hemos hecho cogiendo todo el conjunto de TRAIN, obteníamos un árbol de mala calidad. Esto se debe a que no obteníamos tantos nodos hoja  como etiquetas, y por tanto, había clases a las que nunca etiquetaba y daba malos resultados. Tras darle muchas vueltas, llegamos a la conclusión de que le estábamos dando demasiada información, dando lugar a dos aspectos:
+
+1. El sesgo en el conjunto se ve retratado de forma directa en el árbol.
+2. Se le está pasando excesiva información al algoritmo, y al final, generaliza de la forma que mejor puede (que tal y como se comenta, no es la adecuada). 
+
+Por estas razones, nos hemos decantado por coger un árbol de un tamaño inferior, ya que al menos, conseguimos mejorar en cuanto a predicciones. 
 
 ```{r}
 library(dplyr)
@@ -4784,17 +4792,17 @@ tdm <- tm::DocumentTermMatrix(corpus)
 tdm.tfidf <- tm::weightTfIdf(tdm)
 reviews = as.data.frame(cbind(datos_total$effectivenessNumber, as.matrix(tdm.tfidf)))
 preparado_train <- reviews[1:1500,]
-preparado_test <- reviews[-(1:1000),]
+preparado_test <- reviews[-(1:1500),]
 ```
 
-A continuación se va a generar el modelo utilizando como variable a predecir el effectivenessNumber con el resto de palabras que se ha almacenado en preparado_train.
+A continuación se va a generar el modelo utilizando como variable a predecir el *effectivenessNumber* con el resto de palabras que se ha almacenado en preparado_train.
 
 ```{r}
 reviews.tree = rpart(V1~ .,  method = "class", data = preparado_train );  
 prp(reviews.tree)
 ```
 
-En realidad, es lógico que si utilizamos un conjunto de datos mayor, sobretodo en el caso de los textos, que haga predicciones muy muy restringidas, ya que al haber tanta cantidad de palabras tiene que generalizar un montón y al final, esa generalización se reduce a utilizar pocas palabras para clasificar en las distintas etiquetas. Por ello, hemos ido probando distintos tamaños hasta dar con uno que visualmente nos compense. Pero obviamente, la importancia no está en que visualmente nos parezca un árbol representativo y que de buenos resultados, sino en que a la hora de predecir el conjunto de test, nos de resultado realmente representativos.
+En realidad, es lógico que si utilizamos un conjunto de datos mayor, sobretodo en el caso de los textos, que haga predicciones muy muy restringidas, ya que al haber tanta cantidad de palabras tiene que generalizar un montón y al final, esa generalización se reduce a utilizar pocas palabras para clasificar en las distintas etiquetas. Por ello (como se ha comentado en el párrafo anterior), hemos ido probando distintos tamaños hasta dar con uno que visualmente nos compense. Pero obviamente, la importancia no está en que visualmente nos parezca un árbol representativo y que de buenos resultados, sino en que a la hora de predecir el conjunto de test, nos de resultado realmente representativos.
 
 Por ello vamos a hacer predict con el árbol que hemos generado anteriormente. Simplemente le pasamos a la función predict de la librería `rattle` el árbol que hemos entrenado.  
 
@@ -4815,8 +4823,7 @@ Obtenemos el resultado
 sum(diag(tabla))/nrow(datos_test)
 ```
 
-Con el fin de mejorar esta predicción, se puede seguir la idea del bagging de combinar muchos métodos sencillos, como se verá en el método
-de bosques aleatorios.
+Con el fin de mejorar esta predicción, se puede seguir la idea del Bagging o Random Forest de combinar muchos métodos sencillos, como se verá en secciones posteriores.
 
 
 

@@ -9,7 +9,7 @@ output: pdf_document
 
 Vamos a ver cómo podemos aplicar técnicas de clustering a las distintas columnas de texto de nuestro dataset. Para ello vamos a explicar en mayor detalle el proceso seguido en la columna Benefits Review preprocesada y luego mostraremos los resultados con los otros textos de una forma más directa.
 
-Esta es un técnica no supervisada, por lo que no sabemos las clases que clasifica realmente, solo agrupa las instancias en grupos sin definir sin tener una información previa acerca de la estructura.
+Esta es un técnica no supervisada, por lo que no sabemos las clases que clasifica realmente, solo agrupa las instancias en grupos sin definir sin tener nada de  información previa acerca de la estructura.
 
 ### Clustering de Benefits Review
 
@@ -35,7 +35,6 @@ tfidf.matrix <- as.matrix(tdm.tfidf)
 
 Para poder trabajar con clustering necesitamos trabajar con valores numéricos continuos. Es por ello que hemos utilizado de nuevo TFIDF (esta vez hemos usado una función de más alto nivel, sin entrar en detalles). Necesitamos tener estos datos como matriz para poder continuar con los siguientes pasos.
 
-\newpage
 
 ```{r, eval=FALSE}
 tfidf.matrix[1:20,1:20]
@@ -61,7 +60,7 @@ for(i in 1:length(tfidf.matrix[,1])){
   v[i] <- sum(tfidf.matrix[,i])
 }
 
-# Averiguamos el orden de indices de los pesos de mayor
+# Averiguamos el orden de índices de los pesos de mayor
 # a menor y nos quedamos con los 100 mas grandes.
 indices <- order(v,decreasing = TRUE)[1:100]
 
@@ -70,9 +69,9 @@ tfidf.matrix100 <- tfidf.matrix[,indices]
 tfidf.matrix100 <- t(tfidf.matrix100)
 ```
 
-En definitiva, en lugar de ordenar la matriz lo que obtenemos es una lista de los indices en la posición que deberían estar para que estuvieran ordenados sus pesos de mayor a menor. Después solo tenemos que quedarnos con los 100 primeros índices (los 100 términos con mayor peso) y generar una submatriz de la matriz original con las columnas que corresponden a esos índices.
+En definitiva, en lugar de ordenar la matriz lo que obtenemos es una lista de los índices en la posición que deberían estar para que estuvieran ordenados sus pesos de mayor a menor. Después solo tenemos que quedarnos con los 100 primeros índices (los 100 términos con mayor peso) y generar una submatriz de la matriz original con las columnas que corresponden a esos índices.
 
-Es importante decir que la técnica que vamos a utilizar después con estos 100 términos necesita la traspuesta de la matriz que nosostros hemos calculado. Tardamos un tiempo en darnos cuenta de que la y y la x estaban invertidas para la función que usabamos y se debía a este problema.
+Es importante decir que la técnica que vamos a utilizar después con estos 100 términos necesita la traspuesta de la matriz que nosostros hemos calculado. Tardamos un tiempo en darnos cuenta de que la _y_ y la _x_ estaban invertidas para la función que usabamos y se debía a este problema.
 
 El siguiente paso sería calcular la matriz de distancias. Este es el proceso que consume más tiempo de todo el desarrollo de clustering por lo que debemos ser pacientes.
 
@@ -86,7 +85,7 @@ dist.matrix100 = proxy::dist(tfidf.matrix100, method = "cosine")
 
 Hemos visto distintas técnicas en clase de teoría sobre el cálculo de distancias y semejanzas. Como lo que tenemos es un vector de pesos por cada fila (documento), nos pareció muy apropiado calcular la semejanza utilizando el coseno del ángulo que forman dos vectores.
 
-Como resultado, obtenemos una matriz en la que cada valor representa la medida de proximidad del item de la fila con el item de la columna, por lo que hay muchisima información.
+Como resultado, obtenemos una matriz en la que cada valor representa la medida de proximidad del item de la fila con el item de la columna, por lo que hay mucha información.
 
 Ya tenemos los datos sobre los comentarios de los beneficios de los medicamentos listos para ser utilizados en la técnica de clustering. Principalmente hemos creado tres estrategias para generar los clusters como se puede observar a continuación.
 
@@ -180,9 +179,8 @@ Estuvimos debatiendo el significado de lo obtenido con esta técnica. Llegamos a
 
 En esta ocasión no hemos realizado validación por silueta de los grupos obtenidos, a simple vista se puede ver que los grupos no son muy buenos y que no están claramente diferenciados.
 
-Entonces, decididmos probar con un agrupamiento no particional, como es el jerárquico.
+Entonces, decidimos probar con un agrupamiento no particional, como es el jerárquico.
 
-\newpage
 
 ```{r, eval=FALSE}
 #Segunda técnica
@@ -197,13 +195,11 @@ clustering.hierarchial()
     \label{fig:clustering:jerarquico}
 \end{figure}
 
-En este caso, vemos que teniendo la misma nube de puntos, los resultados son más razonables. Suponemos que se debe a su criterio de anidación de términos, en los que a partir de la matriz de distancias va agrupando los términos cada vez en grupos más grandes. Vemos que hay una mejor cohesión en los grupos obtenidos. Sobretodo en el grupo rojo y negro. 
+En este caso, vemos que teniendo la misma nube de puntos, los resultados son más razonables. Suponemos que se debe a su criterio de anidación de términos, en los que a partir de la matriz de distancias va agrupando los términos cada vez en grupos más grandes. Vemos que hay una mejor cohesión en los grupos obtenidos, sobretodo en el grupo rojo y negro. 
 
 Como esta es la mejor técnica que sacamos, quisimos mostrar más información del proceso. Obtuvimos los 100 términos más frecuentes como se mencionó anteriormente y obtuvimos un dendograma como los vistos en clase de teoría. Podemos ver que los grupos alcanzados tienen coherencia. Por ejemplo, en el primero agrupa sangre, presión, más bajo, alto, nivel...
 
 Dependiendo del número de cluster que fijemos, especifica los grupos en niveles más altos o bajos de las llaves que vemos en la imagen. Por lo que podemos decir que siempre sigue la misma técnica de agrupamiento y lo que cambia es el momento en el que separa los cluster cuando especificamos el número de grupos que queremos tener, lo cual nos pareció curioso destacar.
-
-\newpage
 
 ```{r, eval=FALSE}
 # Tercera técnica

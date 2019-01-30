@@ -1,24 +1,13 @@
----
-output:
-  pdf_document: default
-  html_document: default
----
 
 # Lectura de datos
 
-
 ```{r}
-
-datos_train = read.csv("datos/datos_train_preprocesado.csv", stringsAsFactors = F)
-datos_test = read.csv("datos/datos_test_preprocesado.csv", stringsAsFactors = F)
+datos_train = read.csv("datos_train_preprocesado.csv", stringsAsFactors = F)
+datos_test = read.csv("datos_test_preprocesado.csv", stringsAsFactors = F)
 datos_total <- union(datos_train,datos_test)
-
-
 ```
 
 <!---------->
-
-# Arboles de decisión y clasificación
 
 ## Árboles de decisión
 
@@ -29,9 +18,9 @@ Para la construcción del árbol también se puede utilizar la función **rpart*
 simplificar los modelos ajustados mediante la poda de las divisiones que no merecen la pena. Otros
 parámetros importantes son **minsplit**, número mínimo de observaciones que debe haber en un nodo
 para que se intente una partición, y **minbucket**, número mínimo de observaciones de un nodo terminal.
-Por defecto minsplit = 20, minbucket = round(minsplit/3) y cp = 0,01.
+Por defecto minsplit= 20, minbucket=round(minsplit/3) y cp= 0,01.
 
-El procedimiento habitual para determinar los parámetros del modelo consiste en dejar que el árbol crezca hasta que cada nodo terminal tenga menos de un número mínimo de observaciones, ya que
+A la hora de determinar los parámetros, el procedimiento habitual para determinar los parámetros del modelo consiste en dejar que el árbol crezca hasta que cada nodo terminal tenga menos de un número mínimo de observaciones, ya que
 en algunas divisiones puede que apenas mejore y en las siguientes sí lo haga. Para determinar *cp* se
 considera como 0, para que el árbol crezca lo máximo posible.
 
@@ -72,7 +61,7 @@ en la complejidad. Para esto, se calcula el error de la validación cruzada y se
 
 ```{r}
 plotcp(rpart)
-              
+
 ```
 
 Mostramos la tabla de resultados
@@ -85,11 +74,11 @@ printcp(rpart)
 Tal y como se puede ver en la tabla anterior, el mínimo error se alcanza en el nodo 6.
 
     6 0.000000      6   0.67362 0.67644 0.015294
-    
+
 Típicamente se considera que hasta la línea discontinua de la figura anterior no hay diferencias significativas. Esta línea es la suma del mínimo error y la desviación típica, es decir:
 
     0.67644 + 0.015294 = 0.691734
-    
+
 Observamos en el gráfico anterior que dicho error tiene un cp de 0.023, por lo que se va a volver a generar el árbol con rpart utilizando ahora como valor de cp 0,023.
 
 ```{r}
@@ -144,7 +133,7 @@ sum(diag(tabla))/nrow(datos_test)
 La precisión de este modelo es del **57,44%** aproximadamente.
 
 El poder de predicción de los árboles de decisión no suele ser muy bueno, pero el algoritmo es
-sencillo y los modelos resultantes tienen una fácil interpretación. 
+sencillo y los modelos resultantes tienen una fácil interpretación.
 
 
 ### Predicción de sideEffectsNumber en función del rating
@@ -179,10 +168,10 @@ Mostramos la gráfica del error de la validación cruzada.
 ```{r}
 
 plotcp(rpart)
-              
+
 ```
 
- Generamos la predicción:
+ Generamos la predicción
 
 ```{r}
 pred <- predict(rpart, newdata=datos_test, type="class")
@@ -194,7 +183,7 @@ dnn=c("Real", "Predicho" ))
 tabla
 ```
 
-Obtenemos el resultado:
+Obtenemos el resultado
 
 ```{r}
 
@@ -202,12 +191,12 @@ sum(diag(tabla))/nrow(datos_test)
 
 ```
 
-La precisión de este modelo es del **50,58%**, aproximadamente.
+La precisión de este modelo es del **50,58%** aproximadamente.
 
 
 ### Predicción de effectivenessNumber en función del weightedRating
 
-Siguiendo el mismo proceso que se ha seguido para la obtención del árbol generado anteriormente, se va a predecir el valor de la efectividad del medicamento en función del rating ponderado que se ha generado durante el procesamiento (70% efectos secundarios, 30% efectividad).
+Siguiendo el mismo proceso que se ha seguido para la obtención del árbol generado anteriormente, se va a predecir el valor de la efectividad del medicamento en función del rating ponderado que se ha generado durante el procesamiento ( 70% efectos secundarios, 30% efectividad).
 
 ```{r}
 seed <- 42
@@ -239,7 +228,7 @@ plotcp(rpart)
 
 ```
 
-Generamos la predicción:
+Generamos la predicción
 
 ```{r}
 
@@ -252,21 +241,21 @@ dnn=c("Real", "Predicho" ))
 tabla
 ```
 
-Obtenemos el resultado:
+Obtenemos el resultado
 
 ```{r}
 sum(diag(tabla))/nrow(datos_test)
 
 ```
 
-La precisión de este modelo es del **53,57%**, aproximadamente.
+La precisión de este modelo es del **53,57%** aproximadamente.
 
 ### Predicción de sideEffectsNumber en función del weightedRating
 
-Siguiendo el mismo proceso que se ha seguido para la obtención del árbol generado anteriormente, se va a predecir el valor de efectos secundarios del medicamento en función del rating ponderado que se ha generado durante el procesamiento (70% efectos secundarios, 30% efectividad).
+Siguiendo el mismo proceso que se ha seguido para la obtención del árbol generado anteriormente, se va a predecir el valor de efectos secundarios del medicamento en función del rating ponderado que se ha generado durante el procesamiento ( 70% efectos secundarios, 30% efectividad).
 
 
-Generamos el modelo:
+Generamos el modelo
 ```{r}
 
 library("rattle")
@@ -306,7 +295,7 @@ plotcp(rpart)
 
 
 
-Generamos la predicción:
+Generamos la predicción
 
 ```{r}
 
@@ -320,24 +309,24 @@ tabla
 
 ```
 
-Obtenemos el resultado:
+Obtenemos el resultado
 
 ```{r}
 sum(diag(tabla))/nrow(datos_test)
 
 ```
 
-La precisión de este modelo es del **73,21%**, aproximadamente.
+La precisión de este modelo es del **73,21%** aproximadamente.
 
 ### Conclusión
 
 Haciendo un breve resumen de lo obtenido, tenemos lo siguiente:
-  
-  - Porcentaje de acierto en la predicción de la efectividad en función del rating: **57,44%** 
+
+  - Porcentaje de acierto en la predicción de la efectividad en función del rating: **57,44%**
   - Porcentaje de acierto en la predicción de los efectos secundarios en función del rating: **50,58%**
   - Porcentaje de acierto en la predicción de la efectividad en función del rating ponderado: **53,57%**
   - Porcentaje de acierto en la predicción de los efectos secundarios en función del rating ponderado: **73,21%**
-  
+
 Como se puede observar, el porcentaje de acierto de la efectividad teniendo en cuenta el rating (dado por los usuarios) y el rating ponderado es muy similar, sin embargo la predicción para los efectos secundarios difiere en un 23% a favor del rating ponderado. Esto es debido a que en el rating ponderado se ha tenido más en cuenta el impacto de los efectos secundarios y esto hace que la predicción de dichos efectos secundarios sea más precisa.
 
 
@@ -346,37 +335,27 @@ Como se puede observar, el porcentaje de acierto de la efectividad teniendo en c
 En esta sección se va a realizar una predicción de la efectividad en base a los comentarios aportados por los usuarios (benefitsReview).
 
 ```{r}
-
-# Creación del corpus
+datos_train = read.csv("datos_train_preprocesado.csv", stringsAsFactors = F)
+datos_test = read.csv("datos_test_preprocesado.csv", stringsAsFactors = F)
+datos_total <- bind_rows(datos_train,datos_test)
 corpus = Corpus(VectorSource(datos_total$benefits_preprocesado))
-
-# Creamos matriz de términos con las palabras de los comentarios. 
-# Entonces cada fila, va a estar formada por los comentarios, 
-# donde cada palabra es una columna
+# Creamos matriz de términos con las palabras de los comentarios. Entonces cada fila, va a estar formada por los comentarios, donde cada palabra es una columna
 tdm <- tm::DocumentTermMatrix(corpus)
 tdm.tfidf <- tm::weightTfIdf(tdm)
-
 reviews = as.data.frame(cbind(datos_total$effectivenessNumber, as.matrix(tdm.tfidf)))
-
-# V1 (effectivenessNumber) y en las demás columnas todos 
-# los términos juntos con su peso tf-idf
-preparado_train <- reviews[1:dim(datos_train)[1],]
-preparado_test <- reviews[-(1:dim(datos_test)[1]),]
-
+preparado_train <- reviews[1:1500,]
+preparado_test <- reviews[-(1:1000),]
 # reviews = as.data.frame(cbind(mis_mini_datos_jeje$benefits_preprocesado, as.matrix(tdm.tfidf)))
 ```
 
 A continuación se va a generar el modelo utilizando como variable a predecir el effectivenessNumber con el resto de palabras que se ha almacenado en preparado_train.
 
 ```{r}
-
-# Generamos el modelo y lo visualizamos
 reviews.tree = rpart(V1~ .,  method = "class", data = preparado_train );  
 prp(reviews.tree)
-
 ```
 
-En realidad, es lógico que si utilizamos un conjunto de datos mayor, sobretodo en el caso de los textos, que haga predicciones muy muy restringidas, ya que al haber tanta cantidad de palabras tiene que generalizar un montón y al final, esa generalización se reduce a utilizar pocas palabras para clasificar en las distintas etiquetas. Por ello, hemos ido probando distintos tamaños hasta dar con uno que visualmente nos compense. Pero obviamente, la importancia no está en que visualmente nos parezca un árbol representativo y que de buenos resultados, sino en que a la hora de predecir el conjunto de test, nos de resultado realmente representativos. 
+En realidad, es lógico que si utilizamos un conjunto de datos mayor, sobretodo en el caso de los textos, que haga predicciones muy muy restringidas, ya que al haber tanta cantidad de palabras tiene que generalizar un montón y al final, esa generalización se reduce a utilizar pocas palabras para clasificar en las distintas etiquetas. Por ello, hemos ido probando distintos tamaños hasta dar con uno que visualmente nos compense. Pero obviamente, la importancia no está en que visualmente nos parezca un árbol representativo y que de buenos resultados, sino en que a la hora de predecir el conjunto de test, nos de resultado realmente representativos.
 
 Por ello vamos a hacer predict con el árbol que hemos generado anteriormente. Simplemente le pasamos a la función predict de la librería `rattle` el árbol que hemos entrenado.  
 
@@ -388,105 +367,14 @@ table(preparado_test$V1)
 # Matriz de confusión
 tabla <-table(preparado_test$V1, pred, useNA="ifany",
 dnn=c("Real", "Predicho" ))
-
 tabla
 ```
 
-Obtenemos el resultado:
+Obtenemos el resultado
 
 ```{r}
-
 sum(diag(tabla))/nrow(datos_test)
-
 ```
-
 
 Con el fin de mejorar esta predicción, se puede seguir la idea del bagging de combinar muchos métodos sencillos, como se verá en el método
 de bosques aleatorios.
-
-
-
-<!-- ## Clasificación Bayesiona: algoritmo clasico -->
-
-<!-- ## Clasificación Bayesiona: clasificador Naive Bayes                 -->
-
-<!-- ```{r} -->
-<!-- # https://rpubs.com/jboscomendoza/naive_nayes_con_r_clasificacion_texto -->
-
-<!-- library(tidyverse) -->
-<!-- library(tidytext) -->
-<!-- library(naivebayes) -->
-<!-- library(tm) -->
-<!-- library(caret) -->
-<!-- ``` -->
-
-<!-- ## Random Forest -->
-
-<!-- ```{r} -->
-<!-- # Proyecto_1475.pdf (esto es un ejemplo, adaptarko al nuestro) -->
-
-<!-- # Establecemos una semilla por defecto -->
-<!-- set.seed(127) -->
-
-<!-- train <- datos_train -->
-<!-- test <- datos_test -->
-
-<!-- # Obtenemos el modelo -->
-<!-- library(randomForest) -->
-<!-- modelo_rf <- randomForest(rating  ~ effectivenessNumber, data = train) -->
-<!-- modelo_rf -->
-
-<!-- # Comprobación del modelo con los datos del test: -->
-<!-- pred <- predict(modelo_rf, newdata = test) -->
-
-<!-- # Matriz de confusión: -->
-<!-- tabla <- table(pred, datos_test$rating);  -->
-<!-- tabla -->
-
-<!-- # Dice la precisión -->
-<!-- sum(diag(tabla)) / nrow(test) -->
-<!-- ``` -->
-
-
-<!-- ```{r} -->
-<!-- # usar la curva ROC -->
-<!-- library("ROCR") -->
-
-<!-- # Función que dibuja una curva ROC -->
-<!-- plotROC <- function(modelo, etiq_real, adicionar=FALSE,color="red") {  -->
-<!--   pred <- prediction(modelo, etiq_real) -->
-<!--   perf <- performance(pred,"tpr","fpr") -->
-<!--   plot(perf, col=color, add=adicionar, main="Curva ROC", lwd = 2)  -->
-<!--   segments(0, 0, 1, 1, col='black') -->
-<!--   grid()  -->
-<!-- } -->
-
-<!-- # Para hacer la curva ROC dben etar en probabildiad entre 0 y 1 -->
-<!-- ``` -->
-
-
-<!-- ## Clasificacores basados en RRNN -->
-
-<!-- ## Suuport Vector Machine SVM -->
-
-<!-- ```{r} -->
-<!-- # Proyecto_1475.pdf -->
-
-<!-- library("kernlab") -->
-
-<!-- # Se aplica el SVM a los datos de entrenamiento: -->
-<!-- ksvmTrain <- ksvm (rating  ~ effectivenessNumber, data = train) -->
-
-<!-- # Se clasifica el conjunto de datos de prueba a partir del SVM entrenado, # para ello, se elimina la columna donde está la clasificación original:  -->
-<!-- svmClass <- predict (ksvmTrain, datos_test$rating) -->
-
-<!-- # Matriz de confusión: -->
-<!-- svmTabla <- table(SVM = svmClass, Reuters = trueClass);  -->
-<!-- svmTabla -->
-
-<!-- # La precisión de este método es aproximadamente de -->
-<!-- sum(diag(svmTabla))/nrow(test) -->
-
-<!-- ``` -->
-
-

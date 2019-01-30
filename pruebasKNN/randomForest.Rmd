@@ -1,6 +1,19 @@
 
 # RANDOM FOREST
 
+
+
+## Introducción
+
+El método de Random Forest es una modificación del método Bagging, utiliza una serie de árboles de decisión, con el fin de mejorar la tasa de clasificación. Se usa como clasificador de clases preestablecidas.
+
+La idea es descorrelacionar los diversos árboles que son generados por las diferentes muestras de los datos de entrenamiento, y luego simplemente reducimos la varianza en los árboles promediándolos.
+
+La idea es construir muchos árboles de tal manera que la correlación entre los árboles sea más pequeña.
+
+En nuestro caso, vamos a realizar la predicción de la efectividad del medicamento utilizando esta técnica.
+
+
 ```{r}
 
 # Establecemos una semilla para obtener siempre los mismos resultados
@@ -95,15 +108,6 @@ colnames(data_test_procesado) <- c("rating", "sideEffectsInverse", "effectivenes
 
 
 
-## Introducción
-
-El método de Random Forest es una modificación del método Bagging, utiliza una serie de árboles de decisión, con el fin de mejorar la tasa de clasificación. Se usa como clasificador de clases preestablecidas.
-
-La idea es descorrelacionar los diversos árboles que son generados por las diferentes muestras de los datos de entrenamiento, y luego simplemente reducimos la varianza en los árboles promediándolos.
-
-La idea es construir muchos árboles de tal manera que la correlación entre los árboles sea más pequeña.
-
-En nuestro caso, vamos a realizar la predicción de la efectividad del medicamento utilizando esta técnica.
 
 ```{r}
 

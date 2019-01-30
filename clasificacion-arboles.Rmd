@@ -2,9 +2,11 @@
 # Lectura de datos
 
 ```{r}
-datos_train = read.csv("datos_train_preprocesado.csv", stringsAsFactors = F)
-datos_test = read.csv("datos_test_preprocesado.csv", stringsAsFactors = F)
-datos_total <- union(datos_train,datos_test)
+library(dplyr)
+
+datos_train = read.csv("datos/datos_train_preprocesado.csv", stringsAsFactors = F)
+datos_test = read.csv("datos/datos_test_preprocesado.csv", stringsAsFactors = F)
+datos_total <- bind_rows(datos_train,datos_test)
 ```
 
 <!---------->

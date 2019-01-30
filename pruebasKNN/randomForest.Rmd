@@ -47,10 +47,10 @@ Por ello, tras leer los datos, lo primero que vamos a hacer, es crear un nuevo d
 set.seed(3)
 
 # Cargamos los datos
-datos_train <- read.table("datos_train_preprocesado.csv", sep=",", 
+datos_train <- read.table("../datos/datos_train_preprocesado.csv", sep=",", 
                           comment.char="",quote = "\"", header=TRUE)
 
-datos_test <- read.table("datos_test_preprocesado.csv", sep=",", 
+datos_test <- read.table("../datos/datos_test_preprocesado.csv", sep=",", 
                          comment.char="",quote = "\"", header=TRUE)
 
 # Nos quedamos con las columnas que nos interesan 
@@ -211,13 +211,13 @@ De nuevo, lo primero que tenemos que hacer es adecuar el conjunto de datos a nue
 1. **Procesar el contenido del conjunto de train**, para quitar aquellas columnas con algún caracter extraño, y sobretodo, para eliminar números. También se eliminarán aquellas filas que combinen caracteres alfanuméricos, como es el caso de las columnas 17 y 2585 del conjunto de train. En ambas columnas, se tiene la palabra "800mg", que impide el procesamiento de la técnica. Como seguimos teniendo un conjunto lo suficientemente grande, podemos eliminar estas dos líneas sin que afecte de forma visible a nuestros resultados. Estos cambios, se aplican también a test, para que sea consistente. 
 ```{r}
 # Lectura de datos
-datos_train = read.csv("datos_train_preprocesado.csv", stringsAsFactors = F)
+datos_train = read.csv("../datos/datos_train_preprocesado.csv", stringsAsFactors = F)
 datos_train <- datos_train[-c(17,2585),]
 datos_train$benefits_sin_numeros <-gsub("[0-9]+", "", datos_train$benefits_preprocesado)
 datos_train$benefits_sin_rombos <-gsub("\uFFFD", "", datos_train$benefits_sin_numeros)
 
 
-datos_test = read.csv("datos_test_preprocesado.csv", stringsAsFactors = F)
+datos_test = read.csv("../datos/datos_test_preprocesado.csv", stringsAsFactors = F)
 datos_test <- datos_test[-c(17,2585),]
 datos_test$benefits_sin_numeros <-gsub("[0-9]+", "", datos_test$benefits_preprocesado)
 datos_test$benefits_sin_rombos <-gsub("\uFFFD", "", datos_test$benefits_sin_numeros)

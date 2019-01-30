@@ -5235,3 +5235,346 @@ Por otro lado, se llevó a cabo un análisis de sentimientos sobre los sentimien
 
 Con respecto a las técnicas, debemos destacar la componente subjetiva que tienen las reglas de asociación a la hora de su elección. Se observó, como los consecuentes más frecuentes fueron effect y side, lo que es lógico ya que estamos midiendo los efectos que tienen los medicamentos. 
 Por otro lado, se aplicó el método de regresión sobre las variables numéricas, dicho método obtuvo unas predicciones de etiquetas muy buenas, obteniendo con la regresión logística multivariable el mínimo error fuera de la muestra. Ya que dicho método, permite estimar de manera muy aceptable la probabilidad de una variable cualitativa binaria en función de una variable cuantitativa. 
+
+\newpage 
+
+## Apéndice
+
+Más análisis de sentimientos de comentarios por condición y medicamento:
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.45\textwidth]{figuras/sentimientos/Aacne1.png}
+    \caption{Análisis de sentimientos para condición de acne en los comentarios sobre beneficios.}
+    \label{fig:sentimientos:1}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.45\textwidth]{figuras/sentimientos/Aacne2.png}
+    \caption{Análisis de positivismo para condición de acne en los comentarios sobre beneficios.}
+    \label{fig:sentimientos:2}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{figuras/sentimientos/Bacne1.png}
+    \caption{Análisis de sentimientos para condición de acne en los comentarios sobre efectos seundarios}
+    \label{fig:sentimientos:3}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{figuras/sentimientos/Bacne2.png}
+    \caption{Análisis de positivismo para condición de acne en los comentarios sobre efectos secundarios.}
+    \label{fig:sentimientos:4}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{figuras/sentimientos/Aanxiety1.png}
+    \caption{Análisis de sentimientos para condición de anxiety en los comentarios sobre beneficios.}
+    \label{fig:sentimientos:5}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{figuras/sentimientos/Aanxiety2.png}
+    \caption{Análisis de positivismo para condición de anxiety en los comentarios sobre beneficios.}
+    \label{fig:sentimientos:6}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{figuras/sentimientos/Banxiety1.png}
+    \caption{Análisis de sentimientos para condición de anxiety en los comentarios sobre efectos seundarios}
+    \label{fig:sentimientos:7}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{figuras/sentimientos/Banxiety2.png}
+    \caption{Análisis de positivismo para condición de anxiety en los comentarios sobre efectos secundarios.}
+    \label{fig:sentimientos:8}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{figuras/sentimientos/Abirth1.png}
+    \caption{Análisis de sentimientos para condición de birth control en los comentarios sobre beneficios.}
+    \label{fig:sentimientos:9}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{figuras/sentimientos/Abirth2.png}
+    \caption{Análisis de positivismo para condición de birth control en los comentarios sobre beneficios.}
+    \label{fig:sentimientos:10}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{figuras/sentimientos/Bbirth1.png}
+    \caption{Análisis de sentimientos para condición de birth control en los comentarios sobre efectos seundarios}
+    \label{fig:sentimientos:11}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{figuras/sentimientos/Bbirth2.png}
+    \caption{Análisis de positivismo para condición de birth control en los comentarios sobre efectos secundarios.}
+    \label{fig:sentimientos:12}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{figuras/sentimientos/Ablood1.png}
+    \caption{Análisis de sentimientos para condición de high blood preasure en los comentarios sobre beneficios.}
+    \label{fig:sentimientos:13}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{figuras/sentimientos/Ablood2.png}
+    \caption{Análisis de positivismo para condición de high blood preasure en los comentarios sobre beneficios.}
+    \label{fig:sentimientos:14}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{figuras/sentimientos/Bblood1.png}
+    \caption{Análisis de sentimientos para condición de high blood preasure en los comentarios sobre efectos seundarios}
+    \label{fig:sentimientos:15}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{figuras/sentimientos/Bblood2.png}
+    \caption{Análisis de positivismo para condición de high blood preasure en los comentarios sobre efectos secundarios.}
+    \label{fig:sentimientos:16}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{figuras/sentimientos/Adepression1.png}
+    \caption{Análisis de sentimientos para condición de depression en los comentarios sobre beneficios.}
+    \label{fig:sentimientos:17}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{figuras/sentimientos/Adepression2.png}
+    \caption{Análisis de positivismo para condición de depression en los comentarios sobre beneficios.}
+    \label{fig:sentimientos:18}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{figuras/sentimientos/Bdepression1.png}
+    \caption{Análisis de sentimientos para condición de depression en los comentarios sobre efectos seundarios}
+    \label{fig:sentimientos:19}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{figuras/sentimientos/Bdepression2.png}
+    \caption{Análisis de positivismo para condición de depression en los comentarios sobre efectos secundarios.}
+    \label{fig:sentimientos:20}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{figuras/sentimientos/Ainsomnia1.png}
+    \caption{Análisis de sentimientos para condición de insomnia en los comentarios sobre beneficios.}
+    \label{fig:sentimientos:21}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{figuras/sentimientos/Ainsomnia2.png}
+    \caption{Análisis de positivismo para condición de insomnia en los comentarios sobre beneficios.}
+    \label{fig:sentimientos:22}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{figuras/sentimientos/Binsomnia1.png}
+    \caption{Análisis de sentimientos para condición de insomnia en los comentarios sobre efectos seundarios}
+    \label{fig:sentimientos:23}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{figuras/sentimientos/Binsomnia2.png}
+    \caption{Análisis de positivismo para condición de insomnia en los comentarios sobre efectos secundarios.}
+    \label{fig:sentimientos:24}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{figuras/sentimientos/Alexapro1.png}
+    \caption{Análisis de sentimientos medicamento lexapro en los comentarios sobre beneficios.}
+    \label{fig:sentimientos:25}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{figuras/sentimientos/Alexapro2.png}
+    \caption{Análisis de positivismo para medicamento lexapro en los comentarios sobre beneficios.}
+    \label{fig:sentimientos:26}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{figuras/sentimientos/Blexapro1.png}
+    \caption{Análisis de sentimientos para medicamento lexapro en los comentarios sobre efectos seundarios}
+    \label{fig:sentimientos:27}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{figuras/sentimientos/Blexapro2.png}
+    \caption{Análisis de positivismo para medicamento lexapro en los comentarios sobre efectos secundarios.}
+    \label{fig:sentimientos:28}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{figuras/sentimientos/Apaxil1.png}
+    \caption{Análisis de sentimientos medicamento paxil en los comentarios sobre beneficios.}
+    \label{fig:sentimientos:29}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{figuras/sentimientos/Apaxil2.png}
+    \caption{Análisis de positivismo para medicamento paxil en los comentarios sobre beneficios.}
+    \label{fig:sentimientos:30}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{figuras/sentimientos/Bpaxil1.png}
+    \caption{Análisis de sentimientos para medicamento paxil en los comentarios sobre efectos seundarios}
+    \label{fig:sentimientos:31}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{figuras/sentimientos/Bpaxil2.png}
+    \caption{Análisis de positivismo para medicamento paxil en los comentarios sobre efectos secundarios.}
+    \label{fig:sentimientos:32}
+\end{figure}
+
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{figuras/sentimientos/Apropecia1.png}
+    \caption{Análisis de sentimientos medicamento propecia en los comentarios sobre beneficios.}
+    \label{fig:sentimientos:33}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{figuras/sentimientos/Apropecia2.png}
+    \caption{Análisis de positivismo para medicamento propecia en los comentarios sobre beneficios.}
+    \label{fig:sentimientos:34}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{figuras/sentimientos/Bpropecia1.png}
+    \caption{Análisis de sentimientos para medicamento propecia en los comentarios sobre efectos seundarios}
+    \label{fig:sentimientos:345}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{figuras/sentimientos/Bpropecia2.png}
+    \caption{Análisis de positivismo para medicamento propecia en los comentarios sobre efectos secundarios.}
+    \label{fig:sentimientos:35}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{figuras/sentimientos/Aprozac1.png}
+    \caption{Análisis de sentimientos medicamento prozac en los comentarios sobre beneficios.}
+    \label{fig:sentimientos:36}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{figuras/sentimientos/Aprozac2.png}
+    \caption{Análisis de positivismo para medicamento prozac en los comentarios sobre beneficios.}
+    \label{fig:sentimientos:37}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{figuras/sentimientos/Bprozac1.png}
+    \caption{Análisis de sentimientos para medicamento prozac en los comentarios sobre efectos seundarios}
+    \label{fig:sentimientos:38}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{figuras/sentimientos/Bprozac2.png}
+    \caption{Análisis de positivismo para medicamento prozac en los comentarios sobre efectos secundarios.}
+    \label{fig:sentimientos:39}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{figuras/sentimientos/Aretin1.png}
+    \caption{Análisis de sentimientos medicamento retin-a en los comentarios sobre beneficios.}
+    \label{fig:sentimientos:40}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{figuras/sentimientos/Aretin2.png}
+    \caption{Análisis de positivismo para medicamento retin-a en los comentarios sobre beneficios.}
+    \label{fig:sentimientos:41}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{figuras/sentimientos/Bretin1.png}
+    \caption{Análisis de sentimientos para medicamento retin-a en los comentarios sobre efectos seundarios}
+    \label{fig:sentimientos:42}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{figuras/sentimientos/Bretin2.png}
+    \caption{Análisis de positivismo para medicamento retin-a en los comentarios sobre efectos secundarios.}
+    \label{fig:sentimientos:43}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{figuras/sentimientos/Azoloft1.png}
+    \caption{Análisis de sentimientos medicamento zoloft en los comentarios sobre beneficios.}
+    \label{fig:sentimientos:44}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{figuras/sentimientos/Azoloft2.png}
+    \caption{Análisis de positivismo para medicamento zoloft en los comentarios sobre beneficios.}
+    \label{fig:sentimientos:45}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{figuras/sentimientos/Bzoloft1.png}
+    \caption{Análisis de sentimientos para medicamento zoloft en los comentarios sobre efectos seundarios}
+    \label{fig:sentimientos:46}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{figuras/sentimientos/Bzoloft2.png}
+    \caption{Análisis de positivismo para medicamento zoloft en los comentarios sobre efectos secundarios.}
+    \label{fig:sentimientos:47}
+\end{figure}

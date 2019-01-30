@@ -187,13 +187,15 @@ A continuación, se describen los paquetes necesarios para el desarollo del proy
 
 # 1. Comprender el problema a resolver
 
-El _dataset_ [**Drug Review Dataset**](https://archive.ics.uci.edu/ml/datasets/Drug+Review+Dataset+%28Druglib.com%29), proporcionado por [*UCI Machine Learning Repository*](https://archive.ics.uci.edu/ml/index.php), contiene una exhaustiva base de datos de medicamentos específicos, en la cual, el conjunto de datos muestra revisiones de pacientes sobre medicamentos específicos para unas condiciones particulares. Dichas revisiones se encuentran desglosadas en función del tema que se esté tratando: beneficios, efectos secundarios y comentarios generales. De igual modo, se dispone de una calificación de satisfacción general, es decir, de una calificación en base a los efectos secundarios del medicamento y de otra, en base a la efectividad del mismo.
+El _dataset_ [**Drug Review Dataset**](https://archive.ics.uci.edu/ml/datasets/Drug+Review+Dataset+%28Druglib.com%29), proporcionado por [*UCI Machine Learning Repository*](https://archive.ics.uci.edu/ml/index.php), contiene una exhaustiva base de datos de medicamentos específicos, en la cual, el conjunto de datos muestra revisiones de pacientes sobre medicamentos específicos para unas condiciones particulares. Dichas revisiones se encuentran desglosadas en función del tema que se esté tratando: beneficios, efectos secundarios y comentarios generales. De igual modo, se dispone de una calificación de satisfacción general, valor que representa una puntuación, por parte del paciente, en la que tiene en cuenta todos los factores (tanto positivos como negativos). Además, constará de una calificación en base a los efectos secundarios del medicamento y de otra, en base a la efectividad del mismo.
 
 En este proyecto nos centraremos en el **análisis y experiencia qué tienen los usuarios con ciertos tipos de medicamentos**, para la realización y aplicación de las técnicas explicadas a lo largo del curso. Para ello, se proponen los siguientes objetivos principales:
 
  - Realizar un análisis de sentimientos a partir de la experiencia de dichos usuarios en el uso de ciertos medicamentos, como por ejemplo ver la efectividad del medicamento cuánto está relacionado con los efectos secundarios o beneficios del mismo.
  
- - Comparar la efectividad o efectos secundarios del medicamento, de acuerdo a la puntuación del medicamento según el paciente.
+ - Comparar la efectividad o efectos secundarios del medicamento, de acuerdo a la puntuación del medicamento según el paciente, y sacar toda la información que podamos de dicha relación (en caso de existir).
+ 
+ - Obtener dependencias y patrones existentes entre los distintos fármacos, que nos permita conocer aspectos sobre ellos o incluso realizar agrupaciones, como puede ser, en positivos o negativos desde el punto de vista del paciente. 
  
  - Compatibilizar dicho modelo de datos con otros conjuntos de datos aportados en [**Drugs.com**](https://www.drugs.com/).
 
@@ -332,7 +334,7 @@ head(datos_test, 5)
 summary(datos_test) 
 ```
 
-De las tablas \ref{tabla:datos_testI} y \ref{tabla:datos_testII} podemos extraer que el medicamento \textbf{biaxin} con identificador \textbf{1366}, tiene una puntuación de 9 por parte del paciente (\textbf{rating = 9}), el cual tiene un nivel considerable de efectividad (\textbf{Considerably Effective}) con efectos secundarios leves (\textbf{Mild Side Effects}), usado para la infección sinusal   (\textbf{sinus infection}), en donde el paciente dice que no está muy seguro de si el antibiótico ha destruido las bacterias que causan su infección sinusal. Además, asegura que tomar este medicamento le da algo de dolor de espalda y algunas náuseas. El paciente tomó los antibióticos durante 14 días y la infección sinusal desapareció al sexto día.
+De las tablas \ref{tabla:datos_testI} y \ref{tabla:datos_testII} podemos extraer que el medicamento \textbf{biaxin} con identificador \textbf{1366}, tiene una puntuación de 9 por parte del paciente (\textbf{rating = 9}), el cual tiene un nivel considerable de efectividad (\textbf{Considerably Effective}) con efectos secundarios leves (\textbf{Mild Side Effects}), usado para la infección sinusal   (\textbf{sinus infection}), donde el paciente dice que no está muy seguro de si el antibiótico ha destruido las bacterias que causan su infección sinusal. Además, asegura que tomar este medicamento le da algo de dolor de espalda y algunas náuseas. El paciente tomó los antibióticos durante 14 días y la infección sinusal desapareció al sexto día.
 
 \begin{table}[h]
   \centering
@@ -379,11 +381,11 @@ Dado que la representación total del documento puede tener una alta dimensión,
 
 ### 2.2.1. Eliminar columnas
 
-El primer paso que vamos a realizar es la **eliminación de columnas**, las cuales contienen información irrelevante para nuestro análisis.
+El primer paso que vamos a realizar es la **eliminación de columnas**. En concreto, nos referimos a quellas que contienen información irrelevante para nuestro análisis.
 
 #### Eliminar columna ID
 
-Al conjunto de datos utilizado se le ha añadido de forma automática una novena columna, que representa un ID para cada uno de los datos con los que estamos trabajando. Como este ID no nos aporta información alguna, hemos decidido quitarlo directamente del _dataframe_. Esta columna se corresponde con la primera columna, por lo cuál, debemos eliminar la columna que se corresponde con la posición 1. Los cambios que hacemos en el _dataset_ deben modificarse tanto en el conjunto de test como train para que los resultados sean consistentes.
+Es importante mencionar, que al conjunto de datos utilizado se le ha añadido de forma automática una novena columna, que representa un ID para cada uno de los datos con los que estamos trabajando. Como este ID no nos aporta información alguna, hemos decidido quitarlo directamente del _dataframe_. Esta columna se corresponde con la primera que aparece, con lo cuál, debemos eliminar la columna que se corresponde con la posición 1. Los cambios que hacemos en el _dataset_ deben modificarse tanto en el conjunto de test como train para que los resultados sean consistentes.
 
 ```{r}
 datos_train = datos_train[-1] # Eliminar columna para el ID en el train
@@ -403,7 +405,7 @@ datos_test = datos_test[-8] # Eliminar columna para el commentsReview en el test
 
 ### 2.2.2. Eliminar filas
 
-Además de eliminar las columnas innecesarias, se han localizado tres filas que no aportan información a nuestro análisis. Asimismo, dichas filas perjudicaban la aplicación de técnicas.
+Además de eliminar las columnas innecesarias, se han localizado tres filas que no aportan información a nuestro análisis. Asimismo, dichas filas perjudicaban la aplicación de técnicas. Al tener un dataset grande, esta modificación se puede llevar a cabo sin problema alguno.
 
 - Se elimina la fila 387, porque no dispone de información alguna ni en _benefitsReview_ y _sideEffectsReview_. 
 - Se elimina la fila 928, porque en la columna _condition_ dispone de un carácter raro. 
@@ -450,7 +452,7 @@ datos_test[datos_test$urlDrugName == "paxil",]
 
 ### 2.2.4. Cuantificación de variables
 
-Para poder analizar y trabajar más fácilmente con la información de *sideEffects* y  *effectiveness*, se va a realizar una conversión de dichas columnas a forma cuantitativa, es decir, vamos asignar una etiqueta numérica a cada valor pertinente, tanto para para _train_ como _test_. 
+Para poder analizar y trabajar más fácilmente con la información de *sideEffects* y  *effectiveness*, se va a realizar una conversión de dichas columnas a un valor con el que nos sea más sencillo trabajar.En otras palabras, vamos a asignar una etiqueta numérica a cada valor pertinente, tanto para para _train_ como _test_. 
 
 A continuación, vamos a cuantificar la columna de *sideEffects*, para ello se añade una nueva columna a nuestro conjunto de datos denominada *sideEffectsNumber* que nos clasifica los posibles valores de la columna *sideEffects* en un rango numérico, comprendido entre 1 y 5. Dicha columna hace referencia a la clasificación de los efectos secundarios del medicamento según el paciente, en donde la etiqueta con valor 1 hará referencia a que no haya ningún efecto secundario y la etiqueta con valor 5 a que tiene efectos secundarios extremadamente graves:
 
@@ -483,7 +485,7 @@ head(datos_train$sideEffects, 5)
 head(datos_train$sideEffectsNumber, 5) 
 ```
 
-Volvemos a aplicar el mismo procedimiento para la columna de *effectiveness*, creándonos para ello una columna denominada *effectivenessNumber*. Dicha columna, hace referencia a la clasificación de la efectividad del medicamento según el paciente, asignaremos la etiqueta con valor 1 para indicar que el medicamente es ineficaz, si este es altamente eficaz, le asignaremos la etiqueta con valor 5:
+Volvemos a aplicar el mismo procedimiento para la columna de *effectiveness*, creándonos para ello una columna denominada *effectivenessNumber*. Dicha columna, hace referencia a la clasificación de la efectividad del medicamento según el paciente. Asignaremos la etiqueta con valor 1 para indicar que el medicamente es ineficaz, si este es altamente eficaz, le asignaremos la etiqueta con valor 5:
 
 - Highly Effective (altamente efectivo): 5
 - Considerably Effective (considerablemente efectivo) : 4
@@ -522,7 +524,7 @@ En este subapartado, se va a realizar una agregación de varias columnas, en don
 
 $$( sideEffects \cdot 0.7 ) + ( effectiveness \cdot 0.3 )$$
 
-El motivo de esta ponderación es que se considera que es peor tener efectos secundarios severos en un medicamento, que ser efectivo. Dicha agregación se ha añadido a una nueva columna, denominada **weightedRating**, cuyo resultado contiene una valoración general del medicamento. En donde, dicha transformación, puede ser usada para realizar una compararación con las propias valoraciones de los usuarios.
+El motivo de esta ponderación es que se considera que es peor tener efectos secundarios severos en un medicamento, que ser efectivo. Dicha agregación se ha añadido a una nueva columna, denominada **weightedRating**, cuyo resultado contiene una valoración general del medicamento. En donde, dicha transformación, puede ser usada para realizar una comparación con las propias valoraciones de los usuarios. Este cambio, nos permitirá trabajar posteriormente de una manera más sencilla y simplificada. 
 
 ```{r}
 # Recorremos el dataframe para el conjunto train
@@ -573,7 +575,7 @@ Comprobamos que se ha creado la nueva columna *weightedRating*, y que se han añ
 head(datos_train$weightedRating, 10) 
 ```
 
-Ahora realizamos el mismo procesamiento para el conjunto test, comprobamos que se ha creado la nueva columna *weightedRating*, y además que se han añadido los cambios comentados.
+Ahora realizamos el mismo procesamiento para el conjunto test. Una vez realizada la modificación, comprobamos que se ha creado la nueva columna *weightedRating*, y además que se han añadido los cambios comentados.
 
 ```{r, include=FALSE}
 # Ponderaciones
@@ -631,7 +633,9 @@ head(datos_test$weightedRating, 10)
 
 ### 2.2.6. Convertir el rating a variable binaria
 
-Para la realización de algunas técnicas que se explicarán más adelante, se necesita tener una etiqueta o variable binaria comprendida entre 0 y 1, es por eso que se ha optado por escoger la columna que contiene la puntuación del medicamento por parte del paciente, y establecerla entre 0 y 1. En donde el 0, tendrá los valores comprendidos entre 1 y 4 y nos indicará que el medicamento no es favorable; y en donde el 1, tendrá los valores comprendidos entre 5 y 10 indicándonos que el medicamento es favorable. Dichos cambios, serán añadidos a una nueva columna llamada **ratingLabel**. Realizamos dicho cambio, tanto para test como train.
+Para la realización de algunas técnicas que se explicarán más adelante, se necesita tener una etiqueta o variable binaria comprendida entre 0 y 1. Es por eso que se ha optado por escoger la columna que contiene la puntuación del medicamento por parte del paciente, y establecerla entre 0 y 1. En donde el 0, tendrá los valores comprendidos entre 1 y 4 y nos indicará que el medicamento no es favorable; y en donde el 1, tendrá los valores comprendidos entre 5 y 10 indicándonos que el medicamento es favorable. 
+
+Dichos cambios, serán añadidos a una nueva columna llamada **ratingLabel**. Realizamos dicho cambio, tanto para test como train.
 
 ```{r}
 # Recorremos el dataframe para el conjunto train
@@ -680,7 +684,7 @@ Al comparar las columna _sideEffectsNumber_ y _effectivenesNumber_, llegamos a l
 - Mild Side Effects (efectos secundarios leves) : 4
 - No Side Effects (sin efectos secundarios) : 5
 
-Realizamos dicha modificación, tanto para train como test.
+Realizamos dicha modificación, tanto para train como test. Con ello buscamos, obtener resultados con los que nos resulte más cómodo de trabajar. 
 
 ```{r}
 # Recorremos el dataframe para el conjunto train
@@ -745,9 +749,11 @@ head(datos_train$sideEffectsInverse, 10)
 
 ### 2.2.8. Representación gráfica de los datos
 
-Antes de comenzar con el análisis exploratorio, vamos realizar distintas gráficas de barras con el fin de comprender mejor los datos, antes del procesamiento. Primero realizaremos un gráfico de barras de las clasificaciones del medicamento por parte del paciente. 
+Antes de comenzar con el análisis exploratorio, vamos realizar distintos diagramas de barras con el fin de comprender mejor los datos, previo al procesamiento. Primero realizaremos un diagrama de barras de las clasificaciones del medicamento por parte del paciente. 
 
-En la figura \ref{grafica_rating}, se observa como más del 50% de los medicamentos obtienen una nota superior 6 por parte del paciente. Esto nos sugiere que el paciente, tiene una buena opinión sobre un alto porcentaje de los medicamentos, lo que puede dar lugar a opiniones más positivas. Por otro lado, vamos a mostrar gráficamente los efectos secundarios del medicamento según el paciente. En donde el 1 significa que el medicamento tiene pocos efectos secundarios y el 5 que tiene muchos efectos secundarios. Como se aprecia en la figura \ref{grafica_sideEffectsNumber}, un alto porcentaje de los medicamentos no tiene efectos secundarios, de acuerdo a las valoraciones de los pacientes.
+En la figura \ref{grafica_rating}, se observa cómo más del 50% de los medicamentos obtienen una nota superior 6 por parte del paciente. Esto nos sugiere que el paciente, tiene una buena opinión sobre un alto porcentaje de los medicamentos, lo que puede dar lugar a opiniones más positivas. 
+
+Por otro lado, vamos a mostrar gráficamente los efectos secundarios del medicamento según el paciente. En donde el 1 significa que el medicamento tiene pocos efectos secundarios y el 5 que tiene muchos efectos secundarios. Como se aprecia en la figura \ref{grafica_sideEffectsNumber}, un alto porcentaje de los medicamentos no tiene efectos secundarios, de acuerdo a las valoraciones de los pacientes.
 
 ```{r, include=FALSE, eval=FALSE}
 datos_train %>% 
@@ -788,7 +794,7 @@ datos_train %>%
 ```
 
 
-Por último, vamos a visualizar gráficamente, la efectividad del medicamentoe según el paciente. En donde el 1 significa que el medicamento tiene poca efectividad y el 5 que tiene mucha efectividad. De acuerdo a la figura \ref{grafica_sideEffectsNumber} y sabiendo que los pacientes aseguran que los medicamentos tienen pocos efectos secundarios, no es de extrañar que también tengan una alta efectividad.
+Por último, vamos a visualizar gráficamente, la efectividad del medicamento según el paciente. En donde el 1 significa que el medicamento tiene poca efectividad y el 5 que tiene mucha efectividad. De acuerdo a la figura \ref{grafica_sideEffectsNumber}, es lógica esta observación, sobretodo teniendo en cuenta el hecho de que, para los medicamentos catalogados con pocos efectos secundarios, es de esperar que los pacientes tengan buena opinión de ellos y se traduzca en una alta efectividad.
 
 ```{r, include=FALSE, eval=FALSE}
 datos_train %>% 
@@ -809,7 +815,7 @@ datos_train %>%
     \label{grafica_sideEffectsNumber}
 \end{figure}
 
-Acabamos de comprobar, como las valoraciones de los medicamentos por parte de los pacientes son mayormente positivas. Por tanto, una vez comprendidos los datos y eliminadas las columnas anteriores y modificadas las necesarias, ya podemos continuar con el procesamiento de los datos. Para ello, lo primero tenemos que hacer es cargar la librería que procesa los datos de tipo texto en R, para la construcción y manipulación del corpus. La librería más conocida se llama \textbf{tm}, aunque también haremos uso del paquete \textbf{SnowballC} para realizar el _Stemming_. 
+Acabamos de comprobar, cómo las valoraciones de los medicamentos por parte de los pacientes son mayormente positivas. Por tanto, una vez comprendidos los datos y eliminadas las columnas anteriores y modificadas las necesarias, ya podemos continuar con el procesamiento de los datos. Para ello, lo primero tenemos que hacer es cargar la librería que procesa los datos de tipo texto en R, para la construcción y manipulación del corpus. La librería más conocida se llama \textbf{tm}, aunque también haremos uso del paquete \textbf{SnowballC} para realizar el _Stemming_. 
 
 <!-------------------------------------------------------------------------------------------->
 
@@ -873,7 +879,7 @@ O de la forma `benefits_train_corpus[[4]]$content`:
     \label{benefits2}
 \end{figure}
 
-Y si nos fijamos en el contenido, vemos que tiene signos de puntuación y exclamación.
+Como aspecto a destactar, si nos fijamos en el contenido, podemos ver que tiene signos de puntuación y exclamación.
 
 ```{r, include=FALSE}
 # Si nos fijamos en el contenido, vemos que tiene signos de puntuación y exclamación
@@ -892,7 +898,7 @@ effects_train_corpus[[7]]$content
 
 ### 2.2.10. Correlación
 
-Una forma de medir la distancia es calcular la correlación entre un término y todos los demás de la matriz. Como en este caso, estamos usando variables textuales, no se aconseja hacer la correlación como tal. Debido a que la correlación indica la fuerza y la dirección de una relación lineal y proporcionalidad entre dos variables estadísticas, ya que está pensada para variables cuantitativas. Por otro lado, si que disponemos de variables categóricas, pero también se ha despreciado hacer la correlación entre ellas, debido a que no podemos prescindir de las etiquetas, ni agrupar distintos medicamentos en uno solo.
+Una forma de medir la relación existente entre las variables en nuestro dataset, es calcular la correlación entre un término y todos los demás de la matriz. Como en este caso, estamos usando variables textuales, no se aconseja hacer la correlación como tal. Debido a que la correlación indica la fuerza y la dirección de una relación lineal y proporcionalidad entre dos variables estadísticas, ya que está pensada para variables cuantitativas. Por otro lado, sí que disponemos de variables categóricas, pero también se ha despreciado hacer la correlación entre ellas, debido a que no podemos prescindir de las etiquetas, ni agrupar distintos medicamentos en uno solo.
 
 Además, la correlación está relacionada con el análisis de componentes principales (PCA), el cual, es una técnica utilizada para describir un conjunto de datos en términos de nuevas variables no correlacionadas. Por lo que se ha despreciado inicialmente realizar tal método.
 

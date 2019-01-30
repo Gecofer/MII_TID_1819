@@ -1049,7 +1049,7 @@ Si volvemos a mostrar las opiniones, vemos como todas las mayúsuculas han desap
 
 ### 2.2.14. Eliminación de Stopwords
 
-En cualquier idioma, hay palabras que son tan comunes o muy utilizadas que no aportan información relevante, a dichas palabras se las conoce como _stopwords_ o palabras _stop_. Por ejemplo, en español, las palabras "la", "a", "en", "de" son ejemplos de _stopwords_. Este tipo de palabras debemos de suprimirlas de nuestro corpus. Como, en nuestro caso, el contenido del corpus está en inglés, debemos especificar el idioma correcto para que nos elimine del corpus las palabras adecuadas en dicho idioma, tanto en train como en test.
+En cualquier idioma, hay palabras que son tan comunes o utilizadas que no aportan información relevante, a dichas palabras se las conoce como _stopwords_ o palabras _stop_. Por ejemplo, en español, las palabras "la", "a", "en", "de" son ejemplos de _stopwords_. Este tipo de palabras debemos de suprimirlas de nuestro corpus. Como, en nuestro caso, el contenido del corpus está en inglés, debemos especificar el idioma correcto para que nos elimine del corpus las palabras adecuadas en dicho idioma, tanto en train como en test.
 
 ```{r, warning=FALSE}
 # Datos train
@@ -1087,7 +1087,9 @@ Ahora ya hemos eliminado las _stopwords_ de forma correcta, y pasamos a realizar
 
 ### 2.2.15. Agrupación de sinónimos
 
-Con el fin de disminuir la dimensión del espacio a trabajar, se pueden identificar palabras distintas con el mismo significado y reemplazarlas por una sola palabra. Para ello se toman los sinónimos de dicha palabra. Dentro de las librerías que podemos usar para agrupar sinónimos, destacamos dos: `wordnet` y `rword2vec`. Sin embargo, por su sencillez se va hacer uso de `rword2vec`. Previamente, se obtendrán que palabras son las que mayor frecuencia presentan en nuestro texto, tanto para *benefitsReview* como *sideEffectsReview* del conjunto train y test. Y visualizamos los 4 primeros términos gráficamente para cada columna y conjunto train y test:
+Con el fin de disminuir la dimensión del espacio a trabajar, se pueden identificar palabras distintas con el mismo significado y reemplazarlas por una sola palabra. Para ello se toman los sinónimos de dicha palabra. Dentro de las librerías que podemos usar para agrupar sinónimos, destacamos dos: `wordnet` y `rword2vec`. Sin embargo, por su sencillez se va hacer uso de `rword2vec`. Previamente, se obtendrán qué palabras son las que mayor frecuencia presentan en nuestro texto, tanto para *benefitsReview* como *sideEffectsReview* del conjunto train y test. 
+
+Visualizamos los 4 primeros términos que cumplen estas características para cada columna y conjunto train y test:
 
 ```{r, include=FALSE}
 # Columna benefitsReview del conjunto train
@@ -1177,7 +1179,7 @@ barplot(graph_terms_frecuency_effects_test_corpus[1:4,],  xlab="Términos", ylab
 title(main = list("SideEffects paratest", font = 2))
 ```
 
-Una vez que tenemos los términos con mayor frecuencia en nuestras columnas (*benefitsReview* y *sideEffectsReview*) y su frecuencia asociada, pasamos a matriz dichos datos, con el fin de obtener solo las palabras y descartar su frecuencia.
+Una vez que tenemos los términos con mayor frecuencia en nuestras columnas (*benefitsReview* y *sideEffectsReview*) y su frecuencia asociada, pasamos a matriz dichos datos, con el fin de obtener únicamente las palabras y descartar su frecuencia asociada.
 
 ```{r, include=FALSE}
 # Columna benefitsReview del conjunto train
@@ -1227,7 +1229,7 @@ terms_effects_test_corpus <- rownames(terms_frecuency_effects_test_corpus)
 # terms_effects_test_corpus
 ```
 
-Como ya sabemos las palabras a usar, es decir, los términos que más se repite, procedemos a la agrupación por sinónimos. En donde, mediante la función *distance(...)* de la libería *rword2vec*, obtendremos todas palabras más similares de nuestro conjunto, en nuestro caso nos vamos a quedar con las 2 primeras, tanto para *benefitsTrainReview* como *sideEffectsReview* del conjunto train y test. A continuación, se muestran los pasos seguidos.
+Como ya sabemos las palabras a usar, es decir, los términos que más se repiten, procedemos a la agrupación por sinónimos. En donde, mediante la función *distance(...)* de la librería *rword2vec*, obtendremos todas palabras más similares de nuestro conjunto. En nuestro caso nos vamos a quedar con las 2 primeras, tanto para *benefitsTrainReview* como *sideEffectsReview* del conjunto train y test. A continuación, se muestran los pasos seguidos.
 
 1. Escribir un fichero los datos asociados a dicha columna.
 2. Entrenar los datos del fichero, con el fin de obtener los vectores de palabras que nos darán los palabras más similares.
@@ -1334,7 +1336,7 @@ terms_benefits_train_corpus[3]
 dist_terms_benefits_train_corpus_new[[3]]
 ```
 
-Se debe tener en cuenta, que los términos más similares han sido creados solo para nuestros documentos. Por último, ya solo nos queda hacer el reemplazamiento, para ello se usará la función *gsub(...)* sobre el corpus (*benefits_corpus* y *sideEffectsReview*). Para sustituir las palabras en el texto, se ha hecho uso de la función `gsub(pattern, replacement, x, ignore.case = FALSE, perl = FALSE, fixed = FALSE, useBytes = FALSE)`. A continuación, se describe el proceso seguido:
+Se debe tener en cuenta, que los términos más similares han sido creados únicamente para nuestros documentos. Por último, ya solo nos queda hacer el reemplazamiento, para ello se usará la función *gsub(...)* sobre el corpus (*benefits_corpus* y *sideEffectsReview*). Para sustituir las palabras en el texto, se ha hecho uso de la función `gsub(pattern, replacement, x, ignore.case = FALSE, perl = FALSE, fixed = FALSE, useBytes = FALSE)`. A continuación, se describe el proceso seguido:
 
 1. Iteramos sobre los términos del documento.
 2. Iteramos sobre las palabras más frecuentes de cada término.
@@ -1435,7 +1437,7 @@ $$ tfidf(t, d, D) = tf(t, d) × idf(t, D)$$
 
 donde $t$ es el término, $d$ denota cada documento, $D$ el espacio total de documentos y $tfidf$ es el peso asignado a ese término en el documento correspondiente.
 
-La combinación de los valores de $tf$ e $idf$ da una métrica que permite saber cómo de únicas son las palabras de un documento. La ponderación asigna un alto peso a un término si se produce con frecuencia en ese documento, pero rara vez en la colección completa. Sin embargo, si el término ocurre pocas veces en el documento, o aparece prácticamente en todos ellos, disminuye el peso asignado por la ponderación $tfidf$.
+La combinación de los valores de $tf$ e $idf$ da una métrica que permite saber cómo de únicas son las palabras de un documento. La ponderación asigna un alto peso a un término si se produce con frecuencia en ese documento, pero rara vez en la colección completa. Sin embargo, si el término ocurre pocas veces en el documento, o aparece prácticamente en todos ellos, disminuye el peso asignado por la ponderación $tfidf$. **De esta forma, obtenemos una forma de asignar a cada término un score en relación a cuán representativo es dicho término en nuestro conjunto de datos.**
 
 El peso aumenta proporcionalmente al número de veces que una palabra aparece en el documento, pero es compensada por la frecuencia de la palabra en la colección de documentos, lo que permite filtrar las palabras más comunes. Para ello, necesitamos que convertir nuestro corpus a un _dataframe_, en donde cada columna será una palabra del comentario y cada fila un comentario.
 
@@ -1693,16 +1695,16 @@ wordcloud(
 
 ### 2.2.17. Stemming
 
-El siguiente paso consiste en reducir el número de palabras totales con las que estamos trabajando. En este caso, se trata de reducir aquellas que no nos aportan nada relevante a lo que ya tenemos. En la columna con la que estamos trabajando en este dataframe, se repite una gran cantidad de veces la palabra "benefit", al igual que "benefits". 
+El siguiente paso consiste en reducir el número de palabras totales con las que estamos trabajando. En este caso, se trata de reducir aquellas que no nos aportan nada relevante a lo que ya tenemos. Por ejemplo, en este dataframe se repite una gran cantidad de veces la palabra "benefit", al igual que "benefits". Sin embargo, realizar el análisis de nuestros datos con ambas palabras no tiene gran relevancia, ya que una no aporta nada respecto a la otra. Este es un ejemplo del tipo de casos que se nos dan en nuestro dataset. 
 
-Sin embargo, realizar el análisis de nuestros datos con ambas palabras no tiene gran relevancia, ya que una no aporta nada respecto a la otra. Este es un ejemplo del tipo de casos que se nos dan en nuestro dataset. Igual ocurre con "reduce" y "reduced", por ejemplo. Este tipo de situaciones son las que intentamos corregir con este paso. Vamos a ver un ejemplo de este suceso, que se da por ejemplo en los siguientes valores del corpus (y en muchos más). 
+Igual ocurre con "reduce" y "reduced", por ejemplo. Este tipo de situaciones son las que intentamos corregir con este paso. Vamos a ver un ejemplo de este suceso, que se da por ejemplo en los siguientes valores del corpus (y en muchos más). 
 
 ```{r}
 inspect(benefits_train_corpus_new_load[183])
 inspect(benefits_train_corpus_new_load[213])
 ```
 
-A continuación, aplicamos el proceso de stemming mediante la siguiente orden:
+A continuación, aplicamos el proceso de stemming mediante la siguiente función:
 
 ```{r, warning=FALSE}
 benefits_train_corpus_new_load <- tm_map(benefits_train_corpus_new_load, stemDocument)
@@ -1712,7 +1714,7 @@ benefits_test_corpus_new_load <- tm_map(benefits_test_corpus_new_load, stemDocum
 effects_test_corpus_new_load <- tm_map(effects_test_corpus_new_load, stemDocument)
 ```
 
-Si ahora volvemos a mostrar el contenido de dichas opiniones, podemos ver que el stemming se ha hecho efectivo: donde ponía \textit{benefits}, ahora pone \textit{benefit}, como se puede comprobar si volvemos a mostrar dichos elementos del corpus. De hecho, si nos fijamos, no solo esta palabra ha resultado modificada, sino que se han resumido muchas más palabras en comparación a como teníamos los documentos en el momento previo a la aplicación del método \textit{Stem}. Desde este momento, ya tenemos nuestro conjunto reducido a nivel de concepto.
+Si ahora volvemos a mostrar el contenido de dichas opiniones, podemos ver que el cambio se ha hecho efectivo: donde ponía \textit{benefits}, ahora pone \textit{benefit}, como se puede comprobar si volvemos a mostrar dichos elementos del corpus. De hecho, si nos fijamos, no solo esta palabra ha resultado modificada, sino que se han resumido muchas más palabras en comparación a como teníamos los documentos en el momento previo a la aplicación del método \textit{Stem}. Desde este momento, ya tenemos nuestro conjunto reducido a nivel de concepto.
 
 ```{r}
 inspect(benefits_train_corpus_new_load[183])
@@ -1762,10 +1764,10 @@ effects_test_corpus_new_load <- tm_map(effects_test_corpus_new_load, stripWhites
 
 ### 2.2.20. Sparsity
 
-También puede resultar muy útil eliminar los términos que aparecen en muy pocos documentos antes de proceder a la clasificación. El motivo principal es la factibilidad computacional, ya que este proceso reduce drásticamente el tamaño de la matriz sin perder información significativa. Además puede eliminar errores en los datos, como podrían ser palabras mal escritas. Para suprimir estos términos, denominados escasos, se utiliza el comando `removeSparseTerms()`.
+También puede resultar muy útil eliminar los términos que aparecen en muy pocos documentos antes de proceder a la clasificación. El motivo principal es la factibilidad computacional, ya que este proceso reduce drásticamente el tamaño de la matriz sin perder información significativa. Además puede eliminar errores en los datos, como podrían ser palabras mal escritas, o simplemente borrar las palabras que aparezcan una única vez en el dataframe, y que difícilmente nos aportarán información relevante que podamos extrapolar. Para suprimir estos términos, denominados escasos, se utiliza el comando `removeSparseTerms()`.
 
 $$ df(t) > N \cdot (1 != sparse)$$
-siendo $df$ la frecuencia de documentos del término $t$ y $N$ el número de vectores. El parámetro sparse toma valores entre 0 y 1. En este caso, el umbral de escasez es 0.999, se toman los términos que aparecen en más del 1\% de documentos.
+siendo $df$ la frecuencia de documentos del término $t$ y $N$ el número de vectores. El parámetro *sparse* toma valores entre 0 y 1. En este caso, el umbral de escasez es 0.999. Este umbral elegido significa que se toman los términos que aparecen en más del 1\% de documentos.
 
 ```{r}
 dtm <- DocumentTermMatrix(benefits_train_corpus_new_load)
@@ -1774,13 +1776,15 @@ dtm <- removeSparseTerms(dtm, sparse=0.999)
 inspect(dtm)
 ```
 
-Se observa como de 5835 términos pasamos a 1702 términos, por tanto se ha considerado despreciar aplicar esta técnica ya que necesitamos todos los datos para la aplicación de las técnicas posteriores. Luego, en función de la técnica que se aplique, si fuera necesario se reducirá la dimensionalidad. En definitiva, ya tenemos nuestros datos listos.
+Se observa como de 5835 términos pasamos a 1702 términos, por tanto se ha considerado despreciar aplicar esta técnica ya que consideramos que se ha perdido una gran cantidad de información, y, desde nuestro punto de vista, creemos que no serían suficientes datos como para poder aplicar las técnicas y obtener buenos resultados. Por ello, necesitamos de estos los datos para la aplicación de las técnicas posteriores. 
+
+Luego, en función de la técnica que se aplique, si fuera necesario se reducirá la dimensionalidad. En definitiva, ya tenemos nuestros datos listos.
 
 <!-------------------------------------------------------------------------------------------->
 
 ### 2.2.21. Matriz de documentos de los términos
 
-Ahora vamos a mapear nuestro corpus creando una matriz de términos, donde las filas corresponden a los documentos y las columnas a los términos. Para ello usaremos la función TermDocumentMatrix:
+Ahora vamos a mapear nuestro corpus creando una matriz de términos, donde las filas corresponden a los documentos, las columnas a los términos y cada casilla la ocurrencia de dicho término en dicho documento. Para ello usaremos la función TermDocumentMatrix:
 
 ```{r}
 matrix_corpus <- TermDocumentMatrix(benefits_train_corpus_new_load)
@@ -1842,7 +1846,14 @@ title(main = list("Las nueve palabras más frecuentes después del preprocesamie
 
 ### 2.2.22. Nube de palabras
 
-Por último, vamos a visualizar la nube de palabras para benefits preprocesado, tanto al principio del procesamiento como al final.
+Por último, vamos a visualizar la nube de palabras para benefits preprocesado, tanto al principio del procesamiento como al final. En este caso, en vez de determinar los colores de las palabras en función de la ocurrencia de éstos en el dataset, hemos aplicado la nube de palabras de la forma que vimos en clase: **incluyendo análisis de sentimientos**. Por ello, en primer lugar, identificaremos las palabras a pintar como positivas o negativas, y posteriormente, se generará la nube de palabras con las siguientes características:
+- Si la palabra tiene una connotación positiva, aparecerá de color verde.
+- Si la palabra tiene una connotación negativa, aparecerá de color rojo.
+
+Este análisis es realmente determinante en nuestro problema, puesto que al fin y al cabo, tenemos comentarios de pacientes, que estarán orientados a una buena y positiva opinión del fármaco o al contrario (una mala, y posiblemente molesta opinión acerca del mismo). 
+
+**En este caso, visualizando la nube de palabras, obtenemos una cosa clara: principalmente tenemos malas opiniones de los fármacos, aspecto totalmente lógico puesto que, es más común que un usuario comente algo para quejarse o mostrar su mala experiencia, que para hablar bien del mismo.** Además, al tratarse de temas de enfermedades y problemas de salud, es mucho más fácil encontrar palabras relacionadas con el dolor, o la preocupación, que con la alegría u otros aspectos derivados de las connotaciones positivas.
+
 
 
 ```{r, include=FALSE, eval=FALSE}
@@ -1993,7 +2004,7 @@ A continuación se va a realizar un análisis de la información más relevante 
 
 ## 3.1. Valoraciones de los medicamentos por parte de los usuarios.
 
-En primer lugar vamos a analizar si el *rating* aportado por los usuarios sobre los medicamentos son buenos o no. Para ello empezamos obteniendo las frecuencias y porcentaje total de las valoraciones aportadas por los usuarios. Por tanto, se va a calcular la frecuencia de dicho atributo y su porcentaje respecto del total.
+En primer lugar vamos a analizar si el *rating* aportado por los usuarios sobre los medicamentos es, en general, bueno o no. Para ello empezamos obteniendo las frecuencias y porcentaje total de las valoraciones aportadas por los usuarios. Por tanto, se va a calcular la frecuencia de dicho atributo y su porcentaje respecto del total.
 
 ```{r}
 # Obtener frecuencias del rating

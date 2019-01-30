@@ -125,7 +125,7 @@ A continuación, se describen los paquetes necesarios para el desarollo del proy
 
 - [`e1071`](https://cran.r-project.org/web/packages/e1071/e1071.pdf) : Paquete para realizar _fuzzy clustering_, clasificador de _Naive Bayes_... Se puede instalar usando : _install.packages("e1071")_.
 
-- [`fclust`](https://cran.r-project.org/web/packages/fclust/fclust.pdf) : Paquete que nos proporciona algoritmos para la agrupación difusa, índices de validez de clústeres y gráficos para la validez de estos. Además de la visualización de los resultados de la agrupación difusa. : _install.packages("fclust")_.
+- [`fclust`](https://cran.r-project.org/web/packages/fclust/fclust.pdf) : Paquete que nos proporciona algoritmos para la agrupación difusa, índices de validez de clusters y gráficos para la validez de estos. Además de la visualización de los resultados de la agrupación difusa. : _install.packages("fclust")_.
 
 - [`factoextra`](https://cran.r-project.org/web/packages/factoextra/factoextra.pdf) : Proporciona algunas funciones sencillas para extraer y visualizar la producción de análisis de datos multivariados. : _install.packages("factoextra")_.
 
@@ -143,13 +143,13 @@ A continuación, se describen los paquetes necesarios para el desarollo del proy
 
 - [`NLP`](https://cran.r-project.org/web/packages/NLP/NLP.pdf) : Paquete con clases básicas y métodos para el procesamiento del lenguaje natural. Se puede instalar usando : _install.packages("NLP")_.
 
-- [`ppclust`](https://cran.r-project.org/web/packages/ppclust/ppclust.pdf) : Paquete que nos permite la agrupación de particiones de un conjunto de datos en subconjuntos o clústeres no superpuestos mediante el uso de los algoritmos de agrupación probabilística basados en prototipos. : _install.packages("ppclust")_.
+- [`ppclust`](https://cran.r-project.org/web/packages/ppclust/ppclust.pdf) : Paquete que nos permite la agrupación de particiones de un conjunto de datos en subconjuntos o clusters no superpuestos mediante el uso de los algoritmos de agrupación probabilística basados en prototipos. : _install.packages("ppclust")_.
 
 - [`plyr`](https://cran.r-project.org/web/packages/plyr/plyr.pdf) : Paquete que nos ofrece herramientas para dividir, aplicar y combinar datos. Se puede instalar usando : _install.packages("plyr")_.
 
 - [`proxy`](https://cran.r-project.org/web/packages/proxy/proxy.pdf) : Paquete que proporciona un _framework_ para cálculo eficiente. Se puede instalar usando : _install.packages("proxy")_. 
 
-- [`quanteda`](https://cran.r-project.org/web/packages/quanteda/quanteda.pdf) : Paquete para análisis cuantitativo de texto en R, usado para gestionar corpus, crear y manipular tokens y n-gramas, analizar palabras clave..., representando visualmente el texto y los análisis de texto. Se puede instalar usando : _install.packages("quanteda")_.
+- [`quanteda`](https://cran.r-project.org/web/packages/quanteda/quanteda.pdf) : Paquete para análisis cuantitativo de texto en R, usado para gestionar corpus, crear y manipular tokens y n-gramas, analizar palabras clave, etc, representando visualmente el texto y los análisis de texto. Se puede instalar usando : _install.packages("quanteda")_.
 
 - [`rlm`](https://cran.r-project.org/web/packages/rlm/rlm.pdf) : Paquete que nos propociona una adaptación robusta de un modelo lineal que puede responder en forma de matriz. : _install.packages("rlm")_.
 
@@ -222,14 +222,14 @@ Las características de este conjunto de datos vienen descritas en la siguiente 
 
 Los datos se dividen en un conjunto train (75%) y otro conjunto test (25%) y se almacenan en dos archivos _.tsv_ (tab-separated-values), respectivamente. Los atributos que tenemos en este dataset son:
 
-1. **urlDrugName** (categorical): nombre del medicamento/fármaco
-2. **rating** (numerical): clasificación o puntuación del 1 a 10 del medicamento según el paciente
-3. **effectiveness** (categorical): clasificación de la efectividad del medicamento según el paciente (5 posibles valores)
-4. **sideEffects** (categorical): clasificación de los efectos secundarios del medicamento según el paciente (5 posibles valores)
-5. **condition** (categorical): nombre de la condición (diagnóstico)
-6. **benefitsReview** (text): opinión del paciente sobre los beneficios
-7. **sideEffectsReview** (text): opinión del paciente sobre los efectos secundarios
-8. **commentsReview** (text): comentario general del paciente
+1. **urlDrugName** (categorical): nombre del medicamento/fármaco.
+2. **rating** (numerical): clasificación o puntuación del 1 a 10 del medicamento según el paciente.
+3. **effectiveness** (categorical): clasificación de la efectividad del medicamento según el paciente (5 posibles valores).
+4. **sideEffects** (categorical): clasificación de los efectos secundarios del medicamento según el paciente (5 posibles valores).
+5. **condition** (categorical): nombre de la condición (diagnóstico).
+6. **benefitsReview** (text): opinión del paciente sobre los beneficios.
+7. **sideEffectsReview** (text): opinión del paciente sobre los efectos secundarios.
+8. **commentsReview** (text): comentario general del paciente.
 
 <!----------------------------2. Preprocesamiento de datos------------------------------------>
 
@@ -237,29 +237,29 @@ Los datos se dividen en un conjunto train (75%) y otro conjunto test (25%) y se 
 
 En este apartado, pondremos los datos a punto para la aplicación de diversas técnicas. Por tanto, para poder analizar dicho _dataset_ y realizar el preprocesamiento al mismo, lo primero que se va hacer es leer el conjunto de datos _train_ y _test_. Una vez leídos, se procederán a aplicar las siguientes técnicas con el fin de limpiar los datos:
 
-1. Lectura del dataset
-2. Eliminación de columnas que información irrelevante para el análisis
-3. Eliminación de filas que no proporcionan información alguna
-4. Cuantificación de variables
-5. Representación gráfica de los datos
-6. Creación del corpus
-7. Representación gráfica de las frecuencias
-8. Correlación
-9. Eliminar signos de puntuación
-10. Conversión de las mayúsculas en minúsculas
-11. Eliminación de Stopwords
-12. Agrupación de sinónimos
-13. TF-IDF
-14. Stemming
-15. Borrar espacios en blanco innecesarios
-16. Valores perdidos
-17. Term Document Matrix
-18. Sparsity
-19.
-20.
-21.
-22.
-23.
+1. *Lectura del dataset* a usar.
+2. *Eliminar las columnas* que no aportan información relevante.
+3. *Eliminar las filas* que contienen caracteres raros y perjudican al análisis.
+4.  *Eliminar los medicamentos repetidos* en nuestro dataset.
+5. *Cuantificación de variables* para la obtención de las columnas con etiquetas numéricas.
+6. *Cálculo del rating ponderado* para la obtención de una valoración general del medicamento.
+7. *Conversión de rating a variable binaria*, para ser usada como etiqueta.
+8. *Cambiar el orden para la columna sideEffectsNumber*, con el fin de obtener el mismo orden en efectividad y efectos secundarios.
+9. *Representación gráfica de los datos*.
+10. *Creación del corpus* para las columnas benefitsReview y sideEffectsReview.
+11. *Correlación* entre las variables del dataset.
+12. *Representación gráfica de las frecuencias del Corpus*.
+13. *Eliminar signos de puntuación*.
+14. *Conversión de mayúsculas a minúsculas*.
+15. *Eliminación de palabras no aportan información relevante (stopwords)*.
+16. *Agrupación de sinónimos*.
+17. Cálculo de la frecuencia de cada término con *TF-IDF*.
+18. Reducción de palabras con *stemming*.
+19. Obtención y eliminación de *valores perdidos*.
+20. *Borrar espacios en blanco* innecesarios.
+21. Eliminar los términos que aparecen en muy pocos documentos (*sparsity*).
+22. Obtención de la *matriz de términos*.
+23. Creación de la *nube de palabras* para las columnas sin y con preprocesamiento.
 
 \newpage 
 
@@ -304,7 +304,7 @@ Disponemos de una matriz de 3107 filas x 9 columnas, asimismo vamos a ver un eje
   \label{tabla:datos_trainII}
 \end{table}
 
-De las tablas \ref{tabla:datos_trainI} y \ref{tabla:datos_trainII} podemos extraer que el medicamento \textbf{ponstel} con identificador \textbf{1146}, tiene la máxima puntuación por parte del paciente (\textbf{rating = 10}), el cual tiene un alto nivel de efectividad (\textbf{Highly Effective}) sin efectos secundarios (\textbf{No Side Effects}), usado para dolores menstruales (\textbf{menstrual cramps}), en donde el paciente dice que de estar tumbado en la cama con dolores ha pasado a poder realizar actividades cotidianas sin ningún impedimento. Además, asegura que tomar este medicamento le ha supuesto un sangrado más abundante y coagulación de lo normal. La dosis del medicamento oscila entre una píldora cada 8-12 horas durante 3-4 días.
+De los cuadros \ref{tabla:datos_trainI} y \ref{tabla:datos_trainII} podemos extraer que el medicamento \textbf{ponstel} con identificador \textbf{1146}, tiene la máxima puntuación por parte del paciente (\textbf{rating = 10}), el cual tiene un alto nivel de efectividad (\textbf{Highly Effective}) sin efectos secundarios (\textbf{No Side Effects}), usado para dolores menstruales (\textbf{menstrual cramps}), en donde el paciente dice que de estar tumbado en la cama con dolores ha pasado a poder realizar actividades cotidianas sin ningún impedimento. Además, asegura que tomar este medicamento le ha supuesto un sangrado más abundante y coagulación de lo normal. La dosis del medicamento oscila entre una píldora cada 8-12 horas durante 3-4 días.
 
 ```{r, warning=FALSE, include=FALSE}
 # Visualizar las 5 primeras filas para los datos train
@@ -373,7 +373,7 @@ Una vez leídos nuestros datos, procedemos a la transformación y preprocesamien
 
 ## 2.2. Preprocesamiento de los datos
 
-Dado que la representación total del documento puede tener una alta dimensión, se va a proceder a construir un corpus, necesario para la aplicación de métodos de limpieza y esructuración del texto de entrada e identificación de un subconjunto simplificado de las características del documento, con el fin de poder ser representado en un análisis posterior.
+Dado que la representación total del documento puede tener una alta dimensión, se va a proceder a construir un corpus, necesario para la aplicación de métodos de limpieza y estructuración del texto de entrada e identificación de un subconjunto simplificado de las características del documento, con el fin de poder ser representado en un análisis posterior.
 
 <!-------------------------------------------------------------------------------------------->
 
@@ -383,7 +383,7 @@ El primer paso que vamos a realizar es la **eliminación de columnas**, las cual
 
 #### Eliminar columna ID
 
-Al conjunto de datos utilizado se le ha añadido de forma automática una novena columna, que representa un ID para cada uno de los datos con los que estamos trabajando. Como este ID no nos aporta información alguna, hemos decidido quitarla directamente del _dataframe_. Esta columna se corresponde con la primera columna, por lo cuál, debemos eliminar la columna que se corresponde con la posición 1. Los cambios que hacemos en el _dataset_ deben modificarse tanto en el conjunto de test como train para que los resultados sean consistentes.
+Al conjunto de datos utilizado se le ha añadido de forma automática una novena columna, que representa un ID para cada uno de los datos con los que estamos trabajando. Como este ID no nos aporta información alguna, hemos decidido quitarlo directamente del _dataframe_. Esta columna se corresponde con la primera columna, por lo cuál, debemos eliminar la columna que se corresponde con la posición 1. Los cambios que hacemos en el _dataset_ deben modificarse tanto en el conjunto de test como train para que los resultados sean consistentes.
 
 ```{r}
 datos_train = datos_train[-1] # Eliminar columna para el ID en el train
@@ -407,7 +407,7 @@ Además de eliminar las columnas innecesarias, se han localizado tres filas que 
 
 - Se elimina la fila 387, porque no dispone de información alguna ni en _benefitsReview_ y _sideEffectsReview_. 
 - Se elimina la fila 928, porque en la columna _condition_ dispone de un carácter raro. 
-- Se elimina la fila 3105, porque no tienen información en _benefitsReview_ ("---").
+- Se elimina la fila 3105, porque no tienen información en _benefitsReview_, tan solo había tres guiones.
 
 ```{r}
 datos_train = datos_train[-c(387, 928, 3105),] # Eliminar filas en el train
@@ -418,7 +418,7 @@ datos_test = datos_test[-c(387, 928, 3105),] # Eliminar filas en el test
 
 ### 2.2.3. Eliminar elementos repetidos (medicamentos)
 
-Como se puede ver a continuación, existen medicamentos repetidos. Sin embargo, no se ha contabilizado realizar una eliminación de dichos medicamentos a priori, debido a que le damos más importancia a las opiniones de los pacientes, con el fin de obtener la efectividad o efectos secundarios del medicamento.
+Como se puede ver a continuación, existen medicamentos repetidos. Sin embargo, no se ha realizado a priori, debido a que le damos más importancia a las opiniones de los pacientes, con el fin de obtener la efectividad o efectos secundarios del medicamento.
 
 ```{r, include=FALSE}
 # Obtenemos los nombres de los medicamentos
@@ -483,7 +483,7 @@ head(datos_train$sideEffects, 5)
 head(datos_train$sideEffectsNumber, 5) 
 ```
 
-Volvemos a aplicar el mismo procedimiento para la columna de *effectiveness*, creándonos para ello una columna denominada *effectivenessNumber*. Dicha columna, hace referencia a la clasificación de la efectividad del medicamento según el paciente, en donde la etiqueta con valor 1 hace referencia a que el medicamente es ineficaz y la etiqueta con valor 5 a que el medicamente es altamente eficaz:
+Volvemos a aplicar el mismo procedimiento para la columna de *effectiveness*, creándonos para ello una columna denominada *effectivenessNumber*. Dicha columna, hace referencia a la clasificación de la efectividad del medicamento según el paciente, asignaremos la etiqueta con valor 1 para indicar que el medicamente es ineficaz, si este es altamente eficaz, le asignaremos la etiqueta con valor 5:
 
 - Highly Effective (altamente efectivo): 5
 - Considerably Effective (considerablemente efectivo) : 4
@@ -518,7 +518,7 @@ head(datos_train$effectivenessNumber, 5)
 
 ### 2.2.5. Cálculo del rating ponderado
 
-En este subapartado, se va a realizar una agregación de varias columnas, en donde queremos realizar una valoración general del medicamento. Para ello, se va a realizar una ponderación entre la columna que contiene los efectos secundarios y la efectividad del medicamento. Asimismo, se ha considerado a los efectos secundarios del medicamento con mayor importancia, es por eso que se le ha otorgado una ponderación del 70\% frente al 30\% de la efectividad del medicamento.
+En este subapartado, se va a realizar una agregación de varias columnas, en donde queremos realizar una valoración general del medicamento. Para ello, se va a realizar una ponderación entre la columna que contiene los efectos secundarios y la efectividad del medicamento. Asimismo, se ha considerado los efectos secundarios del medicamento con mayor importancia, es por eso que se le ha otorgado una ponderación del 70\% frente al 30\% de la efectividad del medicamento.
 
 $$( sideEffects \cdot 0.7 ) + ( effectiveness \cdot 0.3 )$$
 
@@ -573,7 +573,7 @@ Comprobamos que se ha creado la nueva columna *weightedRating*, y que se han añ
 head(datos_train$weightedRating, 10) 
 ```
 
-Ahora ralizamos el mismo proceimiento para el conjunto test, y comprobamos que se ha creado la nueva columna *weightedRating*, y que se han añadido los cambios comentados.
+Ahora realizamos el mismo procesamiento para el conjunto test, comprobamos que se ha creado la nueva columna *weightedRating*, y además que se han añadido los cambios comentados.
 
 ```{r, include=FALSE}
 # Ponderaciones
@@ -631,7 +631,7 @@ head(datos_test$weightedRating, 10)
 
 ### 2.2.6. Convertir el rating a variable binaria
 
-Para la realización de algunas técnicas que se explicarán a continuación, se necesita tener una etiqueta o variable binaria comprendida entre 0 y 1, es por eso que se ha optado por escoger la columna que contiene la puntuación del medicamento por parte del paciente, y establecerla entre 0 y 1. En donde el 0, tendrá los valores comprendidos entre 1 y 4 y será que el medicamento no es favorable; y en donde el 1, tendrá los valores comprendidos entre 5 y 10 y será que el medicamento es favorable. Dichos cambios, serán añadidos a una nueva columna llamada **ratingLabel**. Realizamos dicho cambio, tanto para test como train.
+Para la realización de algunas técnicas que se explicarán más adelante, se necesita tener una etiqueta o variable binaria comprendida entre 0 y 1, es por eso que se ha optado por escoger la columna que contiene la puntuación del medicamento por parte del paciente, y establecerla entre 0 y 1. En donde el 0, tendrá los valores comprendidos entre 1 y 4 y nos indicará que el medicamento no es favorable; y en donde el 1, tendrá los valores comprendidos entre 5 y 10 indicándonos que el medicamento es favorable. Dichos cambios, serán añadidos a una nueva columna llamada **ratingLabel**. Realizamos dicho cambio, tanto para test como train.
 
 ```{r}
 # Recorremos el dataframe para el conjunto train
@@ -640,14 +640,14 @@ for (i in 1:length(datos_train[[1]])){
   # Obtenemos el valor de rating
   rating <- datos_train$rating[i]
  
-  # Cuando los valores comprendidos entre 1 y 4 - no favorable - 0
+  # Valores comprendidos entre 1 y 4 - no favorable - 0
   if (datos_train$rating[i] < 5) result <- 0
-  # Cuando los valores comprendidos entre 5 y 10 - favorable - 1
+  # Valores comprendidos entre 5 y 10 - favorable - 1
   else if (datos_train$rating[i] >= 5) 
     result <- 1
   
   # Asignamos el resultado a la nueva variable
-  datos_train$ratingLabel[i]  <- result
+  datos_train$ratingLabel[i] <- result
 }
 ```
 
@@ -745,7 +745,7 @@ head(datos_train$sideEffectsInverse, 10)
 
 ### 2.2.8. Representación gráfica de los datos
 
-Antes de comenzar con el análisis exploratorio, vamos realizar distintas gráfica de barras con el fin de comprender mejor los datos, antes del procesamiento. Primero realizaremos un gráfico de barras de las clasificaciones del medicamente por parte del paciente. 
+Antes de comenzar con el análisis exploratorio, vamos realizar distintas gráficas de barras con el fin de comprender mejor los datos, antes del procesamiento. Primero realizaremos un gráfico de barras de las clasificaciones del medicamento por parte del paciente. 
 
 En la figura \ref{grafica_rating}, se observa como más del 50% de los medicamentos obtienen una nota superior 6 por parte del paciente. Esto nos sugiere que el paciente, tiene una buena opinión sobre un alto porcentaje de los medicamentos, lo que puede dar lugar a opiniones más positivas. Por otro lado, vamos a mostrar gráficamente los efectos secundarios del medicamento según el paciente. En donde el 1 significa que el medicamento tiene pocos efectos secundarios y el 5 que tiene muchos efectos secundarios. Como se aprecia en la figura \ref{grafica_sideEffectsNumber}, un alto porcentaje de los medicamentos no tiene efectos secundarios, de acuerdo a las valoraciones de los pacientes.
 
@@ -758,7 +758,7 @@ datos_train %>%
         scale_fill_brewer(palette="Paired") +
         labs(x = "Puntuación del medicamento", y = "Número de medicamentos") +
         ggtitle("Clasificación del medicamento por parte del paciente") +
-        theme(legend.position = "none", plot.title = element_text(hjust = 0.5, face = "bold"))
+        theme(legend.position = "none", plot.title = element_text(hjust = 0.5, face = "bold", size=40))
 ```
 
 \begin{figure}[ht]
@@ -788,7 +788,7 @@ datos_train %>%
 ```
 
 
-Por último, vamos a visualizar gráficamente, la efectividad del medicamentoe según del paciente. En donde el 1 significa que el medicamento tiene poca efectividad y el 5 que tiene mucha efectividad. De acuerdo a la figura \ref{grafica_sideEffectsNumber} y sabiendo que los pacientes aseguran que los medicamentos tienen pocos efectos secundarios, no es de extrañar que también tengan una alta efectividad.
+Por último, vamos a visualizar gráficamente, la efectividad del medicamentoe según el paciente. En donde el 1 significa que el medicamento tiene poca efectividad y el 5 que tiene mucha efectividad. De acuerdo a la figura \ref{grafica_sideEffectsNumber} y sabiendo que los pacientes aseguran que los medicamentos tienen pocos efectos secundarios, no es de extrañar que también tengan una alta efectividad.
 
 ```{r, include=FALSE, eval=FALSE}
 datos_train %>% 
@@ -894,7 +894,7 @@ effects_train_corpus[[7]]$content
 
 Una forma de medir la distancia es calcular la correlación entre un término y todos los demás de la matriz. Como en este caso, estamos usando variables textuales, no se aconseja hacer la correlación como tal. Debido a que la correlación indica la fuerza y la dirección de una relación lineal y proporcionalidad entre dos variables estadísticas, ya que está pensada para variables cuantitativas. Por otro lado, si que disponemos de variables categóricas, pero también se ha despreciado hacer la correlación entre ellas, debido a que no podemos prescindir de las etiquetas, ni agrupar distintos medicamentos en uno solo.
 
-Además, la correlación está relacionada con el análisis de componentes principales (PCA), el cual, es una técnica utilizada para describir un conjunto de datos en términos de nuevas variables no correlacionadas. Por lo que se ha despreciado, de primeras realizar tal método.
+Además, la correlación está relacionada con el análisis de componentes principales (PCA), el cual, es una técnica utilizada para describir un conjunto de datos en términos de nuevas variables no correlacionadas. Por lo que se ha despreciado inicialmente realizar tal método.
 
 <!-------------------------------------------------------------------------------------------->
 
@@ -904,7 +904,7 @@ Una vez creado el corpus y antes de aplicar las técnicas de preprocesamiento, v
 
 Como se puede apreciar en la gráfica \ref{benefits3}, los términos que más se repiten son _the_ y _and_, además de otras preposiciones y conjunciones. Si se observa, las palabras que aparecen en la gráfica, no nos aportan información alguna, es por eso que vamos hacer una transformación a los términos, como la eliminación de los _stopwords_.
 
-A continuación, mostramos los términos para la columna *sideEffects*, realizando el mismo procedimiento que antes. Y como se puede ver en la gráfica \ref{benefits4}, obtenemos la misma conclusión que antes. En donde, tenemos palabras que no nos aportan nada de información: _very_, _the_, _that_, _and_...
+A continuación, mostramos los términos para la columna *sideEffects*, realizando el mismo procedimiento que antes. Y como se puede ver en la gráfica \ref{benefits4}, obtenemos la misma conclusión, en donde tenemos palabras que no nos aportan nada de información: _very_, _the_, _that_, _and_...
 
 ```{r, echo=FALSE, include=FALSE}
 # Frecuencias para benefits en train
@@ -1011,7 +1011,7 @@ inspect(effects_train_corpus[7])
 
 ### 2.2.13. Conversión de las mayúsculas en minúsculas
 
-Para poder hacer uso de los términos por igual, debemos convertir las mayúsculas en minúsculas. Ya que normalmente se convierte en minúsculas todas las letras para que los comienzos de oración no sean tratados de manera diferente por los algoritmos, tanto para train como test.
+Para poder hacer uso de los términos por igual, debemos convertir las mayúsculas en minúsculas. Normalmente se convierte en minúsculas todas las letras para que los comienzos de oración no sean tratados de manera diferente por los algoritmos, tanto para train como test.
 
 ```{r, warning=FALSE}
 # Datos train
@@ -1043,7 +1043,7 @@ Si volvemos a mostrar las opiniones, vemos como todas las mayúsuculas han desap
 
 ### 2.2.14. Eliminación de Stopwords
 
-En cualquier idioma, hay palabras que son tan comunes o muy utilizadas que no aportan información relevante, a dichas palabras se las conoce como _stopwords_ o palabras _stop_. Por ejemplo, en español, las palabras "la", "a", "en", "de" son ejemplos de _stopwords_. Este tipo de palabras debemos de suprimirlas de nuestro corpus. Como, en nuestro caso, el contenido del corpus está en inglés, debemos especificar el idioma correcto para que nos elimine del corpus las palabras adecuadas en dicho idioma, tanto en train como en corpus.
+En cualquier idioma, hay palabras que son tan comunes o muy utilizadas que no aportan información relevante, a dichas palabras se las conoce como _stopwords_ o palabras _stop_. Por ejemplo, en español, las palabras "la", "a", "en", "de" son ejemplos de _stopwords_. Este tipo de palabras debemos de suprimirlas de nuestro corpus. Como, en nuestro caso, el contenido del corpus está en inglés, debemos especificar el idioma correcto para que nos elimine del corpus las palabras adecuadas en dicho idioma, tanto en train como en test.
 
 ```{r, warning=FALSE}
 # Datos train
@@ -1224,7 +1224,7 @@ terms_effects_test_corpus <- rownames(terms_frecuency_effects_test_corpus)
 Como ya sabemos las palabras a usar, es decir, los términos que más se repite, procedemos a la agrupación por sinónimos. En donde, mediante la función *distance(...)* de la libería *rword2vec*, obtendremos todas palabras más similares de nuestro conjunto, en nuestro caso nos vamos a quedar con las 2 primeras, tanto para *benefitsTrainReview* como *sideEffectsReview* del conjunto train y test. A continuación, se muestran los pasos seguidos.
 
 1. Escribir un fichero los datos asociados a dicha columna.
-2. Entrenat los datos del fichero, con el fin de obtener los vectores de palabras que nos darán los palabras más similares.
+2. Entrenar los datos del fichero, con el fin de obtener los vectores de palabras que nos darán los palabras más similares.
 3. Obtener para cada término del documento, la distancia con los térmios del ficheros, quedándonos con las de mayor frecuencia.
 4. Guardar en un fichero dichas distancias.
 
@@ -1330,8 +1330,8 @@ dist_terms_benefits_train_corpus_new[[3]]
 
 Se debe tener en cuenta, que los términos más similares han sido creados solo para nuestros documentos. Por último, ya solo nos queda hacer el reemplazamiento, para ello se usará la función *gsub(...)* sobre el corpus (*benefits_corpus* y *sideEffectsReview*). Para sustituir las palabras en el texto, se ha hecho uso de la función `gsub(pattern, replacement, x, ignore.case = FALSE, perl = FALSE, fixed = FALSE, useBytes = FALSE)`. A continuación, se describe el proceso seguido:
 
-1. Iteramos sobre los términos del documento
-2. Iteramos sobre las palabras más frecuentes de cada término
+1. Iteramos sobre los términos del documento.
+2. Iteramos sobre las palabras más frecuentes de cada término.
 3. Realizamos el reemplazamiento de las palabras más similares por los términos generales, previa conversión a minúsculas.
 4. Guardamos los resultados en ficheros.
 
@@ -1466,7 +1466,7 @@ for (i in 1:length(dataframe_benefits_test[[1]])){
 La primera parte de la fórmula $tf(t, d)$ es simplemente calcular el número de veces que aparece cada palabra en cada documento:
 
 1. Creamos el corpus utilizando el vector de string que hemos creado previamente.
-2. Generamos la matriz de términos
+2. Generamos la matriz de términos.
 3. Convertimos a matriz.
 
 ```{r, include=FALSE}
@@ -1499,15 +1499,15 @@ Durante el cálculo de la frecuencia del término se considera que todos los té
 ```{r}
 # Calculamos los pesos asociados a cada término en train
 terms_benefits_train <- ( idf_benefits_train <- log( ncol(tf_benefits_train) 
-                                                     / ( 1+rowSums(tf_benefits_train != 0))))
+                                                / ( 1+rowSums(tf_benefits_train != 0))))
 terms_effects_train <- ( idf_effects_train <- log( ncol(tf_effects_train) 
-                                                   / ( 1+rowSums(tf_effects_train != 0))))
+                                                / ( 1+rowSums(tf_effects_train != 0))))
 
 # Calculamos los pesos asociados a cada término en test
 terms_benefits_test <- ( idf_benefits_test <- log( ncol(tf_benefits_test) 
-                                                   / ( 1+rowSums(tf_benefits_test != 0))))
+                                                / ( 1+rowSums(tf_benefits_test != 0))))
 terms_effects_test <- ( idf_effects_test <- log( ncol(tf_effects_test) 
-                                                 / ( 1+rowSums(tf_effects_test != 0))))
+                                               / ( 1+rowSums(tf_effects_test != 0))))
 
 # Muestra los pesos asociados a cada término (los 5 primeros)
 terms_benefits_train[1:5] 
@@ -1566,7 +1566,7 @@ colnames(tf_idf_benefits_test_new) <- rownames(tf_benefits_test)
 colnames(tf_idf_effects_test_new) <- rownames(tf_effects_test)
 ```
 
-Hay que recordar que en la sección $tf$ (frecuencia del término), estamos representando cada término como el número de veces que aparecieron en el documento. El principal problema para esta representación es que creará un sesgo hacia documentos largos, ya que un término dado tiene más posibilidades de aparecer en documentos más largos, lo que los hace parecer más importantes de lo que realmente son. Por lo tanto, el enfoque para resolver este problema es la buena normalización:
+Hay que recordar que en la sección $tf$ (frecuencia del término), estamos representando cada término como el número de veces que aparecieron en el documento. El principal problema para esta representación es que creará un sesgo hacia documentos largos, ya que un término dado tiene más posibilidades de aparecer en documentos más largos, lo que los hace parecer más importantes de lo que realmente son. Por lo tanto, el enfoque para resolver este problema es la normalización:
 
 $$ t\_benefits\_train = \frac{tf\_idf\_benefits\_train\_new}{\sqrt(rowSums( tf\_idf\_benefits\_train\_new^2 ) )}$$
 
@@ -1656,8 +1656,9 @@ z_benefits_train$terms1_5_new_benefits_train[1:20]
 ```{r}
 # Graficamos los resultados para benefits train
 ggplot() + 
- geom_bar(data=z_benefits_train[1:10,],aes(x=z_benefits_train$terms1_5_new_benefits_train[1:10],
-                                           y=z_benefits_train$v_benefits_train[1:10]), stat='identity', 
+ geom_bar(data=z_benefits_train[1:10,],
+          aes(x=z_benefits_train$terms1_5_new_benefits_train[1:10],
+          y=z_benefits_train$v_benefits_train[1:10]), stat='identity', 
           position='dodge')
 ```
 
@@ -1758,7 +1759,7 @@ dtm <- removeSparseTerms(dtm, sparse=0.999)
 inspect(dtm)
 ```
 
-Se observa como de x términos pasamos a x términos, ni un 5\% del total, por tanto se ha considerado despreciar aplicar esta técnica.  Por tanto, ya tenemos nuestros datos listos.
+Se observa como de 3104 términos pasamos a 1702 términos, por tanto se ha considerado despreciar aplicar esta técnica ya que necesitamos todos los datos para la aplicación de las técnicas posteriores. Luego, en función de la técnica que se aplique, si fuera necesario se reducirá la dimensionalidad. En definitiva, ya tenemos nuestros datos listos.
 
 <!-------------------------------------------------------------------------------------------->
 
@@ -1791,19 +1792,21 @@ Con este método, hemos obtenido la ocurrencia de las palabras que tenemos en nu
 suma_matrix_corpus <- rowSums(matrix_corpus)
 head(suma_matrix_corpus,5)
 
-# Ordenanamos de mayor a menor y muestra los 10 primeros
+# Ordenamos de mayor a menor y muestra los 10 primeros
 ordena_mayor_matrix_corpus <- sort(suma_matrix_corpus, decreasing = TRUE)
 head(ordena_mayor_matrix_corpus,10)
 copia_ordena_mayor = ordena_mayor_matrix_corpus # Para graficos (evitando data.frame)
 
-# Ordenanamos de menor a mayor y muestra los 10 primeros
+# Ordenamos de menor a mayor y muestra los 10 primeros
 ordena_menor_matrix_corpus <- sort(suma_matrix_corpus, decreasing = FALSE)
 head(ordena_menor_matrix_corpus,10)
 ```
 
 ```{r}
-# Transformamos a objeto data.frame, con dos columnas (palabra, frec), para posteriormente graficarlo.
-ordena_mayor_matrix_corpus <- data.frame(palabra = names(ordena_mayor_matrix_corpus), frec = ordena_mayor_matrix_corpus)
+# Transformamos a objeto data.frame, con dos columnas (palabra, frec), 
+#para posteriormente graficarlo.
+ordena_mayor_matrix_corpus <- data.frame(palabra = names(ordena_mayor_matrix_corpus), 
+                                         frec = ordena_mayor_matrix_corpus)
 ```
 
 Mostramos las más frecuentes:
@@ -2684,7 +2687,7 @@ transactions_effects <- as(items_effects,"transactions")
 
 ```
 
-Ya tenemos los datos de textos estructurados en una base de datos transaccional, podemos aplicar la técnica para obtener las reglas de asosiación. Vamos a utilizar el algoritmo "a priori" visto en clase. De lo contrario, el coste computacional y de tiempo no sería viable para obtener este conocimineto a partir de los comentarios.
+Ya tenemos los datos de textos estructurados en una base de datos transaccional, podemos aplicar la técnica para obtener las reglas de asociación. Vamos a utilizar el algoritmo "a priori" visto en clase. De lo contrario, el coste computacional y de tiempo no sería viable para obtener este conocimineto a partir de los comentarios.
 
 El primer parámetro que encontramos en la función se corresponde con los datos que le proporcionamos y el segundo, un listado de parámetros específicos. En cuanto a estos, el primero es el umbral para el soporte, el segundo el umbral de la confianza, el tercero el target para indicar que buscamos reglas de asociación y en el cuarto indicamos que como mínimo empecemos con itemset de tamaño 2. De esta forma estamos selecciondo un conjunto más reducido de reglas, que es lo que nos interesa desde el principio para ahorrar costes de procesamiento de los datos, al mismo tiempo que perdemos la mínima calidad posible en las reglas.
 
@@ -3835,4 +3838,11 @@ lines(x = nuevos_puntos$sideEffectsInverse, intervalo_conf$inferior, col = "blue
 lines(x = nuevos_puntos$sideEffectsInverse, intervalo_conf$superior, col = "blue", pch = 4)
 ```
 
-## 5.4. Conclusiones
+# 9. Conclusiones
+
+Después de realizar las técnicas que acabamos de comentar, hemos comprendido la importancia que tiene el preprocesamiento en nuestros datos, los cuales sirven como entrada para las técnicas implementadas en la Minería de Textos. Es por eso que a partir de una base de datos sin estructura, hemos ido transformando dichos datos en datos con una coherencia y sentido. Debido a que nuestro dataset de primeras disponía de mucho ruido, cosa que hubiera afectado negativamente a la precisión de los predictores. Es por eso que se llevó a cabo un debido filtrado, como se pudo ver en el apartado 2. Una vez que tuvimos los datos tratados adecuadamente, se procedió a la realización del análisis exploratorio de los datos. Dicho análisis, fue llevado a cabo, principalmente, para saber y comprender en mayor medida el conjunto con el que estamos trabajando y, en particular, para estudiar la efectividad y los efectos secundarios de los medicamentos. 
+
+Por otro lado, se llevó a cabo un análisis de sentimientos sobre los sentimientos de las personas, mediante la opinión que tienen sobre los distintos medicamentos que se encuentran en nuestro dataset. Dicho análisis nos llevó a la conclusión, de que se tiene una opinión más negativa que positiva sobre la aplicación de los medicamentos. Sin embargo, esta conclusión tiene coherencia, ya que las personas tiende a extraer los contras de los medicamentos. Y a no ser que el medicamento cumpla su función eficazmente, el paciente no tenderá a ser positivo respecto al mismo.
+
+Con respecto a las técnicas, debemos destacar la componente subjetiva que tienen las reglas de asociación a la hora de su elección. Se observó, como los consecuentes más frecuentes fueron effect y side, lo que es lógico ya que estamos midiendo los efectos que tienen los medicamentos. 
+Por otro lado, se aplicó el método de regresión sobre las variables numéricas, dicho método obtuvo unas predicciones de etiquetas muy buenas, obteniendo con la regresión logística multivariable el mínimo error fuera de la muestra. Ya que dicho método, permite estimar de manera muy aceptable la probabilidad de una variable cualitativa binaria en función de una variable cuantitativa. 

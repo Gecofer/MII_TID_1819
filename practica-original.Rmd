@@ -2560,23 +2560,25 @@ Por último, mencionar que, gracias a estos resultados, hemos podido corroborar 
 
 # 5. Reglas de Asociación
 
-En esta técnica haremos un análisis descriptivo de los datos de texto. Buscaremos la relación que existe entre las palabras expuestas en los distintos comentarios sobre los medicamentos y tratatemos de asociarlos a distintos conceptos para tener una mejor idea de nuestro dataset. Esto nos permitirá saber de antemano que palabras a priori pueden tener que ver algo con distintos efectos de los medicamentos.
+En esta técnica haremos un análisis descriptivo de los datos de texto ya que, en nuestra opinión, son los que consideramos que nos pueden permitir sacar más provecho de esta técnica. 
+
+Buscaremos la relación que existe entre las palabras expuestas en los distintos comentarios sobre los medicamentos y tratatemos de asociarlos a distintos conceptos para tener una mejor idea de nuestro dataset. Esto nos permitirá saber de antemano que palabras a priori pueden tener que ver algo con distintos efectos de los medicamentos, y también, obtener información relevante acerca de cuestiones que se nos hayan podido plantear (lo cual se conoce como filtraje de reglas guiado por el usuario).
 
 ```{r, eval=FALSE, include=FALSE}
 datos_train <- read.table("datos/datos_train_preprocesado.csv", sep=",",
                           comment.char="",quote = "\"", header=TRUE)
 ```
 
-Vamos a crearnos un corpus por cada uno de los tipos de comentarios que tenemos en cada item. Recordar que estos textos ya se encuentran preprocesados como se puede consultar en secciones anteriores de esta documentación.
+Vamos a crearnos un corpus por cada uno de los tipos de comentarios que tenemos en cada item. Recordar que estos textos ya se encuentran preprocesados, tal y  como se puede consultar en secciones anteriores de esta documentación.
 
 ```{r, eval=FALSE}
 benefits_corpus = Corpus(VectorSource(datos_train$benefits_preprocesado))
 effects_corpus = Corpus(VectorSource(datos_train$effects_preprocesado))
 ```
 
-Ahora mismo el dataset es de tipo categórico pero nosotros los necesitamos como una cadena de caracteres para pasos posteriores. Por tanto, todos los datos que se encuentran en estas columnas van a ser transformados. Serán entendidas como palabras diferenciadas.
+Ahora mismo el dataset es de tipo categórico pero nosotros necesitamos tener los datos como una cadena de caracteres para pasos posteriores. Por tanto, todos los datos que se encuentran en estas columnas van a ser transformados. Serán entendidos como palabras diferenciadas. Este paso de diferenciación de las palabras de los documentos, es clave para el funcionamiento de la técnica, puesto que nos permite obtener las distintas palabras que posteriormente formaran los item-sets.
 
-Una vez que obtenemos las palabras en string, algunas de estas se quedan como palabras vacías, para ello utilizamos la función. Finalmente, ya podemos obtener una base de datos de tipo transaccional.
+Una vez que obtenemos las palabras en tipo *character*, algunas de estas se quedan como palabras vacías. Debemos *limpiar* estos vacíos que se nos han generado, antes de continuar al siguiente paso. Finalmente, una vez llevemos a cabo este último paso, ya podremos obtener una base de datos de tipo transaccional.
 
 ```{r, eval=FALSE}
 items_benefits <- strsplit(as.character(benefits_corpus$content), " ")

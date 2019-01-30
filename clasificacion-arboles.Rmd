@@ -8,11 +8,9 @@ output:
 # Lectura de datos
 
 ```{r}
-library(dplyr)
-
 datos_train = read.csv("datos/datos_train_preprocesado.csv", stringsAsFactors = F)
 datos_test = read.csv("datos/datos_test_preprocesado.csv", stringsAsFactors = F)
-datos_total <- bind_rows(datos_train,datos_test)
+datos_total <- union(datos_train,datos_test)
 ```
 
 <!---------->
@@ -280,8 +278,8 @@ library(dplyr)
 library(tm) 
 library(SnowballC)
 
-datos_train = read.csv("datos_train_preprocesado.csv", stringsAsFactors = F)
-datos_test = read.csv("datos_test_preprocesado.csv", stringsAsFactors = F)
+datos_train = read.csv("datos/datos_train_preprocesado.csv", stringsAsFactors = F)
+datos_test = read.csv("datos/datos_test_preprocesado.csv", stringsAsFactors = F)
 datos_total <- bind_rows(datos_train,datos_test)
 corpus = Corpus(VectorSource(datos_total$benefits_preprocesado))
 # Creamos matriz de términos con las palabras de los comentarios. Entonces cada fila, va a estar formada por los comentarios, donde cada palabra es una columna

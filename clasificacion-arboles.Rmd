@@ -1,11 +1,16 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
 
 # Lectura de datos
 
 
 ```{r}
 
-datos_train = read.csv("datos_train_preprocesado.csv", stringsAsFactors = F)
-datos_test = read.csv("datos_test_preprocesado.csv", stringsAsFactors = F)
+datos_train = read.csv("datos/datos_train_preprocesado.csv", stringsAsFactors = F)
+datos_test = read.csv("datos/datos_test_preprocesado.csv", stringsAsFactors = F)
 datos_total <- union(datos_train,datos_test)
 
 
@@ -13,9 +18,9 @@ datos_total <- union(datos_train,datos_test)
 
 <!---------->
 
-# Arboles de decision y clasificacion
+# Arboles de decisión y clasificación
 
-## Arboles de decision
+## Árboles de decisión
 
 El árbol de decisión es una técnica clásica de clasificación en la que se realizan particiones binarias
 de los datos de forma recursiva. El resultado se puede representar con un árbol.
@@ -24,9 +29,9 @@ Para la construcción del árbol también se puede utilizar la función **rpart*
 simplificar los modelos ajustados mediante la poda de las divisiones que no merecen la pena. Otros
 parámetros importantes son **minsplit**, número mínimo de observaciones que debe haber en un nodo
 para que se intente una partición, y **minbucket**, número mínimo de observaciones de un nodo terminal.
-Por defecto minsplit= 20, minbucket=round(minsplit/3) y cp= 0,01.
+Por defecto minsplit = 20, minbucket = round(minsplit/3) y cp = 0,01.
 
-A la hora de determinar los parámetros, el procedimiento habitual para determinar los parámetros del modelo consiste en dejar que el árbol crezca hasta que cada nodo terminal tenga menos de un número mínimo de observaciones, ya que
+El procedimiento habitual para determinar los parámetros del modelo consiste en dejar que el árbol crezca hasta que cada nodo terminal tenga menos de un número mínimo de observaciones, ya que
 en algunas divisiones puede que apenas mejore y en las siguientes sí lo haga. Para determinar *cp* se
 considera como 0, para que el árbol crezca lo máximo posible.
 
@@ -177,7 +182,7 @@ plotcp(rpart)
               
 ```
 
- Generamos la predicción
+ Generamos la predicción:
 
 ```{r}
 pred <- predict(rpart, newdata=datos_test, type="class")
@@ -189,7 +194,7 @@ dnn=c("Real", "Predicho" ))
 tabla
 ```
 
-Obtenemos el resultado
+Obtenemos el resultado:
 
 ```{r}
 
@@ -197,12 +202,12 @@ sum(diag(tabla))/nrow(datos_test)
 
 ```
 
-La precisión de este modelo es del **50,58%** aproximadamente.
+La precisión de este modelo es del **50,58%**, aproximadamente.
 
 
 ### Predicción de effectivenessNumber en función del weightedRating
 
-Siguiendo el mismo proceso que se ha seguido para la obtención del árbol generado anteriormente, se va a predecir el valor de la efectividad del medicamento en función del rating ponderado que se ha generado durante el procesamiento ( 70% efectos secundarios, 30% efectividad).
+Siguiendo el mismo proceso que se ha seguido para la obtención del árbol generado anteriormente, se va a predecir el valor de la efectividad del medicamento en función del rating ponderado que se ha generado durante el procesamiento (70% efectos secundarios, 30% efectividad).
 
 ```{r}
 seed <- 42
@@ -234,7 +239,7 @@ plotcp(rpart)
 
 ```
 
-Generamos la predicción
+Generamos la predicción:
 
 ```{r}
 
@@ -247,21 +252,21 @@ dnn=c("Real", "Predicho" ))
 tabla
 ```
 
-Obtenemos el resultado
+Obtenemos el resultado:
 
 ```{r}
 sum(diag(tabla))/nrow(datos_test)
 
 ```
 
-La precisión de este modelo es del **53,57%** aproximadamente.
+La precisión de este modelo es del **53,57%**, aproximadamente.
 
 ### Predicción de sideEffectsNumber en función del weightedRating
 
-Siguiendo el mismo proceso que se ha seguido para la obtención del árbol generado anteriormente, se va a predecir el valor de efectos secundarios del medicamento en función del rating ponderado que se ha generado durante el procesamiento ( 70% efectos secundarios, 30% efectividad).
+Siguiendo el mismo proceso que se ha seguido para la obtención del árbol generado anteriormente, se va a predecir el valor de efectos secundarios del medicamento en función del rating ponderado que se ha generado durante el procesamiento (70% efectos secundarios, 30% efectividad).
 
 
-Generamos el modelo
+Generamos el modelo:
 ```{r}
 
 library("rattle")
@@ -301,7 +306,7 @@ plotcp(rpart)
 
 
 
-Generamos la predicción
+Generamos la predicción:
 
 ```{r}
 
@@ -315,14 +320,14 @@ tabla
 
 ```
 
-Obtenemos el resultado
+Obtenemos el resultado:
 
 ```{r}
 sum(diag(tabla))/nrow(datos_test)
 
 ```
 
-La precisión de este modelo es del **73,21%** aproximadamente.
+La precisión de este modelo es del **73,21%**, aproximadamente.
 
 ### Conclusión
 
@@ -345,13 +350,16 @@ En esta sección se va a realizar una predicción de la efectividad en base a lo
 # Creación del corpus
 corpus = Corpus(VectorSource(datos_total$benefits_preprocesado))
 
-# Creamos matriz de términos con las palabras de los comentarios. Entonces cada fila, va a estar formada por los comentarios, donde cada palabra es una columna
+# Creamos matriz de términos con las palabras de los comentarios. 
+# Entonces cada fila, va a estar formada por los comentarios, 
+# donde cada palabra es una columna
 tdm <- tm::DocumentTermMatrix(corpus)
 tdm.tfidf <- tm::weightTfIdf(tdm)
 
 reviews = as.data.frame(cbind(datos_total$effectivenessNumber, as.matrix(tdm.tfidf)))
 
-# V1 (effectivenessNumber) y en las demás columnas todos los términos juntos con su peso tf-idf
+# V1 (effectivenessNumber) y en las demás columnas todos 
+# los términos juntos con su peso tf-idf
 preparado_train <- reviews[1:dim(datos_train)[1],]
 preparado_test <- reviews[-(1:dim(datos_test)[1]),]
 
@@ -384,7 +392,7 @@ dnn=c("Real", "Predicho" ))
 tabla
 ```
 
-Obtenemos el resultado
+Obtenemos el resultado:
 
 ```{r}
 
@@ -398,87 +406,87 @@ de bosques aleatorios.
 
 
 
-## Clasificación Bayesiona: algoritmo clasico
+<!-- ## Clasificación Bayesiona: algoritmo clasico -->
 
-## Clasificación Bayesiona: clasificador Naive Bayes                
+<!-- ## Clasificación Bayesiona: clasificador Naive Bayes                 -->
 
-```{r}
-# https://rpubs.com/jboscomendoza/naive_nayes_con_r_clasificacion_texto
+<!-- ```{r} -->
+<!-- # https://rpubs.com/jboscomendoza/naive_nayes_con_r_clasificacion_texto -->
 
-library(tidyverse)
-library(tidytext)
-library(naivebayes)
-library(tm)
-library(caret)
-```
+<!-- library(tidyverse) -->
+<!-- library(tidytext) -->
+<!-- library(naivebayes) -->
+<!-- library(tm) -->
+<!-- library(caret) -->
+<!-- ``` -->
 
-## Random Forest
+<!-- ## Random Forest -->
 
-```{r}
-# Proyecto_1475.pdf (esto es un ejemplo, adaptarko al nuestro)
+<!-- ```{r} -->
+<!-- # Proyecto_1475.pdf (esto es un ejemplo, adaptarko al nuestro) -->
 
-# Establecemos una semilla por defecto
-set.seed(127)
+<!-- # Establecemos una semilla por defecto -->
+<!-- set.seed(127) -->
 
-train <- datos_train
-test <- datos_test
+<!-- train <- datos_train -->
+<!-- test <- datos_test -->
 
-# Obtenemos el modelo
-library(randomForest)
-modelo_rf <- randomForest(rating  ~ effectivenessNumber, data = train)
-modelo_rf
+<!-- # Obtenemos el modelo -->
+<!-- library(randomForest) -->
+<!-- modelo_rf <- randomForest(rating  ~ effectivenessNumber, data = train) -->
+<!-- modelo_rf -->
 
-# Comprobación del modelo con los datos del test:
-pred <- predict(modelo_rf, newdata = test)
+<!-- # Comprobación del modelo con los datos del test: -->
+<!-- pred <- predict(modelo_rf, newdata = test) -->
 
-# Matriz de confusión:
-tabla <- table(pred, datos_test$rating); 
-tabla
+<!-- # Matriz de confusión: -->
+<!-- tabla <- table(pred, datos_test$rating);  -->
+<!-- tabla -->
 
-# Dice la precisión
-sum(diag(tabla)) / nrow(test)
-```
-
-
-```{r}
-# usar la curva ROC
-library("ROCR")
-
-# Función que dibuja una curva ROC
-plotROC <- function(modelo, etiq_real, adicionar=FALSE,color="red") { 
-  pred <- prediction(modelo, etiq_real)
-  perf <- performance(pred,"tpr","fpr")
-  plot(perf, col=color, add=adicionar, main="Curva ROC", lwd = 2) 
-  segments(0, 0, 1, 1, col='black')
-  grid() 
-}
-
-# Para hacer la curva ROC dben etar en probabildiad entre 0 y 1
-```
+<!-- # Dice la precisión -->
+<!-- sum(diag(tabla)) / nrow(test) -->
+<!-- ``` -->
 
 
-## Clasificacores basados en RRNN
+<!-- ```{r} -->
+<!-- # usar la curva ROC -->
+<!-- library("ROCR") -->
 
-## Suuport Vector Machine SVM
+<!-- # Función que dibuja una curva ROC -->
+<!-- plotROC <- function(modelo, etiq_real, adicionar=FALSE,color="red") {  -->
+<!--   pred <- prediction(modelo, etiq_real) -->
+<!--   perf <- performance(pred,"tpr","fpr") -->
+<!--   plot(perf, col=color, add=adicionar, main="Curva ROC", lwd = 2)  -->
+<!--   segments(0, 0, 1, 1, col='black') -->
+<!--   grid()  -->
+<!-- } -->
 
-```{r}
-# Proyecto_1475.pdf
+<!-- # Para hacer la curva ROC dben etar en probabildiad entre 0 y 1 -->
+<!-- ``` -->
 
-library("kernlab")
 
-# Se aplica el SVM a los datos de entrenamiento:
-ksvmTrain <- ksvm (rating  ~ effectivenessNumber, data = train)
+<!-- ## Clasificacores basados en RRNN -->
 
-# Se clasifica el conjunto de datos de prueba a partir del SVM entrenado, # para ello, se elimina la columna donde está la clasificación original: 
-svmClass <- predict (ksvmTrain, datos_test$rating)
+<!-- ## Suuport Vector Machine SVM -->
 
-# Matriz de confusión:
-svmTabla <- table(SVM = svmClass, Reuters = trueClass); 
-svmTabla
+<!-- ```{r} -->
+<!-- # Proyecto_1475.pdf -->
 
-# La precisión de este método es aproximadamente de
-sum(diag(svmTabla))/nrow(test)
+<!-- library("kernlab") -->
 
-```
+<!-- # Se aplica el SVM a los datos de entrenamiento: -->
+<!-- ksvmTrain <- ksvm (rating  ~ effectivenessNumber, data = train) -->
+
+<!-- # Se clasifica el conjunto de datos de prueba a partir del SVM entrenado, # para ello, se elimina la columna donde está la clasificación original:  -->
+<!-- svmClass <- predict (ksvmTrain, datos_test$rating) -->
+
+<!-- # Matriz de confusión: -->
+<!-- svmTabla <- table(SVM = svmClass, Reuters = trueClass);  -->
+<!-- svmTabla -->
+
+<!-- # La precisión de este método es aproximadamente de -->
+<!-- sum(diag(svmTabla))/nrow(test) -->
+
+<!-- ``` -->
 
 

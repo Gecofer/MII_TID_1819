@@ -2951,6 +2951,7 @@ Como podemos apreciar en la imagen, el mapa de por sí es poco visualizable debi
 
 # 6. Agrupamiento y Clustering
 
+Para la realización del Clustering, se debe destacar el uso de este [enlace](https://rpubs.com/Joaquin_AR/310338). 
 
 ## 6.1. KNN
 

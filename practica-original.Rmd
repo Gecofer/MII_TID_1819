@@ -3622,14 +3622,49 @@ Además, podemos destacar otro aspecto, y es que, **con esta última representac
 
 
 
-## 6.3. Agrupamiento de los fármacos en base a las opiniones de los usuarios
+## 6.3. Density based clustering (DBSCAN)
+
+Por último, vamos a aplicar una técnica más, la cuál se corresponde con una técnica de agrupamiento particional. Se correponde con la técnica *Density-based spatial clustering of applications* y consiste en dar una percepción más humana, donde se busca interpretar aquellas zonas muy densas rodeadas de zonas poco densas.
+
+
+Recordemos que, tal y como hemos visto en la asignatura, puede darse el caso de tener zonas del espacio que sean muy densas,y otras con una densidad baja (dando lugar a grupos de baja densidad). Si tenemos en cuenta, los mismos parámetros para los dos tipos de zonas planteadas, al final estaríamos perdiendo mucha información, lo cuál no es deseable en una técnica de este tipo. 
+
+A continuación se muestra los resultados que hemos obtenido estableciendo *esp*=0.15 y *MinPt*=5. Como se aprecia en la siguiente gráfica, disponemos tanto de zonas de baja densidad como de alta densidad. Sin embargo, es muy notable la cantidad de puntos ruido que existen en nuestro conjunto, lo cual nos indica que disponemos de muchos puntos que no forman parte de ningún grupo. Este hecho nos lleva a pensar que este algoritmo no obtiene un resultado apropiado, en comparación a los métodos anteriores, y que **no se está ajustando bien a nuestro problema**.
+
+```{r}
+datos_ <- scale(data_train_procesado)
+dbscan_cluster <- fpc::dbscan(data = datos_, eps = 0.15, MinPts = 5)
+# Visualización de los clusters
+fviz_cluster(object = dbscan_cluster, data = datos_, stand = FALSE,
+             geom = "point", ellipse = FALSE, show.clust.cent = FALSE,
+             pallete = "jco") +
+  theme_bw() +
+  theme(legend.position = "bottom")
+```
+Podemos intenta ponerle solución, esableciendo radios de mayor amplitud, para así permitir que más puntos formen parte de los núcleos que se obtengan con la técnica. A continuación podemos ver el resultado obtenido. De nuevo, aunque podemos ver que abarcamos mayor cantidad de items, una gran cantidad de los datos siguen siendo considerados ruido. Además, se puede apreciar claramente como grandes zonas del espacio no son capaces de agruparse. **Por ello, pensamos que, por las características de nuestro problema, esta técnica no es apropiada.** 
+```{r}
+datos_ <- scale(data_train_procesado)
+dbscan_cluster <- fpc::dbscan(data = datos_, eps = 0.4, MinPts = 5)
+# Visualización de los clusters
+fviz_cluster(object = dbscan_cluster, data = datos_, stand = FALSE,
+             geom = "point", ellipse = FALSE, show.clust.cent = FALSE,
+             pallete = "jco") +
+  theme_bw() +
+  theme(legend.position = "bottom")
+```
+
+
+
+
+
+## 6.4. Agrupamiento de los fármacos en base a las opiniones de los usuarios
 
 
 Vamos a ver cómo podemos aplicar técnicas de clustering a las distintas columnas de texto de nuestro dataset. Para ello vamos a explicar en mayor detalle el proceso seguido en la columna Benefits Review preprocesada y luego mostraremos los resultados con los otros textos de una forma más directa.
 
 Esta es un técnica no supervisada, por lo que no sabemos las clases que clasifica realmente, solo agrupa las instancias en grupos sin definir sin tener nada de  información previa acerca de la estructura.
 
-### 6.3.1. Clustering de Benefits Review
+### 6.4.1. Clustering de Benefits Review
 
 Lo primero que debemos hacer es cargar el dataset preprocesado que hemos creado en esta práctica. Formamos el corpus correspondiente a la columna de beneficios que estamos analizando.
 
@@ -3843,39 +3878,6 @@ Intentamos también realizar un word cloud en función de estos clústers, aunqu
 
 
 
-
-
-
-## 6.4. Density based clustering (DBSCAN)
-
-Por último, vamos a aplicar una técnica más, la cuál se corresponde con una técnica de agrupamiento particional. Se correponde con la técnica *Density-based spatial clustering of applications* y consiste en 
-
-
-Recordemos que, tal y como hemos visto en la asignatura, puede darse el caso de tener zonas del espacio que sean muy densas,y otras con una densidad baja (dando lugar a grupos de baja densidad). Si tenemos en cuenta, los mismos parámetros para los dos tipos de zonas planteadas, al final estaríamos perdiendo mucha información, lo cuál no es deseable en una técnica de este tipo. 
-
-A continuación se muestra los resultados que hemos obtenido estableciendo *esp*=0.15 y *MinPt*=5. Como se aprecia en la siguiente gráfica, disponemos tanto de zonas de baja densidad como de alta densidad. Sin embargo, es muy notable la cantidad de puntos ruido que existen en nuestro conjunto, lo cual nos indica que disponemos de muchos puntos que no forman parte de ningún grupo. Este hecho nos lleva a pensar que este algoritmo no obtiene un resultado apropiado, en comparación a los métodos anteriores, y que **no se está ajustando bien a nuestro problema**.
-
-```{r}
-datos_ <- scale(data_train_procesado)
-dbscan_cluster <- fpc::dbscan(data = datos_, eps = 0.15, MinPts = 5)
-# Visualización de los clusters
-fviz_cluster(object = dbscan_cluster, data = datos_, stand = FALSE,
-             geom = "point", ellipse = FALSE, show.clust.cent = FALSE,
-             pallete = "jco") +
-  theme_bw() +
-  theme(legend.position = "bottom")
-```
-Podemos intenta ponerle solución, esableciendo radios de mayor amplitud, para así permitir que más puntos formen parte de los núcleos que se obtengan con la técnica. A continuación podemos ver el resultado obtenido. De nuevo, aunque podemos ver que abarcamos mayor cantidad de items, una gran cantidad de los datos siguen siendo considerados ruido. Además, se puede apreciar claramente como grandes zonas del espacio no son capaces de agruparse. **Por ello, pensamos que, por las características de nuestro problema, esta técnica no es apropiada.** 
-```{r}
-datos_ <- scale(data_train_procesado)
-dbscan_cluster <- fpc::dbscan(data = datos_, eps = 0.4, MinPts = 5)
-# Visualización de los clusters
-fviz_cluster(object = dbscan_cluster, data = datos_, stand = FALSE,
-             geom = "point", ellipse = FALSE, show.clust.cent = FALSE,
-             pallete = "jco") +
-  theme_bw() +
-  theme(legend.position = "bottom")
-```
 
 
 
